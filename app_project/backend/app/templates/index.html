@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FastAPI Jinja2 Example</title>
+</head>
+<body>
+    <h1>Danh sách người dùng</h1>
+    <ul>
+        {% for inv in inventory %}
+            <li>{{ inv.InventoryID }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

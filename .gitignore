@@ -1,0 +1,50 @@
+# ===================
+# 🔹 BỎ QUA BACKEND 🔹
+# ===================
+
+# Môi trường ảo Python
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# File môi trường chứa thông tin nhạy cảm
+backend/.env
+
+# CSDL SQLite (nếu có)
+*.sqlite3
+*.db
+
+# Logs & Cache
+*.log
+*.cache
+*.pytest_cache/
+*.mypy_cache/
+
+# Alembic migration cache (giữ thư mục alembic nhưng bỏ cache)
+backend/alembic/versions/
+
+# ===================
+# 🔹 BỎ QUA FRONTEND 🔹
+# ===================
+
+frontend/node_modules/
+frontend/.env
+frontend/dist/
+frontend/.output/
+
+# ===================
+# 🔹 BỎ QUA HỆ THỐNG 🔹
+# ===================
+
+# File hệ điều hành
+.DS_Store
+Thumbs.db
+
+# File của IDE
+.vscode/
+.idea/
+*.iml
+

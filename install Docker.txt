@@ -1,0 +1,79 @@
+Install docker in Ubuntu
+
+sudo apt update
+sudo apt install -y docker.io
+
+sudo apt install docker-compose -> cài docker compose plugin
+docker-compose version -> kiểm tra version sau khi cài
+docker-compose up --build -> Build
+---------------------------
+docker-compose down -v  # Xóa container và volume cũ
+docker-compose up --build  # Build lại và chạy
+--------------------
+Cần phải start SQl và backend
+docker start sqlserver
+docker start py_api
+Kiểm tra
+docker ps -a
+docker logs py_api
+docker stop $(docker ps -q) - dừng docker
+
+-------------
+Tắt docker: docker stop $(docker ps -q) -> wsl --shutdown
+Mở docker: wsl -> Kiểm tra Docker đã chạy chưa: docker ps -> Chạy: docker start $(docker ps -a -q)
+
+(chuyển sang thư mục app -> cd /mnt/e/MrHien/Project/Python/fastapi_project/backend)
+docker info - > xem status docker
+sudo dockerd --iptables=false & -> kích hoạt docker
+docker ps -> kiểm tra hoạt động của docker
+
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
+
+
+
+Dừng Docker daemon
+Chạy lệnh sau để dừng tất cả các tiến trình dockerd đang chạy:
+sudo kill -9 123 121 122
+Sau đó kiểm tra lại:
+ps aux | grep dockerd
+Xóa file lock của Docker
+sudo rm -f /var/run/docker.pid
+
+
+
+để chạy được
+sudo dockerd &
+Hãy chuyển về iptables-legacy
+sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
+sudo update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+kiểm tra lại
+sudo update-alternatives --display iptables
+---------------------------------------------------------
+Nếu docker bị treo
+Kiểm tra Docker có đang chạy không : ps aux | grep dockerd
+Dừng Docker nếu đang chạy : sudo killall dockerd
+Sau đó kiểm tra lại: ps aux | grep dockerd
+Nếu dockerd vẫn còn, dùng lệnh sau để buộc dừng: sudo pkill -9 dockerd
+Xóa file docker.pid
+Sau khi đảm bảo Docker đã tắt, chạy lệnh: sudo rm -f /var/run/docker.pid
+Khởi động lại Docker: sudo dockerd
+Nếu Docker khởi động thành công, bạn có thể kiểm tra bằng: docker ps
+
+-------------------------------------
+nếu bị lỗi không tải được python
+sudo nano /etc/docker/daemon.json 
+sửa lại thành 
+{
+    "dns": ["8.8.8.8", "8.8.4.4"]
+}
+
+sudo nano /etc/resolv.conf
+thêm
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+
+sau đó 
+curl -v https://registry-1.docker.io/v2/
+docker pull python:3.12

@@ -1,0 +1,30 @@
+version: '3'
+services:
+  api:
+    build: .
+    container_name: py_api
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "mssql+pymssql://sa:Hien2024@10.1.11.36:1433/YSMaintenanceInventory"
+    ports:
+      - "8000:8000"
+    networks:
+      - mynetwork
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: sqlserver
+    restart: always
+    ports:
+      - "1433:1433"  # Mở cổng cho SQL Server
+    environment:
+      SA_PASSWORD: "Hien2024"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge

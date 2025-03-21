@@ -1,0 +1,14 @@
+npm create vite@latest frontend --template vue-ts (-> Check: Vue -> Typescript)
+cd frontend
+npm install
+
+npm install vue-router@4 pinia axios postcss autoprefixer element-plus
+npm install -D tailwindcss@3.3.5 postcss autoprefixer
+npx tailwindcss init -p
+
+Nếu bạn đang dùng TypeScript mà chưa có file vue-shim.d.ts, hãy tạo một file src/vue-shim.d.ts và thêm vào
+declare module "*.vue" {
+  import { DefineComponent } from "vue";
+  const component: DefineComponent<{}, {}, any>;
+  export default component;
+}
