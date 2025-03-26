@@ -1,0 +1,26 @@
+/* AG Grid styling */
+.ag-theme-quartz {
+    --ag-background-color: #2E3A47 !important;
+    --ag-foreground-color: #D1D5DB !important;
+    --ag-header-background-color: #3B4856 !important;
+    --ag-header-foreground-color: #E5E7EB !important;
+    --ag-border-color: #4B5563 !important;
+  }
+  .ag-theme-quartz .ag-header {
+    font-weight: 600;
+    border-bottom: 2px solid #4B5563 !important;
+  }
+  .ag-theme-quartz .ag-row {
+    border-bottom: 1px solid #4B5563 !important;
+  }
+  .ag-theme-quartz .ag-row:hover {
+    background-color: #4B5563 !important;
+    transition: background-color 0.2s ease;
+  }
+  .ag-theme-quartz .ag-row:hover .ag-cell {
+    color: #F3F4F6 !important;
+  }
+  .ag-cell:focus {
+    outline: none !important;
+    border: none !important;
+  }

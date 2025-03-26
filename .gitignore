@@ -3,15 +3,15 @@
 # ===================
 
 # Môi trường ảo Python
-venv/
-env/
+app_project/backend/venv/
+app_project/backend/env/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
 # File môi trường chứa thông tin nhạy cảm
-backend/.env
+app_project/backend/.env
 
 # CSDL SQLite (nếu có)
 *.sqlite3
@@ -24,16 +24,31 @@ backend/.env
 *.mypy_cache/
 
 # Alembic migration cache (giữ thư mục alembic nhưng bỏ cache)
-backend/alembic/versions/
+app_project/backend/alembic/versions/
+
+# Docker files nếu không dùng
+app_project/backend/docker-compose.yml
+app_project/backend/Dockerfile
 
 # ===================
 # 🔹 BỎ QUA FRONTEND 🔹
 # ===================
 
-frontend/node_modules/
-frontend/.env
-frontend/dist/
-frontend/.output/
+app_project/frontend/node_modules/
+app_project/frontend/.env
+app_project/frontend/dist/
+app_project/frontend/.output/
+
+# Cache & logs
+app_project/frontend/.cache/
+app_project/frontend/npm-debug.log*
+app_project/frontend/yarn-debug.log*
+app_project/frontend/yarn-error.log*
+
+# Build files
+app_project/frontend/.nuxt/
+app_project/frontend/.next/
+app_project/frontend/out/
 
 # ===================
 # 🔹 BỎ QUA HỆ THỐNG 🔹
@@ -47,4 +62,3 @@ Thumbs.db
 .vscode/
 .idea/
 *.iml
-

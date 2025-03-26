@@ -1,0 +1,351 @@
+<script setup lang="ts">
+import { ref, onMounted, computed } from "vue";
+import { useMaterial } from "@/hooks/useMaterial";
+import type { Material } from "@/models/material";  // Import kiểu Material
+import { Icon } from '@iconify/vue';
+import VueEasyLightbox from "vue-easy-lightbox";
+
+const {
+  fetchMaterials,
+  addMaterial,
+  editMaterial,
+  removeMaterial,
+  materials,
+} = useMaterial();
+
+const isModalOpen = ref(false);
+const isEditMode = ref(false);
+const materialForm = ref({
+  MaterialID: 0,
+  MaterialCode: "",
+  MaterialName: "",
+  Unit: "",
+  Description: "",
+  ImageUrl: "" as string | File,
+  Model: "",
+  Origin: "",
+});
+
+onMounted(fetchMaterials);
+
+const openModal = (material: any = null) => {
+  isEditMode.value = !!material;
+  materialForm.value = material
+    ? { ...material }
+    : {
+        MaterialName: "",
+        Unit: "",
+        Description: "",
+        ImageUrl: "" as string | File,
+        Model: "",
+        Origin: "",
+      };
+  isModalOpen.value = true;
+};
+
+const saveMaterial = async () => {
+  if (isEditMode.value) {
+    await editMaterial(materialForm.value.MaterialID, materialForm.value);
+  } else {
+    await addMaterial(materialForm.value);
+  }
+  isModalOpen.value = false;
+  fetchMaterials();
+};
+
+const previewUrl = ref<string | null>(null);
+
+const handleImageUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    const file = target.files[0];
+    materialForm.value.ImageUrl = file; // Lưu File
+    previewUrl.value = URL.createObjectURL(file); // Lưu URL tạm
+  }
+};
+//Show image 
+const showViewer = ref(false);
+const selectedImage = ref<string>("");
+
+const openViewer = (imageUrl: string) => {
+  selectedImage.value = imageUrl;
+  showViewer.value = true;
+};
+
+// --- Tìm kiếm & Sắp xếp ---
+const searchQuery = ref("");
+const sortOrder = ref<"asc" | "desc">("asc");
+
+type SortableField = "MaterialCode" | "MaterialName" | "Unit" | "Description" | "Origin" | "ImageUrl" | "Model";
+const sortColumn = ref<SortableField | "">("");
+
+// Tạo danh sách đã lọc và sắp xếp
+const sortedFilteredMaterials = computed(() => {
+  if (!Array.isArray(materials.value)) {
+    console.error("materials.value is not an array:", materials.value);
+    return [];
+  }
+
+  let filtered = materials.value.filter((material) => {
+    return (
+      material.MaterialCode.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      material.MaterialName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      (material.Description &&
+        material.Description.toLowerCase().includes(searchQuery.value.toLowerCase()))
+    );
+  });
+
+  if (sortColumn.value) {
+    filtered.sort((a, b) => {
+      const key = sortColumn.value as keyof Material;
+      const valA = a[key] || "";
+      const valB = b[key] || "";
+      if (typeof valA === "string" && typeof valB === "string") {
+        return sortOrder.value === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      } else if (typeof valA === "number" && typeof valB === "number") {
+        return sortOrder.value === "asc" ? valA - valB : valB - valA;
+      } else {
+        return 0;
+      }
+    });
+  }
+  return filtered;
+});
+
+// --- Phân trang ---
+const currentPage = ref(1);
+const pageSize = ref(5);
+const totalPages = computed(() =>
+  Math.ceil(sortedFilteredMaterials.value.length / pageSize.value)
+);
+
+const paginatedMaterials = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  return sortedFilteredMaterials.value.slice(start, start + pageSize.value);
+});
+
+const changePage = (page: number) => {
+  if (page < 1 || page > totalPages.value) return;
+  currentPage.value = page;
+};
+
+// Sự kiện sắp xếp khi click header, nhận tham số kiểu SortableField
+const setSort = (column: SortableField) => {
+  if (sortColumn.value === column) {
+    sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
+  } else {
+    sortColumn.value = column;
+    sortOrder.value = "asc";
+  }
+  currentPage.value = 1; // reset trang về 1 sau khi sắp xếp
+};
+</script>
+
+<template>
+  <div class="w-full max-w-12xl mx-auto p-8 my-8">
+    <!-- Header với tìm kiếm và thêm mới -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+      <h2 class="text-3xl font-bold text-blue-300 mb-4 md:mb-0">
+        Danh sách Vật Tư
+      </h2>
+      <div class="flex flex-col md:flex-row md:items-center gap-4">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Tìm kiếm..."
+          class="border border-gray-600 p-3 rounded-md bg-[#252F3D] text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button 
+          @click="openModal()"
+          class="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold rounded-full flex items-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+        >
+          <Icon icon="mdi:plus" class="mr-2 text-xl" />
+          Thêm vật tư
+        </button>
+      </div>
+    </div>
+
+    <!-- Bảng danh sách -->
+    <div class="overflow-x-auto shadow-md rounded-lg">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-[#3B4856]">
+          <tr>
+            <th class="w-[7%] border border-gray-600 p-3 text-gray-300 cursor-pointer" @click="setSort('MaterialCode')">
+              Mã vật tư
+              <span v-if="sortColumn === 'MaterialCode'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th class="w-[28%] border border-gray-600 p-3 text-gray-300 cursor-pointer" @click="setSort('MaterialName')">
+              Tên vật tư
+              <span v-if="sortColumn === 'MaterialName'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th class="w-[8%] border border-gray-600 p-3 text-gray-300 cursor-pointer" @click="setSort('Unit')">
+              Đơn vị
+              <span v-if="sortColumn === 'Unit'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th class="w-[23%] border border-gray-600 p-3 text-gray-300 cursor-pointer" @click="setSort('Description')">
+              Mô tả
+              <span v-if="sortColumn === 'Description'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th class="w-[7%] border border-gray-600 p-3 text-gray-300 cursor-pointer" @click="setSort('ImageUrl')">
+              Hình ảnh
+            </th>
+            <th class="w-[15%] border border-gray-600 p-3 text-gray-300 cursor-pointer" @click="setSort('Model')">
+              Model
+              <span v-if="sortColumn === 'Model'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th class="w-[23%] border border-gray-600 p-3 text-center text-gray-300">
+              Hành động
+            </th>
+          </tr>
+
+        </thead>
+        <tbody class="bg-[#2E3A47]">
+          <tr
+            v-for="material in paginatedMaterials"
+            :key="material.MaterialID"
+            class="border border-gray-700 hover:bg-[#3B4856] transition duration-200"
+          >
+            <td class="border border-gray-600 p-3">{{ material.MaterialCode }}</td>
+            <td class="border border-gray-600 p-3">{{ material.MaterialName }}</td>
+            <td class="border border-gray-600 p-3">{{ material.Unit }}</td>
+            <td class="border border-gray-600 p-3">{{ material.Description }}</td>
+            <td class="border border-gray-600 p-3">
+              <img 
+                v-if="material.ImageUrl && typeof material.ImageUrl === 'string'"
+                :src="material.ImageUrl"
+                alt="Hình ảnh"
+                class="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 object-cover rounded-md cursor-pointer"
+                @click="openViewer(material.ImageUrl)"
+              />              
+            </td>
+            <td class="border border-gray-600 p-3">{{ material.Model }}</td>
+            <td class="border border-gray-600 p-3 text-center">
+              <button
+                @click="openModal(material)"
+                class="inline-flex items-center px-3 py-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white font-semibold text-sm rounded-md hover:from-yellow-500 hover:to-yellow-600 transition transform hover:scale-105 shadow"
+              >
+                <Icon icon="mdi:pencil" class="mr-1 text-base" />
+                Sửa
+              </button>
+              <button
+                @click="removeMaterial(material.MaterialID!)"
+                class="inline-flex items-center px-3 py-1 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold text-sm rounded-md hover:from-red-600 hover:to-red-700 transition transform hover:scale-105 shadow ml-2"
+              >
+                <Icon icon="mdi:delete" class="mr-1 text-base" />
+                Xóa
+              </button>
+            </td>
+          </tr>
+          <tr v-if="paginatedMaterials.length === 0">
+            <td colspan="8" class="p-4 text-center text-gray-400">
+              Không có dữ liệu
+            </td>
+          </tr>
+        </tbody>
+        <vue-easy-lightbox 
+          :visible="showViewer"
+          :imgs="[selectedImage]"
+          @hide="showViewer = false"
+        />
+      </table>
+    </div>
+
+
+    <!-- Phân trang -->
+    <div class="flex justify-center items-center mt-6 space-x-4">
+      <button
+        @click="changePage(currentPage - 1)"
+        :disabled="currentPage === 1"
+        class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition disabled:opacity-50"
+      >
+        Prev
+      </button>
+      <span class="text-gray-300">
+        Trang {{ currentPage }} / {{ totalPages }}
+      </span>
+      <button
+        @click="changePage(currentPage + 1)"
+        :disabled="currentPage === totalPages"
+        class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition disabled:opacity-50"
+      >
+        Next
+      </button>
+    </div>
+
+    <!-- Modal -->
+    <transition name="fade">
+    <div
+      v-if="isModalOpen"
+      class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-70 z-50"
+    >
+      <div class="bg-[#2E3A47] p-8 rounded-lg shadow-2xl w-full max-w-lg">
+        <h3 class="text-2xl font-semibold text-blue-300 mb-6">
+          {{ isEditMode ? "Chỉnh sửa vật tư" : "Thêm vật tư mới" }}
+        </h3>
+        <div class="space-y-4">
+          <!-- Tên vật tư -->
+          <input
+            v-model="materialForm.MaterialName"
+            placeholder="Tên vật tư"
+            class="border border-gray-600 p-3 w-full bg-[#252F3D] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <!-- Đơn vị -->
+          <input
+            v-model="materialForm.Unit"
+            placeholder="Đơn vị"
+            class="border border-gray-600 p-3 w-full bg-[#252F3D] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <!-- Mô tả -->
+          <textarea
+            v-model="materialForm.Description"
+            placeholder="Mô tả"
+            rows="3"
+            class="border border-gray-600 p-3 w-full bg-[#252F3D] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          ></textarea>
+          <!-- Hình ảnh -->
+          <div>
+            <label class="block mb-1 text-white font-semibold" for="imageUpload">
+              Hình ảnh
+            </label>
+            <input
+              id="imageUpload"
+              type="file"
+              @change="handleImageUpload"
+              class="w-full text-white"
+            />
+            <div v-if="previewUrl" class="mt-2">
+              <img :src="previewUrl" alt="Hình ảnh" class="w-24 h-24 object-cover rounded-lg" />
+            </div>
+          </div>
+          <!-- Model -->
+          <input
+            v-model="materialForm.Model"
+            placeholder="Model"
+            class="border border-gray-600 p-3 w-full bg-[#252F3D] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <!-- Xuất xứ -->
+          <input
+            v-model="materialForm.Origin"
+            placeholder="Xuất xứ"
+            class="border border-gray-600 p-3 w-full bg-[#252F3D] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div class="flex justify-end mt-8">
+          <button
+            @click="isModalOpen = false"
+            class="px-6 py-3 bg-gray-500 text-white rounded-lg mr-4 hover:bg-gray-600 transition shadow-lg"
+          >
+            Hủy
+          </button>
+          <button
+            @click="saveMaterial"
+            class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition shadow-lg"
+          >
+            Lưu
+          </button>
+        </div>
+      </div>
+    </div>
+  </transition>
+  </div>
+</template>

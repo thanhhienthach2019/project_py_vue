@@ -1,0 +1,23 @@
+select {
+    color: white;
+  }
+  
+  select option {
+    color: black;
+    background-color: white;
+  }
+  
+  .multiselect__tags {
+    background: transparent !important;
+}
+ .multiselect__single {
+  background: transparent !important;
+  color: white;
+ }
+ .multiselect__input {
+  background: transparent !important;
+  color: white;
+ }
+ .custom-multiselect .vs__placeholder {
+  color: white !important;
+}

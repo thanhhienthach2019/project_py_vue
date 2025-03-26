@@ -1,11 +1,11 @@
 // src/models/material.ts
 export interface Material {
-    MaterialID?: number;  
+    MaterialID: number;  
     MaterialCode: string;
     MaterialName: string;
     Unit?: string;
     Description?: string;
-    ImageUrl?: string;
+    ImageUrl?: File | string | null;
     Model?: string;
     Origin?: string;
     CreatedAt?: string; 

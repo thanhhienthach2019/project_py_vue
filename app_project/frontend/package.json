@@ -9,17 +9,25 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@headlessui/vue": "^1.7.23",
+    "@heroicons/vue": "^2.2.0",
     "@iconify/vue": "^4.3.0",
+    "@mdi/font": "^7.4.47",
     "@vueuse/motion": "^3.0.3",
+    "ag-grid-community": "^33.1.1",
+    "ag-grid-vue3": "^33.1.1",
     "axios": "^1.8.3",
     "element-plus": "^2.9.6",
     "framer-motion": "^12.5.0",
     "motion": "^12.5.0",
     "pinia": "^3.0.1",
-    "vite-aliases": "^0.11.8",
+    "vite-aliases": "^0.10.0",
+    "vite-plugin-vuetify": "^2.0.4",
     "vue": "^3.5.13",
+    "vue-easy-lightbox": "^1.19.0",
+    "vue-multiselect": "^3.2.0",
     "vue-router": "^4.5.0",
-    "vue3-easy-data-table": "^1.5.47"
+    "vuetify": "^3.7.2"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
@@ -30,7 +38,7 @@
     "postcss-cli": "^11.0.1",
     "tailwindcss": "^3.3.5",
     "typescript": "~5.7.2",
-    "vite": "^6.2.0",
+    "vite": "^5.4.8",
     "vue-tsc": "^2.2.4"
   }
 }

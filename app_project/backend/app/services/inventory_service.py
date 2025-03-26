@@ -96,3 +96,10 @@ def export_stock(db: Session, warehouse_id: int, material_id: int, quantity: int
 
 def get_stock_history(db: Session):
     return db.query(StockHistory).all()
+
+def get_inventory_by_material_and_warehouse_id(db: Session, material_id: int, warehouse_id: int):
+    inventories = db.query(Inventory).filter(
+        Inventory.MaterialID == material_id,
+        Inventory.WarehouseID == warehouse_id
+    ).all()
+    return inventories

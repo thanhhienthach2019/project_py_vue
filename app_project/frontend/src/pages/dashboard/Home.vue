@@ -89,7 +89,7 @@ const logout = () => {
       </header>
 
       <!-- Nội dung động từ Vue Router -->
-      <main class="main p-6 flex-grow bg-[#252F3D] rounded-lg shadow-lg">
+      <main class="main flex-grow bg-[#252F3D]">
         <RouterView />
       </main>
 

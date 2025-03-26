@@ -194,3 +194,77 @@ def update_maintenance_request(db: Session, request_id: int, update_data: Mainte
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Lỗi khi cập nhật phiếu bảo trì: {str(e)}")
+
+def get_all_maintenance_requests(db: Session) -> list[MaintenanceRequestResponse]:
+    maintenance_requests = db.query(MaintenanceRequests).all()
+    
+    responses = []
+    for request in maintenance_requests:
+        # Lấy danh sách chi tiết của mỗi phiếu bảo trì
+        request_details = db.query(MaintenanceRequestDetails).filter(
+            MaintenanceRequestDetails.RequestID == request.RequestID
+        ).all()
+
+        details_response = [
+            MaintenanceRequestDetailResponse(
+                RequestDetailID=d.RequestDetailID,
+                RequestID=d.RequestID,
+                MaterialID=d.MaterialID,
+                WarehouseID=d.WarehouseID,
+                QuantityUsed=d.QuantityUsed
+            ) for d in request_details
+        ]
+
+        responses.append(
+            MaintenanceRequestResponse(
+                RequestID=request.RequestID,
+                RequestNumber=request.RequestNumber,
+                MachineName=request.MachineName,
+                Diagnosis=request.Diagnosis,
+                RequestedBy=request.RequestedBy,
+                Status=request.Status,
+                RequestDate=request.RequestDate,
+                CreatedAt=request.CreatedAt,
+                Details=details_response
+            )
+        )
+    
+    return responses
+
+def get_maintenance_request_by_id(db: Session, request_id: int) -> MaintenanceRequestResponse:
+    # Lấy thông tin phiếu bảo trì theo RequestID
+    maintenance_request = db.query(MaintenanceRequests).filter(
+        MaintenanceRequests.RequestID == request_id
+    ).first()
+
+    if not maintenance_request:
+        raise HTTPException(status_code=404, detail="Phiếu bảo trì không tồn tại")
+    
+    # Lấy danh sách chi tiết của phiếu bảo trì
+    request_details = db.query(MaintenanceRequestDetails).filter(
+        MaintenanceRequestDetails.RequestID == request_id
+    ).all()
+
+    details_response = [
+        MaintenanceRequestDetailResponse(
+            RequestDetailID=d.RequestDetailID,
+            RequestID=d.RequestID,
+            MaterialID=d.MaterialID,
+            WarehouseID=d.WarehouseID,
+            QuantityUsed=d.QuantityUsed
+        ) for d in request_details
+    ]
+    
+    response = MaintenanceRequestResponse(
+        RequestID=maintenance_request.RequestID,
+        RequestNumber=maintenance_request.RequestNumber,
+        MachineName=maintenance_request.MachineName,
+        Diagnosis=maintenance_request.Diagnosis,
+        RequestedBy=maintenance_request.RequestedBy,
+        Status=maintenance_request.Status,
+        RequestDate=maintenance_request.RequestDate,
+        CreatedAt=maintenance_request.CreatedAt,
+        Details=details_response
+    )
+
+    return response
