@@ -20,6 +20,7 @@ export interface MaintenanceRequestDetail {
     RequestedBy: string;
     // Trạng thái có thể được set mặc định (ví dụ: "Pending") từ phía backend
     Status: string;
+    WarehouseId: number;
     // Danh sách chi tiết vật tư
     Details: MaintenanceRequestDetail[];
   }

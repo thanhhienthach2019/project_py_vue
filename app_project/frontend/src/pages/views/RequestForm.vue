@@ -69,16 +69,23 @@
             <div>
               <label for="warehouse" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Kho</label>
               <select
-                v-model="maintenanceForm.Diagnosis"
+                v-model="maintenanceForm.WarehouseId"
                 required
                 :class="[
                   'w-full px-3 py-2 text-sm text-white bg-transparent border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none',
-                  errors.Diagnosis ? 'border-red-500' : 'border-gray-300'
+                  errors.WarehouseId ? 'border-red-500' : 'border-gray-300'
                 ]"
               >
-                <option></option>
+                <option disabled value="">Chọn Kho</option>
+                <option
+                  v-for="warehouse in warehouses"
+                  :key="warehouse.WarehouseID"
+                  :value="warehouse.WarehouseID"
+                >
+                  {{ warehouse.WarehouseName }}
+                </option>
               </select>
-              <p v-if="errors.Diagnosis" class="text-red-500 text-xs mt-1">
+              <p v-if="errors.WarehouseId" class="text-red-500 text-xs mt-1">
                 Vui lòng chọn Kho.
               </p>
             </div> 
@@ -196,12 +203,14 @@ import { ref, onMounted, computed, inject, type Ref } from "vue";
 import { AgGridVue } from "ag-grid-vue3";
 import { useMaintenance } from "@/hooks/useMaintenance";
 import { useMaterial } from "@/hooks/useMaterial";
+import { useWarehouse } from "@/hooks/warehouse";
 import type {
   MaintenanceRequestCreate,
   MaintenanceRequestUpdate
 } from "@/models/maintenance";
 import type { Material } from "@/models/material";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
+import { showConfirmToast } from "@/utils/confirmToast";
 import 'vue-multiselect/dist/vue-multiselect.css';
 import type { GridApi, GridOptions } from "ag-grid-community";
 
@@ -217,6 +226,7 @@ const {
 } = useMaintenance();
 
 onMounted(fetchMaintenanceRequests);
+const { warehouses ,fetchWarehouses } = useWarehouse();
 
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
 
@@ -226,6 +236,7 @@ const maintenanceForm = ref<MaintenanceRequestCreate & { RequestID?: number }>({
   Diagnosis: "",
   RequestedBy: "",
   Status: "Pending",
+  WarehouseId: 0,
   Details: []
 });
 
@@ -233,7 +244,11 @@ const errors = ref({
   RequestNumber: false,
   MachineName: false,
   Diagnosis: false,
-  RequestedBy: false
+  RequestedBy: false,
+  WarehouseId: false
+});
+onMounted(() => {
+  fetchWarehouses();
 });
 
 const validateAll = (): boolean => {
@@ -257,6 +272,7 @@ const resetForm = () => {
     Diagnosis: "",
     RequestedBy: "",
     Status: "Pending",
+    WarehouseId: 0,
     Details: []
   };
   searchMaterial.value = "";
@@ -319,7 +335,12 @@ const detailColumnDefs = ref([
     cellEditor: "agTextCellEditor", 
     valueParser: (params: any) => Number(params.newValue)
   },
-  { headerName: "SL tồn kho", field: "RemainingStock", flex: 1 },
+  { 
+    headerName: "SL tồn kho", 
+    field: "RemainingStock", 
+    flex: 1,
+    valueFormatter: (params: any) => params.value === 0 ? "" : params.value
+   },
   { headerName: "Đơn vị tính", field: "Unit", flex: 1 },
   {
     headerName: "Hành động",
@@ -355,7 +376,7 @@ const saveMaintenanceRequest = async () => {
   // Map vật tư đã chọn thành chi tiết phiếu bảo trì
   maintenanceForm.value.Details = selectedMaterials.value.map((item) => ({
     MaterialID: item.MaterialID,
-    WarehouseID: 1, // Mặc định WarehouseID = 1; có thể chỉnh sửa nếu cần
+    WarehouseID: maintenanceForm.value.WarehouseId, 
     QuantityUsed: item.QuantityUsed
   }));
 
@@ -386,6 +407,7 @@ const saveMaintenanceRequest = async () => {
     toast?.value?.showToast("Có lỗi xảy ra, vui lòng thử lại!", "error");
   }
 };
+const selectedEditRowId = ref<number | null>(null);
 
 // ----------------- AG Grid DANH SÁCH PHIẾU BẢO TRÌ -----------------
 const columnDefs = ref([
@@ -400,20 +422,55 @@ const columnDefs = ref([
     sortable: false,
     filter: false,
     cellRenderer: (params: any) => {
-      return `
-        <div data-row-id="${params.data.RequestID}">
-          <i class="mdi mdi-pencil text-gray-500 text-lg cursor-pointer"></i>
-          <i class="mdi mdi-check-circle text-green-500 text-lg cursor-pointer ml-2"></i>
-        </div>
-      `;
+      // Tạo container cho các icon
+      const container = document.createElement("div");
+      container.setAttribute("data-row-id", params.data.RequestID);
+
+      // Tạo icon edit (pencil)
+      const editIcon = document.createElement("i");
+      // Kiểm tra nếu dòng được chọn thì icon hiển thị màu vàng, ngược lại màu xám
+      if (selectedEditRowId.value === params.data.RequestID) {
+        editIcon.className = "mdi mdi-pencil text-yellow-500 text-lg cursor-pointer";
+      } else {
+        editIcon.className = "mdi mdi-pencil text-gray-500 text-lg cursor-pointer";
+      }
+      editIcon.addEventListener("click", (event) => {
+        event.stopPropagation();
+        // Cập nhật dòng được chọn
+        selectedEditRowId.value = params.data.RequestID;
+        // Refresh lại grid để cập nhật màu của các cell (nếu bạn có sử dụng grid API)
+        params.api.refreshCells({ force: true });
+        // Gọi hàm onEdit được truyền qua cellRendererParams
+        params.colDef.cellRendererParams.onEdit(params.data.RequestID);
+      });
+      container.appendChild(editIcon);
+
+      // Tạo icon approve (check-circle)
+      const approveIcon = document.createElement("i");
+      if (params.data.Status === "Approved") {
+        // Nếu trạng thái là Approved -> hiển thị màu xám và không cho click
+        approveIcon.className = "mdi mdi-check-circle text-gray-500 text-lg ml-2";
+      } else {
+        // Nếu khác "Approved" -> hiển thị màu xanh và cho phép click
+        approveIcon.className = "mdi mdi-check-circle text-green-500 text-lg cursor-pointer ml-2";
+        approveIcon.addEventListener("click", (event) => {
+          event.stopPropagation();
+          params.colDef.cellRendererParams.onApprove(params.data.RequestID);
+        }, { once: true });
+      }
+      container.appendChild(approveIcon);
+
+      return container;
     },
     cellRendererParams: {
     onEdit: async (requestId: number) => {
       await fetchMaintenanceRequestById(requestId);
       if (selectedMaintenanceRequest.value) {
-        maintenanceForm.value = { ...selectedMaintenanceRequest.value };
+        maintenanceForm.value = {
+           ...selectedMaintenanceRequest.value, 
+           WarehouseId: (selectedMaintenanceRequest.value.Details as any).WarehouseId ?? 0         
+          };
         if (maintenanceForm.value.Details && maintenanceForm.value.Details.length) {
-          const warehouseId = 1; // hoặc lấy từ biến cấu hình nếu cần
 
           // Sử dụng Promise.all để load tồn kho cho từng vật tư
           const updatedMaterials = await Promise.all(
@@ -421,12 +478,17 @@ const columnDefs = ref([
               const material = materialOptions.value.find(
                 (m) => m.MaterialID === d.MaterialID
               );
-              let remainingStock = 0;
+              let remainingStock = 0;              
               try {
+                const warehouseID =
+                      selectedMaintenanceRequest.value!.Status === "Approved"
+                        ? 0
+                        : d.WarehouseID;
+                        
                 const materialWithStock = await fetchMaterialWithStock(
                   d.MaterialID,
-                  warehouseId
-                );
+                  warehouseID
+                );                
                 remainingStock = materialWithStock?.remaining_quantity || 0;
               } catch (error) {
                 console.error("Lỗi khi lấy tồn kho cho vật tư", d.MaterialID, error);
@@ -437,7 +499,8 @@ const columnDefs = ref([
                 MaterialName: material ? material.MaterialName : "",
                 QuantityUsed: d.QuantityUsed,
                 Unit: material ? material.Unit : "",
-                RemainingStock: remainingStock
+                RemainingStock: remainingStock,
+                WarehouseID: d.WarehouseID
               };
             })
           );
@@ -445,18 +508,33 @@ const columnDefs = ref([
         }
       }
     },
-      onApprove: async (requestId: number) => {
-        const confirmApprove = confirm("Bạn có chắc muốn duyệt phiếu bảo trì này?");
-        if (confirmApprove) {
+    onApprove: async (requestId: number) => {
+        // Load thông tin request nếu chưa có
+        await fetchMaintenanceRequestById(requestId);
+        // Kiểm tra nếu request đã duyệt
+        if (
+          selectedMaintenanceRequest.value &&
+          selectedMaintenanceRequest.value.Status === "Approved"
+        ) {
+          toast?.value?.showToast("Số phiếu đã được duyệt", "error");
+          return;
+        }
+        const confirmed = await showConfirmToast(
+          "Bạn có chắc muốn duyệt phiếu bảo trì này?"
+        );
+        if (confirmed) {
           const response = await approveMaintenanceRequest(requestId);
           if (response.success) {
             toast?.value?.showToast(response.message, "success");
             fetchMaintenanceRequests();
           } else {
-            toast?.value?.showToast(response.message || "Có lỗi xảy ra khi duyệt phiếu bảo trì!", "error");
+            toast?.value?.showToast(
+              response.message || "Có lỗi xảy ra khi duyệt phiếu bảo trì!",
+              "error"
+            );
           }
         }
-      }
+      },
     },
     flex: 1
   }

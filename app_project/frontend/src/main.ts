@@ -19,7 +19,8 @@ import { ClientSideRowModelModule,
     QuickFilterModule,
     ColumnAutoSizeModule,
     CsvExportModule,
-    TextEditorModule     } from 'ag-grid-community';
+    TextEditorModule,
+    RenderApiModule      } from 'ag-grid-community';
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -29,7 +30,8 @@ ModuleRegistry.registerModules([
   QuickFilterModule,
   ColumnAutoSizeModule,
   CsvExportModule,
-  TextEditorModule    
+  TextEditorModule,
+  RenderApiModule     
 ]);
 
 const app = createApp(App);

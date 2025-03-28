@@ -9,7 +9,7 @@ from app.core.middleware import custom_verify_token
 
 router = APIRouter()
 
-@router.get("get_warehouse")
+@router.get("/get_warehouse")
 def fetch_warehouse(db: Session = Depends(get_db), payload: dict = Depends(custom_verify_token)):
     return get_warehouse(db)
 
