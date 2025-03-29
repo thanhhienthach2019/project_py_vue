@@ -234,6 +234,10 @@ const resetForm = () => {
   previewUrl.value = null;
   errors.value.MaterialName = false;
   errors.value.Unit = false;
+  const imageInput = document.getElementById("imageUpload") as HTMLInputElement;
+  if (imageInput) {
+    imageInput.value = "";
+  }
 };
 
 // Hàm lưu vật tư mới hoặc cập nhật

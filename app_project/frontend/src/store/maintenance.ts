@@ -6,7 +6,8 @@ import {
   getMaintenanceRequestById,
   createMaintenanceRequest,
   approveMaintenanceRequest,
-  updateMaintenanceRequest
+  updateMaintenanceRequest,
+  deleteMaintenanceRequest 
 } from "@/services/maintenance";
 import type {
   MaintenanceRequestCreate,
@@ -99,6 +100,20 @@ export const useMaintenanceStore = defineStore("maintenance", {
         return response;
       } catch (error) {
         console.error("Lỗi khi cập nhật phiếu bảo trì:", error);
+        throw error;
+      }
+    },
+    async deleteMaintenanceRequest(requestId: number) {
+      try {
+        const response = await deleteMaintenanceRequest(requestId);
+        if (response.success) {
+          this.maintenanceRequests = this.maintenanceRequests.filter(
+            (r) => r.RequestID !== requestId
+          );
+        }
+        return response;
+      } catch (error) {
+        console.error("Lỗi khi xóa phiếu bảo trì:", error);
         throw error;
       }
     }

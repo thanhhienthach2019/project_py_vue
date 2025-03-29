@@ -12,7 +12,7 @@ export const createMaintenanceRequest = async (
   requestData: MaintenanceRequestCreate
 ): Promise<{ success: boolean; data?: MaintenanceRequestResponse; message: string }> => {
   try {
-    const response = await apiClient.post("/maintenance-requests", requestData, getAuthHeaders());
+    const response = await apiClient.post("/maintenance-requests", requestData, getAuthHeaders());    
     if (response.status === 200 || response.status === 201) {
       return {
         success: true,
@@ -93,6 +93,36 @@ export const updateMaintenanceRequest = async (
     };
   }
 };
+
+export const deleteMaintenanceRequest = async (
+  requestId: number
+): Promise<{ success: boolean; message: string }> => {
+  try {    
+    const response = await apiClient.delete(
+      `/delete-maintenance-request/${requestId}`,
+      getAuthHeaders()
+    );
+    if (response.status === 200) {
+      return {
+        success: true,
+        message: "Xóa phiếu bảo trì thành công!"
+      };
+    } else {
+      return {
+        success: false,
+        message: "Xóa phiếu bảo trì thất bại!"
+      };
+    }
+  } catch (error: any) {
+    return {
+      success: false,
+      message:
+        error.response?.data?.detail ||
+        "Có lỗi xảy ra khi xóa phiếu bảo trì!"
+    };
+  }
+};
+
 
 export const getAllMaintenanceRequests = async (): Promise<{ success: boolean; data?: MaintenanceRequestResponse[]; message: string }> => {
   try {

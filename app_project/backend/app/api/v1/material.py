@@ -115,8 +115,7 @@ def modify_material(
             file_object.write(image.file.read())
 
         image_url = f"/public/images/{new_filename}"
-    else:
-        # Nếu không upload file mới, có thể lấy image_url từ database hoặc giữ nguyên giá trị cũ
+    else:        
         image_url = None
 
     material_data = MaterialUpdate(

@@ -14,6 +14,11 @@ def add_warehouse(db: Session, warehouse_data: WarehouseCreate):
     db.add(new_warehouse)
     db.commit()
     db.refresh(new_warehouse)
+
+    new_warehouse.WarehouseCode = f"WH-{new_warehouse.WarehouseID:05d}"
+    db.commit()
+    db.refresh(new_warehouse)
+    
     return new_warehouse
 
 def update_warehouse(db: Session, warehouse_id: int, warehouse_data: WarehouseUpdate):

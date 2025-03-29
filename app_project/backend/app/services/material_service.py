@@ -33,7 +33,8 @@ def update_material(db: Session, material_id: int,material_data: MaterialUpdate)
     material.MaterialName = material_data.MaterialName
     material.Unit = material_data.Unit
     material.Description = material_data.Description
-    material.ImageUrl = material_data.ImageUrl
+    if material_data.ImageUrl is not None:
+        material.ImageUrl = material_data.ImageUrl        
     material.Model = material_data.Model
     material.Origin = material_data.Origin
 

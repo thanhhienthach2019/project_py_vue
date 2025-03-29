@@ -50,6 +50,25 @@ export function useMaintenance() {
     }
   };
 
+  const deleteMaintenanceRequest = async (requestId: number) => {
+    try {
+      // Lấy thông tin phiếu cần xoá từ store (để lấy RequestNumber)
+      const deletedItem = maintenanceStore.maintenanceRequests.find(
+        (r) => r.RequestID === requestId
+      );
+      // Gọi store để xoá phiếu
+      const response = await maintenanceStore.deleteMaintenanceRequest(requestId);
+      if (response.success) {
+        // Nếu xoá thành công, trả về thêm trường deletedRequestNumber
+        return { ...response, deletedRequestNumber: deletedItem?.RequestNumber };
+      }
+      return response;
+    } catch (error) {
+      console.error("Lỗi khi xóa phiếu bảo trì:", error);
+      return { success: false, message: "Có lỗi xảy ra khi xóa phiếu bảo trì!" };
+    }
+  };
+
   // Cập nhật phiếu bảo trì
   const updateMaintenanceRequest = async (
     requestId: number,
@@ -70,6 +89,7 @@ export function useMaintenance() {
     addMaintenanceRequest,
     approveMaintenanceRequest,
     updateMaintenanceRequest,
+    deleteMaintenanceRequest,
     maintenanceRequests: computed(() => maintenanceStore.maintenanceRequests || []),
     selectedMaintenanceRequest: computed(() => maintenanceStore.selectedMaintenanceRequest || null)
   };

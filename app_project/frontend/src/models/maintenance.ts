@@ -4,7 +4,7 @@
 export interface MaintenanceRequestDetail {
     // Đối với create request, RequestDetailID và RequestID có thể chưa có (được tạo sau khi lưu vào database)
     RequestDetailID?: number;
-    RequestID?: number;
+    RequestID: number;
     MaterialID: number;
     WarehouseID: number;
     QuantityUsed: number;
@@ -20,7 +20,6 @@ export interface MaintenanceRequestDetail {
     RequestedBy: string;
     // Trạng thái có thể được set mặc định (ví dụ: "Pending") từ phía backend
     Status: string;
-    WarehouseId: number;
     // Danh sách chi tiết vật tư
     Details: MaintenanceRequestDetail[];
   }

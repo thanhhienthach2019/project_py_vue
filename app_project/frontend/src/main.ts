@@ -20,7 +20,9 @@ import { ClientSideRowModelModule,
     ColumnAutoSizeModule,
     CsvExportModule,
     TextEditorModule,
-    RenderApiModule      } from 'ag-grid-community';
+    RenderApiModule,
+    CustomEditorModule,
+    NumberEditorModule        } from 'ag-grid-community';
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -31,7 +33,9 @@ ModuleRegistry.registerModules([
   ColumnAutoSizeModule,
   CsvExportModule,
   TextEditorModule,
-  RenderApiModule     
+  RenderApiModule,
+  CustomEditorModule,
+  NumberEditorModule       
 ]);
 
 const app = createApp(App);

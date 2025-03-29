@@ -14,6 +14,9 @@ export function useAuth() {
           throw new Error(error.message || "Đăng nhập thất bại");
         }
       };
+    const fetchUser = async () => {
+      return await authStore.fetchUser();
+    };
 
     const logout = () => {
         authStore.logout();
@@ -23,6 +26,7 @@ export function useAuth() {
     return {
         login,
         logout,
+        fetchUser,
         isAuthenticated: computed(() => authStore.isAuthenticated),
         user: computed(() => authStore.user)
     };
