@@ -1,22 +1,29 @@
 // src/services/auth.ts
 import axios from "axios";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-axios.defaults.withCredentials = true; //Cho phép gửi cookie trong request
+import apiClient from "@/utils/apiClient";
+axios.defaults.withCredentials = true; 
 
 export const loginApi = async (username: string, password: string) => {
-  return await axios.post(`${API_BASE_URL}/token`, 
-    new URLSearchParams({ 
-      username: username, 
-      password: password 
-    }).toString(), 
-    { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-  );
+  const data = {
+    username: username,
+    password: password,
+  };
+
+  return await apiClient.post("/auth/login", data, {
+    headers: {
+      "Content-Type": "application/json", 
+    },
+  });
 };
 
 export const checkAuth = async () => {
-  return await axios.get(`${API_BASE_URL}/check-auth`);
-}
+  return await apiClient.get("/auth/check-auth");
+};
 
 export const logoutApi = async () => {
-  return await axios.post(`${API_BASE_URL}/logout`);
-}
+  return await apiClient.post("/auth/logout");
+};
+
+export const refreshTokenApi = async () => {
+  return await apiClient.post("/auth/refresh-token");
+};

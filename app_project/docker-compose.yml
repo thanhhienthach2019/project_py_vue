@@ -1,0 +1,45 @@
+
+services:
+  py_api:
+    build:
+      context: ./backend
+    container_name: py_api
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+      - /mnt/d/public/images:/app/public/images  # Mount thư mục chứa ảnh từ host vào container
+    environment:
+      - ENV=DEV                      # Thêm biến môi trường để đảm bảo không sử dụng HTTPS
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - BASE_URL=${BASE_URL}
+      - PORT=${PORT}                    # Đảm bảo PORT khớp với lệnh CMD của uvicorn (nếu bạn thay đổi CMD trong Dockerfile)
+      - BASE_URL_FE=http://localhost:5173,http://10.1.11.36:5173
+      - UPLOAD_DIR=/app/public/images
+    ports:
+      - "9600:9600"                # Map port nếu uvicorn chạy trên 9600
+    depends_on:
+      - db
+    restart: always  # ✅ Tự động restart nếu container bị lỗi
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: sql_server
+    environment:
+      SA_PASSWORD: "Hien2024"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    restart: always  # ✅ Thêm restart
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: vue_frontend
+    ports:
+      - "5173:80"
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf  # Mount file cấu hình Nginx
+    restart: always  # ✅ Thêm restart

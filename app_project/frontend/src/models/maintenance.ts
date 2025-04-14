@@ -18,6 +18,7 @@ export interface MaintenanceRequestDetail {
     MachineName: string;
     Diagnosis: string;
     RequestedBy: string;
+    RequestDate: string;
     // Trạng thái có thể được set mặc định (ví dụ: "Pending") từ phía backend
     Status: string;
     // Danh sách chi tiết vật tư

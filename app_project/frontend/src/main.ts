@@ -9,6 +9,7 @@ import ElementPlus from "element-plus";
 // import vuetify from '../plugins/vuetify';
 import '@mdi/font/css/materialdesignicons.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
+import { setupRouterGuard } from "@/router/guard";
 
 // Đăng ký các module cần thiết
 import { ModuleRegistry } from 'ag-grid-community';
@@ -22,7 +23,8 @@ import { ClientSideRowModelModule,
     TextEditorModule,
     RenderApiModule,
     CustomEditorModule,
-    NumberEditorModule        } from 'ag-grid-community';
+    NumberEditorModule 
+    } from 'ag-grid-community';
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -35,13 +37,15 @@ ModuleRegistry.registerModules([
   TextEditorModule,
   RenderApiModule,
   CustomEditorModule,
-  NumberEditorModule       
+  NumberEditorModule
+          
 ]);
 
 const app = createApp(App);
 
 app.use(createPinia());
 app.use(router);
+setupRouterGuard();
 app.use(ElementPlus);
 // app.use(vuetify);
 

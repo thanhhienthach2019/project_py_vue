@@ -7,14 +7,13 @@ import RequestForm from "@/pages/views/RequestForm.vue";
 import StockManagement from "@/pages/views/StockManagement.vue";
 import InventoryHistory from "@/pages/views/InventoryHistory.vue";
 import Dashboard from "@/pages/views/Dashboard.vue";
-import { authGuard } from "../middleware/authGuard";
 
 const routes = [
   { path: "/login", component: Login },
   {
     path: "/",
     component: Home,
-    beforeEnter: authGuard,
+    meta: { requiresAuth: true }, 
     children: [
       { path: "", name: "dashboard", component: Dashboard },
       { path: "dashboard", name: "dashboard", component: Dashboard },

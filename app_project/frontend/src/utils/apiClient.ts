@@ -4,10 +4,36 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
-    withCredentials: true, // 🔥 Gửi cookie tự động
+    withCredentials: true, 
     headers: {
         "Content-Type": "application/json",
     },
 });
-
+// 🛡️ Interceptor 
+apiClient.interceptors.response.use(
+    response => response,
+    async error => {
+      const originalRequest = error.config;
+  
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+  
+        try {
+          await axios.post(`${API_BASE_URL}/auth/refresh-token`, null, {
+            withCredentials: true,
+          });
+  
+          return apiClient(originalRequest);
+        } catch (refreshError) {
+        //   console.log(refreshError)
+          window.localStorage.removeItem("user"); 
+          window.location.href = "/login";
+          return Promise.reject("Đã có lỗi xảy ra!");
+        }
+      }
+    //   console.log(error);
+      return Promise.reject();
+    }
+  );
+  
 export default apiClient;

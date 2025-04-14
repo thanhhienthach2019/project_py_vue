@@ -1,17 +1,18 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, CheckConstraint, UniqueConstraint
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, CheckConstraint
 from sqlalchemy.sql import func
+from sqlalchemy.dialects.mssql import NVARCHAR
 from app.core.database import Base
 
 class MaintenanceRequests(Base):
     __tablename__ = "MaintenanceRequests"
 
     RequestID = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    RequestNumber = Column(String(50), unique=True, nullable=False)
-    MachineName = Column(String(255, collation="SQL_Latin1_General_CP1_CI_AS"), nullable=True)
-    Diagnosis = Column(String(500, collation="SQL_Latin1_General_CP1_CI_AS"), nullable=True)
-    RequestedBy = Column(String(100, collation="SQL_Latin1_General_CP1_CI_AS"), nullable=True)
+    RequestNumber = Column(NVARCHAR(50), unique=True, nullable=False)
+    MachineName = Column(NVARCHAR(255), nullable=True)
+    Diagnosis = Column(NVARCHAR(500), nullable=True)
+    RequestedBy = Column(NVARCHAR(100), nullable=True)
     RequestDate = Column(DateTime, nullable=False, default=func.now())
-    Status = Column(String(50), nullable=False, default="Pending")
+    Status = Column(NVARCHAR(50), nullable=False, default="Pending")
     CreatedAt = Column(DateTime, nullable=False, default=func.now())
     ApprovedAt = Column(DateTime, nullable=True)
 

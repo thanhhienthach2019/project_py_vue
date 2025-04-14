@@ -5,12 +5,12 @@ import type { MaterialWithStock } from "@/models/materialWithStock";
 
 
 export const getAllMaterials = async (): Promise<Material[]> => {
-    const response = await apiClient.get("/materials", getAuthHeaders());
+    const response = await apiClient.get("/materials");
     return response.data;
 };
 
 export const getMaterialById = async (materialId: number): Promise<Material> => {
-    const response = await apiClient.get(`/materials/${materialId}`, getAuthHeaders());
+    const response = await apiClient.get(`/materials/${materialId}`);
     return response.data;
 };
 

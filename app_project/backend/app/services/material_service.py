@@ -7,7 +7,7 @@ from app.services import inventory_service
 from app.schemas.material import MaterialCreate, MaterialUpdate
 
 load_dotenv()
-BASE_URL = f"{os.getenv("BASE_URL")}{os.getenv("PORT")}"
+BASE_URL = f"{os.getenv("BASE_URL")}:{os.getenv("PORT")}"
 
 def add_material(db: Session, material_data: MaterialCreate):
     material_code = generate_material_code(db)
@@ -54,8 +54,8 @@ def delete_material(db: Session, material_id: int):
 def get_all_materials(db: Session):
     materials = db.query(Materials).all()
     for material in materials:
-        if material.ImageUrl and material.ImageUrl.startswith("/public"):
-            material.ImageUrl = f"{BASE_URL}{material.ImageUrl}"
+        if material.ImageUrl:
+            material.ImageUrl = f"{BASE_URL}/public/{material.ImageUrl}"
 
     return materials
 

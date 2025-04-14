@@ -7,27 +7,32 @@ export function useAuth() {
     const router = useRouter();
 
     const login = async (username: string, password: string) => {
-        try {
-          const success = await authStore.login(username, password);
-          if (success) router.push("/");
-        } catch (error: any) {
-          throw new Error(error.message || "Đăng nhập thất bại");
+      try {
+        const success = await authStore.login(username, password);
+        if (success) {
+          router.push("/");
         }
-      };
+      } catch (error: any) {
+        throw new Error("Đăng nhập thất bại");
+      }
+    };
     const fetchUser = async () => {
-      return await authStore.fetchUser();
+      await authStore.fetchUser();    
+      if (!authStore.isAuthenticated) {
+        router.push("/login");
+      }
     };
 
     const logout = () => {
-        authStore.logout();
-        router.push("/login");
+      authStore.logout(); 
     };
 
     return {
-        login,
-        logout,
-        fetchUser,
-        isAuthenticated: computed(() => authStore.isAuthenticated),
-        user: computed(() => authStore.user)
+      login,
+      logout,
+      fetchUser,
+      isAuthenticated: computed(() => authStore.isAuthenticated),
+      user: computed(() => authStore.user),
+      loading: computed(() => authStore.loading),
     };
 }

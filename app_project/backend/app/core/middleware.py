@@ -4,17 +4,7 @@ from jwt import ExpiredSignatureError, InvalidTokenError
 from app.core.config import settings
 
 def custom_verify_token(request: Request):
-    # Thử lấy token từ header Authorization
-    auth_header = request.headers.get("Authorization")
-    token = None
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header[len("Bearer "):]
-    
-    # Nếu không có, thử lấy từ cookie
-    if not token:
-        token = request.cookies.get("token")
-    
-    # Nếu vẫn không có token, ném lỗi
+    token = request.cookies.get("_aid-atk_")         
     if not token:
         raise HTTPException(status_code=403, detail="Missing authentication token")
     

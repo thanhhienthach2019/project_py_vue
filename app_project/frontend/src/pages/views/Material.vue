@@ -182,7 +182,9 @@ const unitOptions = ref([
   "Hộp",
   "Thùng",
   "Bao",
-  "Cuộn"
+  "Cuộn",
+  "Chiếc",
+  "Bộ"
 ]);
 // Biến reactive cho form nhập liệu
 const materialForm = ref<Material>({

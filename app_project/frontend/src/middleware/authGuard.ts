@@ -1,15 +1,25 @@
 import { useAuthStore } from "@/store/auth";
 import type { NavigationGuardNext, RouteLocationNormalized } from "vue-router"
 
-export const authGuard = async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+export const authGuard = async (
+  _to: RouteLocationNormalized, 
+  _from: RouteLocationNormalized, 
+  next: NavigationGuardNext) => {
+
   const authStore = useAuthStore();
-  if (!authStore.isAuthenticated) {
-    await authStore.fetchUser();
+
+   if (!authStore.isAuthenticated && !authStore.loading) {
+    try {
+      await authStore.fetchUser();
+    } catch (error) {
+      console.error("🔐 Lỗi xác thực");
+    }
   }
+  
   if (authStore.isAuthenticated) {
-    next(); // ✅ Cho phép vào trang
+    next(); // 
   } else {
-    console.warn("⛔ Không có quyền truy cập, chuyển hướng đến /login");
-    next("/login"); // 🔄 Chuyển về trang đăng nhập
+    console.warn("⛔ Không có quyền truy cập. Đang chuyển hướng về trang đăng nhập.");
+    next("/login"); // 
   }
 };

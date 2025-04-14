@@ -162,9 +162,18 @@ def update_maintenance_request(db: Session, request_id: int, update_data: Mainte
             maintenance_request.RequestedBy = update_data.RequestedBy
         
         db.commit()
-        db.refresh(maintenance_request)
-
+        db.refresh(maintenance_request)        
+        
         if update_data.Details:
+            existing_details = db.query(MaintenanceRequestDetails).filter(
+                MaintenanceRequestDetails.RequestID == request_id
+            ).all()
+            new_detail_keys = set((d.MaterialID, d.WarehouseID) for d in update_data.Details)
+            for existing in existing_details:
+                key = (existing.MaterialID, existing.WarehouseID)
+                if key not in new_detail_keys:
+                    db.delete(existing)
+                    
             for detail in update_data.Details:
                 existing_detail = db.query(MaintenanceRequestDetails).filter(
                     MaintenanceRequestDetails.RequestID == request_id,

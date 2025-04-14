@@ -58,7 +58,7 @@ def create_material(
             file_object.write(image.file.read())
 
         # Đường dẫn tương đối để truy cập file
-        image_url = f"/public/images/{new_filename}"
+        image_url = f"{new_filename}"
 
     # Tạo Material mới
     material_data = MaterialCreate(
@@ -114,7 +114,7 @@ def modify_material(
         with open(file_location, "wb+") as file_object:
             file_object.write(image.file.read())
 
-        image_url = f"/public/images/{new_filename}"
+        image_url = f"{new_filename}"
     else:        
         image_url = None
 
@@ -142,11 +142,6 @@ def remove_material(material_id: int, db: Session = Depends(get_db), payload: di
 
 @router.get("/materials")
 def get_materials(request: Request, db: Session = Depends(get_db), payload: dict = Depends(custom_verify_token)):
-    token = request.cookies.get("token")  # 🔥 Lấy token từ cookie
-
-    if not token:
-        raise HTTPException(status_code=401, detail="Không có token trong cookie")
-
     materials = get_all_materials(db)
     return materials
 

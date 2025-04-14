@@ -114,7 +114,7 @@
                 Ngày yêu cầu
               </label>
               <input
-                  v-model="requestDate"
+                  v-model="maintenanceForm.RequestDate"
                   id="requestedDate"
                   type="date"
                   required
@@ -143,18 +143,24 @@
                 class="w-full px-3 py-2 mb-2 text-sm text-white bg-transparent border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <!-- Danh sách vật tư có thể scroll -->
-              <div class="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2">
+              <div class="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2 shadow-sm bg-gray-800">
                 <div
                   v-for="item in filteredMaterials"
                   :key="item.MaterialID"
-                  class="flex justify-between items-center py-1 px-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                  class="flex justify-between items-center py-2 px-4 my-2 rounded-md transition-all duration-200 ease-in-out hover:bg-gray-700 hover:shadow-lg cursor-pointer"
                   @click="handleSelect(item)"
                 >
-                  <div>
-                    <span>{{ item.MaterialName }}</span>
-                    <span class="text-sm text-gray-500">({{ item.MaterialCode }})</span>
+                  <div class="flex flex-col">
+                    <p class="text-sm font-semibold text-white mb-1 tracking-wide">
+                      {{ item.MaterialName }}
+                    </p>
+                    <p class="text-xs text-gray-300 tracking-tight">
+                      ({{ item.MaterialCode }})
+                    </p>
                   </div>
-                  <button class="text-blue-500 text-sm">Thêm</button>
+                  <button class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium py-1 px-3 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    Thêm
+                  </button>
                 </div>
               </div>
             </div>            
@@ -170,6 +176,8 @@
                   :rowData="selectedMaterials"
                   :gridOptions="detailGridOptions"
                   domLayout="autoHeight"
+                  @grid-ready="onGridReady"
+                  @first-data-rendered="onFirstDataRendered"
                 />
               </div>
             </div>     
@@ -216,6 +224,7 @@
           :gridOptions="gridOptions"
           :quickFilterText="quickFilterText"
           domLayout="autoHeight"
+          @first-data-rendered="onFirstDataRendered"
         />
       </div>
     </div>
@@ -223,12 +232,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, inject, type Ref } from "vue";
+import { ref, onMounted, computed, inject, type Ref, nextTick, watch } from "vue";
 import { AgGridVue } from "ag-grid-vue3";
 import { useMaintenance } from "@/hooks/useMaintenance";
 import { useMaterial } from "@/hooks/useMaterial";
 import { useWarehouse } from "@/hooks/warehouse";
 import { useAuth } from "@/hooks/useAuth";
+import { useAutoSizeGrid } from "@/pages/custom/useAutoSizeGrid";
+import { formatDateToYMD, formatDateToDMY } from "@/utils/dateUtils";
 
 import type {
   MaintenanceRequestCreate,
@@ -238,7 +249,7 @@ import type { Material } from "@/models/material";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { showConfirmToast } from "@/utils/confirmToast";
 import 'vue-multiselect/dist/vue-multiselect.css';
-import type { GridApi, GridOptions, SortDirection  } from "ag-grid-community";
+import type { GridApi, GridOptions, SortDirection } from "ag-grid-community";
 
 // ----------------- PHẦN QUẢN LÝ PHIẾU BẢO TRÌ -----------------
 const {
@@ -259,12 +270,14 @@ const { warehouses ,fetchWarehouses } = useWarehouse();
 const selectedWarehouse = ref<number | null>(null);
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
 const requestDate = ref(new Date().toISOString().slice(0, 10));
+const { autoSizeColumns, onGridReady, onFirstDataRendered } = useAutoSizeGrid();
 
 const maintenanceForm = ref<MaintenanceRequestCreate & { RequestID?: number }>({
   RequestNumber: "",
   MachineName: "",
   Diagnosis: "",
   RequestedBy: "",
+  RequestDate: requestDate.value,
   Status: "Pending",
   Details: []
 });
@@ -318,6 +331,7 @@ const resetForm = async () => {
     MachineName: "",
     Diagnosis: "",
     RequestedBy: requestedBy,
+    RequestDate: requestDate.value,
     Status: "Pending",
     Details: []
   };
@@ -401,11 +415,15 @@ const handleSelect = async (material: Material) => {
     }
   }
 };
-
+watch(selectedMaterials, () => {
+      nextTick(() => {
+        autoSizeColumns();
+      });
+    });
 // ----------------- AG Grid CHO CHI TIẾT VẬT TƯ -----------------
 const detailColumnDefs = ref([
   { headerName: "Mã vật tư", field: "MaterialCode", flex: 1 },
-  { headerName: "Tên vật tư", field: "MaterialName", flex: 1 },
+  { headerName: "Tên vật tư", field: "MaterialName", flex: 1, minWidth: 150 },
   { 
     headerName: "SL sử dụng", 
     field: "QuantityUsed", 
@@ -429,6 +447,7 @@ const detailColumnDefs = ref([
   {
     headerName: "Hành động",
     field: "actions",
+    flex: 1,
     cellRenderer: (_params: any) => {
       const container = document.createElement("div");
       const deleteIcon = document.createElement("i");
@@ -444,11 +463,12 @@ const detailColumnDefs = ref([
     cellRendererParams: {
       onClick: (params: any) => {
         selectedMaterials.value = selectedMaterials.value.filter(
-          (item) => item.MaterialID !== params.data.MaterialID
+          (item) => 
+            item.MaterialID !== params.data.MaterialID ||
+            item.WarehouseID !== params.data.WarehouseID
         );
       }
     },
-    flex: 1
   }
 ]);
 
@@ -486,6 +506,24 @@ const detailGridOptions = ref<GridOptions>({
 
 // ----------------- SAVE PHIẾU BẢO TRÌ -----------------
 const saveMaintenanceRequest = async () => {
+  // Map vật tư đã chọn thành chi tiết phiếu bảo trì
+  maintenanceForm.value.Details = selectedMaterials.value.map((item) => ({
+    MaterialID: item.MaterialID,
+    QuantityUsed: item.QuantityUsed,
+    WarehouseID: item.WarehouseID,
+    RequestID: item.RequestID
+  }));
+  if (maintenanceForm.value.RequestID){
+    await fetchMaintenanceRequestById(maintenanceForm.value.RequestID);
+
+    if (
+      selectedMaintenanceRequest.value &&
+      selectedMaintenanceRequest.value.Status === "Approved"
+    ) {
+      toast?.value?.showToast("Không thể cập nhật vì phiếu đã được duyệt!", "error");
+      return;
+    }
+  }
 
   if (!validateAll()) return;
   if (selectedMaterials.value.length === 0) {
@@ -496,6 +534,18 @@ const saveMaintenanceRequest = async () => {
     (item) => Number(item.QuantityUsed) > Number(item.RemainingStock)
   );
 
+  const insufficientQuanityUsedItem = selectedMaterials.value.find(
+    (item) => Number(item.QuantityUsed) == 0
+  );
+
+  if (insufficientQuanityUsedItem) {
+    toast.value?.showToast(
+      `Vui lòng nhập số lượng sử dụng`,
+      "error"
+    );
+    return;
+  }
+
   if (insufficientItem) {
     toast.value?.showToast(
       `Mã vật tư ${insufficientItem.MaterialCode} số lượng trong kho ${insufficientItem.WarehouseCode} không đủ để cung cấp`,
@@ -503,13 +553,6 @@ const saveMaintenanceRequest = async () => {
     );
     return;
   }
-  // Map vật tư đã chọn thành chi tiết phiếu bảo trì
-  maintenanceForm.value.Details = selectedMaterials.value.map((item) => ({
-    MaterialID: item.MaterialID,
-    QuantityUsed: item.QuantityUsed,
-    WarehouseID: item.WarehouseID,
-    RequestID: item.RequestID
-  }));
 
   try {
     if (!maintenanceForm.value.RequestID) {
@@ -519,10 +562,11 @@ const saveMaintenanceRequest = async () => {
       if (response.success && response.data && response.data.RequestID) {
         toast?.value?.showToast("Tạo phiếu bảo trì thành công!", "success");
       } else {
-        console.log(response.message);
-        toast?.value?.showToast(response.message || "Có lỗi xảy ra khi tạo phiếu bảo trì!", "error");
+        // console.log(response.message);
+        toast?.value?.showToast("Có lỗi xảy ra khi tạo phiếu bảo trì!", "error");
       }
     } else {
+      // console.log(maintenanceForm.value.Details);
       // Cập nhật phiếu bảo trì
       const response = await updateMaintenanceRequest(
         maintenanceForm.value.RequestID,
@@ -531,13 +575,14 @@ const saveMaintenanceRequest = async () => {
       if (response.success && response.data && response.data.RequestID) {
         toast?.value?.showToast("Cập nhật phiếu bảo trì thành công!", "success");
       } else {
-        toast?.value?.showToast(response.message || "Có lỗi xảy ra khi cập nhật phiếu bảo trì!", "error");
+        // console.log(response.message);
+        toast?.value?.showToast("Có lỗi xảy ra khi cập nhật phiếu bảo trì!", "error");
       }
     }
     resetForm();
     fetchMaintenanceRequests();
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     toast?.value?.showToast("Có lỗi xảy ra, vui lòng thử lại!", "error");
   }
 };
@@ -560,11 +605,12 @@ const columnDefs = ref([
     flex: 1 
   },
   { 
-    headerName: "Chuẩn đoán", 
-    field: "Diagnosis", 
+    headerName: "Ngày yêu cầu", 
+    field: "RequestDate", 
     sortable: true, 
     filter: "agTextColumnFilter", 
-    flex: 1 
+    flex: 1,
+    valueFormatter: (_params: any) => formatDateToDMY(_params.value)
   },
   { 
     headerName: "Người yêu cầu", 
@@ -620,7 +666,8 @@ const columnDefs = ref([
         await fetchMaintenanceRequestById(requestId);
         if (selectedMaintenanceRequest.value) {
           maintenanceForm.value = {
-            ...selectedMaintenanceRequest.value,           
+            ...selectedMaintenanceRequest.value,   
+            RequestDate: formatDateToYMD(selectedMaintenanceRequest.value.RequestDate)    
           };
           if (maintenanceForm.value.Details && maintenanceForm.value.Details.length) {
             const updatedMaterials = await Promise.all(
@@ -640,12 +687,14 @@ const columnDefs = ref([
                   );
                   remainingStock = materialWithStock?.remaining_quantity || 0;
                 } catch (error) {
-                  console.error("Lỗi khi lấy tồn kho cho vật tư", d.MaterialID, error);
+                  // console.error(d.MaterialID, error);
+                  console.error("Lỗi khi lấy tồn kho cho vật tư");
                 }
                 const warehouse = warehouses.value.find(
                   (w) => w.WarehouseID === d.WarehouseID
                 );
                 const WarehouseCode = warehouse ? warehouse.WarehouseCode : '';
+              
                 return {
                   MaterialID: d.MaterialID,
                   MaterialCode: material ? material.MaterialCode : "",
@@ -659,6 +708,7 @@ const columnDefs = ref([
                 };
               })
             );
+            
             selectedMaterials.value = updatedMaterials;
           }
         }
@@ -670,6 +720,7 @@ const columnDefs = ref([
           selectedMaintenanceRequest.value.Status === "Approved"
         ) {
           toast?.value?.showToast("Không thể xoá vì số phiếu đã duyệt", "error");
+          resetForm();
           return;
         }
         const confirmed = await showConfirmToast("Bạn có chắc muốn xoá phiếu này?");
@@ -685,7 +736,8 @@ const columnDefs = ref([
           } else {
             toast?.value?.showToast("Có lỗi khi xoá phiếu", "error");
           }
-        }        
+        }
+        resetForm();        
       }
     },
     flex: 1
@@ -698,22 +750,30 @@ const columnDefs = ref([
     cellRenderer: (params: any) => {
       const container = document.createElement("div");
       container.setAttribute("data-row-id", params.data.RequestID);
-      
+      container.className = "flex items-center gap-2"; // để canh hàng đẹp
+
       const approveIcon = document.createElement("i");
-      // Đặt màu theo trạng thái
+
+      const statusText = document.createElement("span");
+      statusText.className = "ml-1 text-sm";
+
       if (params.data.Status === "Approved") {
-        approveIcon.className = "mdi mdi-check-circle text-gray-500 text-lg ml-2";
+        approveIcon.className = "mdi mdi-check-circle text-gray-500 text-lg";
+        statusText.textContent = "(Phiếu đã duyệt)";
+        statusText.classList.add("text-gray-400");
       } else {
-        approveIcon.className = "mdi mdi-check-circle text-green-500 text-lg cursor-pointer ml-2";
+        approveIcon.className = "mdi mdi-check-circle text-green-500 text-lg cursor-pointer";
+        statusText.textContent = "(Phiếu chưa duyệt)";
+        statusText.classList.add("text-green-500");
+
+        approveIcon.addEventListener("click", async (event) => {
+          event.stopPropagation();
+          await params.colDef.cellRendererParams.onApprove(params.data.RequestID);
+        });
       }
-      
-      // Gắn sự kiện click cho icon trong mọi trường hợp
-      approveIcon.addEventListener("click", async (event) => {
-        event.stopPropagation();
-        await params.colDef.cellRendererParams.onApprove(params.data.RequestID);
-      });
-      
+
       container.appendChild(approveIcon);
+      container.appendChild(statusText);
       return container;
     },
     cellRendererParams: {
@@ -724,6 +784,7 @@ const columnDefs = ref([
           selectedMaintenanceRequest.value.Status === "Approved"
         ) {
           toast?.value?.showToast("Số phiếu này đã được duyệt", "error");
+          resetForm();
           return;
         }
         const confirmed = await showConfirmToast("Bạn có chắc muốn duyệt phiếu bảo trì này?");
@@ -737,6 +798,7 @@ const columnDefs = ref([
               response.message || "Có lỗi xảy ra khi duyệt phiếu bảo trì!",
               "error"
             );
+            resetForm();
           }
         }
       }

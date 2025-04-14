@@ -68,7 +68,7 @@ export const updateMaintenanceRequest = async (
   requestId: number,
   updateData: MaintenanceRequestUpdate
 ): Promise<{ success: boolean; data?: MaintenanceRequestResponse; message: string }> => {
-  try {
+  try {  
     const response = await apiClient.put(
       `/update-maintenance-request/${requestId}`,
       updateData,

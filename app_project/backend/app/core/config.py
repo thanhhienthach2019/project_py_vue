@@ -3,7 +3,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from dotenv import load_dotenv
 
 # Load environment variables từ file .env
-load_dotenv()
+dotenv_path = os.path.join(os.path.dirname(__file__), "../../.env") 
+load_dotenv(dotenv_path)
+# print("DATABASE_URL từ dotenv:", os.getenv("DATABASE_URL"))
 
 class Settings(BaseSettings):
     DATABASE_URL: str

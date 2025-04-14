@@ -1,9 +1,12 @@
 from datetime import datetime, timedelta
+from fastapi import HTTPException
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from app.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+SECRET_KEY = settings.JWT_SECRET_KEY
+ALGORITHM = settings.JWT_ALGORITHM
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
@@ -17,9 +20,15 @@ def get_password_hash(password: str) -> str:
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def create_refresh_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(days=7))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def decode_access_token(token: str):
     try:
@@ -28,5 +37,5 @@ def decode_access_token(token: str):
         if username is None:
             raise JWTError("Invalid token payload")
         return {"username": username}
-    except JWTError:
-        return None
+    except JWTError as e:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")

@@ -15,7 +15,7 @@ export function useMaintenance() {
     try {
       await maintenanceStore.fetchMaintenanceRequests();
     } catch (error) {
-      console.error("Lỗi khi lấy danh sách phiếu bảo trì:", error);
+      console.error("Lỗi khi lấy danh sách phiếu bảo trì");
     }
   };
 
@@ -24,7 +24,7 @@ export function useMaintenance() {
     try {
       await maintenanceStore.fetchMaintenanceRequestById(requestId);
     } catch (error) {
-      console.error("Lỗi khi lấy phiếu bảo trì theo ID:", error);
+      console.error("Lỗi khi lấy phiếu bảo trì");
     }
   };
 
@@ -34,7 +34,7 @@ export function useMaintenance() {
       const response = await maintenanceStore.addMaintenanceRequest(requestData);
       return response;
     } catch (error) {
-      console.error("Lỗi khi tạo phiếu bảo trì:", error);
+      // console.error("Lỗi khi tạo phiếu bảo trì:", error);
       return { success: false, message: "Có lỗi xảy ra khi tạo phiếu bảo trì!" };
     }
   };
@@ -45,7 +45,7 @@ export function useMaintenance() {
       const response = await maintenanceStore.approveMaintenanceRequest(requestId);
       return response;
     } catch (error) {
-      console.error("Lỗi khi duyệt phiếu bảo trì:", error);
+      // console.error("Lỗi khi duyệt phiếu bảo trì:", error);
       return { success: false, message: "Có lỗi xảy ra khi duyệt phiếu bảo trì!" };
     }
   };
@@ -64,7 +64,7 @@ export function useMaintenance() {
       }
       return response;
     } catch (error) {
-      console.error("Lỗi khi xóa phiếu bảo trì:", error);
+      // console.error("Lỗi khi xóa phiếu bảo trì:", error);
       return { success: false, message: "Có lỗi xảy ra khi xóa phiếu bảo trì!" };
     }
   };
@@ -78,7 +78,7 @@ export function useMaintenance() {
       const response = await maintenanceStore.updateMaintenanceRequest(requestId, updateData);
       return response;
     } catch (error) {
-      console.error("Lỗi khi cập nhật phiếu bảo trì:", error);
+      // console.error("Lỗi khi cập nhật phiếu bảo trì:", error);
       return { success: false, message: "Có lỗi xảy ra khi cập nhật phiếu bảo trì!" };
     }
   };

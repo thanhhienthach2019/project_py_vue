@@ -16,7 +16,7 @@ const handleLogin = async () => {
   try {
     await authHooks.login(username.value, password.value);
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : "Đăng nhập thất bại!";
+    // errorMessage.value = error instanceof Error ? error.message : "Đăng nhập thất bại!";
   } finally {
     loading.value = false;
   }
