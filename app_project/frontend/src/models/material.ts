@@ -8,5 +8,7 @@ export interface Material {
     ImageUrl?: File | string | null;
     Model?: string;
     Origin?: string;
+    Weight?: number;
+    Dimensions?: string;
     CreatedAt?: string; 
   }

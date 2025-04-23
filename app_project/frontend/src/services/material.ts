@@ -24,10 +24,12 @@ export const createMaterial = async (
         if (materialData.Unit) formData.append("Unit", materialData.Unit);
         if (materialData.Description) formData.append("Description", materialData.Description);
         if (materialData.Model) formData.append("Model", materialData.Model);
-        if (materialData.Origin) formData.append("Origin", materialData.Origin);
+        if (materialData.Origin) formData.append("Origin", materialData.Origin);        
         if (materialData.ImageUrl && materialData.ImageUrl instanceof File) {
             formData.append("image", materialData.ImageUrl as File);
         }
+        if (materialData.Weight) formData.append("Weight", materialData.Weight.toString());
+        if (materialData.Dimensions) formData.append("Dimensions", materialData.Dimensions);
 
         const response = await apiClient.post("/add_material", formData, {
             headers: {
@@ -55,11 +57,13 @@ export const updateMaterial = async (materialId: number, materialData: Material)
             if (materialData.Unit) formData.append("Unit", materialData.Unit);
             if (materialData.Description) formData.append("Description", materialData.Description);
             if (materialData.Model) formData.append("Model", materialData.Model);
-            if (materialData.Origin) formData.append("Origin", materialData.Origin);
+            if (materialData.Origin) formData.append("Origin", materialData.Origin);            
             // Nếu có file mới để upload, thêm file ảnh; nếu không, backend có thể giữ ảnh cũ
             if (materialData.ImageUrl && typeof materialData.ImageUrl === "object" && "name" in materialData.ImageUrl) {
                 formData.append("image", materialData.ImageUrl as File);
             }
+            if (materialData.Weight) formData.append("Weight", materialData.Weight.toString());
+            if (materialData.Dimensions) formData.append("Dimensions", materialData.Dimensions);
             const response = await apiClient.put(`/update_material/${materialId}`, formData, {
               headers: {
                   ...(getAuthHeaders().headers || {}),

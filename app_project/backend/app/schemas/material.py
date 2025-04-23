@@ -9,6 +9,8 @@ class MaterialBase(BaseModel):
     Origin: str | None = None
     Unit: str | None = None
     Description: str | None = None
+    Weight: str | None = None
+    Dimensions: str | None = None
 
 class MaterialCreate(MaterialBase):
     pass

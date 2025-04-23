@@ -43,7 +43,7 @@ export const useMaterialStore = defineStore("material", {
 
     async addMaterial(materialData: Material) {
       try {
-        const response = await createMaterial(materialData);
+         const response = await createMaterial(materialData);
         if (response.success && response.data) {
           this.materials.push(response.data);
         }

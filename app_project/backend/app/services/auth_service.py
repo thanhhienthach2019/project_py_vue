@@ -37,7 +37,11 @@ def login_user(db: Session, username: str, password: str, response: Response):
         path="/",
     )
 
-    return {"message": "Login successful"}
+    return {
+        "message": "Login successful",
+        "username": user.username,
+        "user_id": user.id
+    }
 
 
 def check_user_auth(request: Request):

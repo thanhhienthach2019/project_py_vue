@@ -22,6 +22,8 @@ def create_material(
     Model: str | None = Form(None),
     Origin: str | None = Form(None),
     image: UploadFile = File(None),
+    Weight: str | None = Form(None),
+    Dimensions: str | None = Form(None),
     db: Session = Depends(get_db),
     payload: dict = Depends(custom_verify_token)
 ):
@@ -68,7 +70,9 @@ def create_material(
         Description=Description,
         ImageUrl=image_url,
         Model=Model,
-        Origin=Origin
+        Origin=Origin,
+        Weight=Weight,
+        Dimensions=Dimensions
     )
     
     return add_material(db, material_data)
@@ -83,6 +87,8 @@ def modify_material(
     Model: str | None = Form(None),
     Origin: str | None = Form(None),
     image: UploadFile = File(None),
+    Weight: str | None = Form(None),
+    Dimensions: str | None = Form(None),
     db: Session = Depends(get_db),
     payload: dict = Depends(custom_verify_token)
 ):
@@ -125,7 +131,9 @@ def modify_material(
         Description=Description,
         ImageUrl=image_url,
         Model=Model,
-        Origin=Origin
+        Origin=Origin,
+        Weight=Weight,
+        Dimensions=Dimensions
     )
     
     up_material = update_material(db, material_id, material_data)

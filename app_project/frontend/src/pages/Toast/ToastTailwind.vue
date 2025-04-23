@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 
 // Reactive state
 const visible = ref(false);
@@ -97,6 +97,20 @@ const iconFill = computed(() => "currentColor");
 
 // Expose hàm showToast để có thể gọi từ bên ngoài
 defineExpose({ showToast });
+// Lắng nghe sự kiện global
+function handleToastEvent(e: Event) {
+  const customEvent = e as CustomEvent;
+  const { message: msg, type } = customEvent.detail;
+  showToast(msg, type);
+}
+
+onMounted(() => {
+  window.addEventListener("show-toast", handleToastEvent);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("show-toast", handleToastEvent);
+});
 </script>
 
 <style scoped>

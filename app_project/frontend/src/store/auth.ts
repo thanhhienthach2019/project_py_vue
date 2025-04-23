@@ -34,6 +34,7 @@ export const useAuthStore = defineStore("auth", {
     async fetchUser() {
       this.loading = true;
       try {
+        // console.log("vận chạy");
         const response = await checkAuth();
         if (response.data.authenticated) {
           this.user = response.data.user;

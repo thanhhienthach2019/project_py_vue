@@ -1,0 +1,45 @@
+1. Khởi chạy docker
+2.cài đặt
+docker run -d \
+  --hostname my-rabbit \
+  --name rabbitmq \
+  -p 5672:5672 \
+  -p 15672:15672 \
+  rabbitmq:3-management
+3. Kiểm tra
+docker ps
+4. vào trình duyệt 
+http://localhost:15672
+login: geust/geust
+Nếu không được:
+Bước 1: Truy cập vào container RabbitMQ
+docker exec -it rabbitmq bash
+Bước 2: Tạo user mới
+rabbitmqctl add_user hien_dev Hien@2024
+Gán quyền cho user:
+rabbitmqctl set_user_tags hien_dev administrator
+Cấp quyền vhost mặc định /:
+rabbitmqctl set_permissions -p / hien_dev ".*" ".*" ".*"
+
+**Nếu bạn muốn xóa user guest để tăng bảo mật:rabbitmqctl delete_user guest
+
+***Xoá Redis:
+Đầu tiên, bạn cần dừng container Redis và xóa nó khỏi Docker.
+docker stop redis
+docker rm redis
+Bước 2: Xóa Redis image nếu không còn sử dụng
+------------------------------------Trong API---------------------
+Để chạy được đoạn code tích hợp RabbitMQ bằng aio-pika trong FastAPI, bạn chỉ cần thêm thư viện sau:
+pip install fastapi uvicorn sqlalchemy psycopg2-binary  # nếu dùng PostgreSQL
+# hoặc
+pip install fastapi uvicorn sqlalchemy pymysql         # nếu dùng MySQL
+
+pip install aio-pika
+--------------Xem list User--------------
+docker exec -it rabbitmq bash
+rabbitmqctl list_users
+-------------khởi chạy-------------------
+docker stop rabbitmq
+docker rm rabbitmq
+
+docker run -d --hostname my-rabbit --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management

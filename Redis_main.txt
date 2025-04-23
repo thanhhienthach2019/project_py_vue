@@ -1,0 +1,22 @@
+from fastapi_limiter import FastAPILimiter
+from fastapi.responses import JSONResponse
+from starlette.status import HTTP_429_TOO_MANY_REQUESTS
+from redis.asyncio import Redis
+
+@app.middleware("http")
+async def rate_limit_exception_handler(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as e:
+        if "Rate limit exceeded" in str(e):
+            return JSONResponse(
+                status_code=HTTP_429_TOO_MANY_REQUESTS,
+                content={"detail": "Vui lòng thử lại sau vài phút!"},
+            )
+        raise e
+    
+@app.on_event("startup")
+async def startup():
+    redis = Redis(host="localhost", port=6379, db=0, decode_responses=True)
+    await FastAPILimiter.init(redis)

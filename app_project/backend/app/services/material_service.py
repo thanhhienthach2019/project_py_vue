@@ -18,8 +18,11 @@ def add_material(db: Session, material_data: MaterialCreate):
         Description = material_data.Description,
         ImageUrl = material_data.ImageUrl,
         Model = material_data.Model,
-        Origin = material_data.Origin
+        Origin = material_data.Origin,
+        Weight = material_data.Weight,
+        Dimensions = material_data.Dimensions
     )
+    print(new_material.Weight)
     db.add(new_material)
     db.commit()
     db.refresh(new_material)
@@ -37,6 +40,8 @@ def update_material(db: Session, material_id: int,material_data: MaterialUpdate)
         material.ImageUrl = material_data.ImageUrl        
     material.Model = material_data.Model
     material.Origin = material_data.Origin
+    material.Weight = material_data.Weight
+    material.Dimensions = material_data.Dimensions
 
     db.commit()
     db.refresh(material)

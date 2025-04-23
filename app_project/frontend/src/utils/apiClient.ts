@@ -1,4 +1,5 @@
 import axios from "axios";
+import { showToast } from "@/utils/toastUtils";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -9,7 +10,7 @@ const apiClient = axios.create({
         "Content-Type": "application/json",
     },
 });
-// 🛡️ Interceptor 
+// 🛡️ Interceptor  
 apiClient.interceptors.response.use(
     response => response,
     async error => {
@@ -30,6 +31,9 @@ apiClient.interceptors.response.use(
           window.location.href = "/login";
           return Promise.reject("Đã có lỗi xảy ra!");
         }
+      }
+      if (error.response?.status === 429) {
+        showToast("Vui lòng thử lại sau vài phút!", "error");
       }
     //   console.log(error);
       return Promise.reject();

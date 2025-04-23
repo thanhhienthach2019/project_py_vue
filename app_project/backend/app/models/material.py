@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Float
 from sqlalchemy.dialects.mssql import NVARCHAR
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -14,5 +14,7 @@ class Materials(Base):
     Origin = Column(NVARCHAR(100), nullable=True) 
     Unit = Column(NVARCHAR(50), nullable=True)  
     Description = Column(NVARCHAR(500), nullable=True)  
+    Weight = Column(Float, nullable=True)
+    Dimensions = Column(NVARCHAR(100), nullable=True)
     CreatedAt = Column(DateTime, nullable=False, default=func.now())
     

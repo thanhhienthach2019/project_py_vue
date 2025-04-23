@@ -1,0 +1,20 @@
+Giới hạn request API
+cài trên wsl
+sudo apt install redis-server
+Sau khi cài đặt, hãy khởi động Redis:
+sudo systemctl start redis-server hoặc redis-server(wsl)
+Kiểm tra lại bằng lệnh:
+redis-cli ping
+
+
+Kiểm tra trạng thái:
+ps aux | grep redis
+kill 1092 (Tắt 1092 đang chạy)
+
+
+----------------
+Tắt ghi log lỗi(chỉ dành môi trường DEV)
+redis-cli
+CONFIG SET stop-writes-on-bgsave-error no
+Sau đó khởi động lại Redis:
+sudo systemctl restart redis

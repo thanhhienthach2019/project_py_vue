@@ -1,230 +1,466 @@
 <template>
-  <div class="w-full max-w-12xl mx-auto p-6 my-6">
-    <!-- Phần 1: Tiêu đề chính -->
-    <div class="mt-0 mb-6">
-      <h2 class="text-4xl font-extrabold text-blue-300 uppercase text-center">
-        Quản lý phiếu bảo trì
-      </h2>
+  <div class="w-full max-w-12xl mx-auto p-2 my-2 space-y-2 transition-all duration-300">
+    <!-- Header Section -->
+    <div class="bg-gradient-to-r from-blue-600/30 to-indigo-600/30 backdrop-blur-xl rounded-2xl p-8 border border-white/20 shadow-2xl hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-500">
+      <div class="flex items-center space-x-6">
+        <div class="p-5 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm transform transition-all duration-500 hover:rotate-12">
+          <Icon icon="mdi:toolbox-outline" class="w-10 h-10 text-blue-400" />
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-white tracking-tight">Maintenance Management System</h1>
+          <p class="text-indigo-200 mt-2 font-medium">Comprehensive maintenance workflow solution</p>
+        </div>
+      </div>
     </div>
 
-    <!-- Phần 2: Form nhập liệu phiếu bảo trì -->
-    <div class="mb-6">
-      <div class="bg-gray-700 text-gray-200 px-4 py-2 rounded-t-lg shadow-sm">
-        <h3 class="text-lg font-medium">Thông tin phiếu bảo trì</h3>
+    <!-- Form Container -->
+    <div class="bg-white/3 backdrop-blur-2xl rounded-2xl p-8 border border-white/15 shadow-xl transition-all duration-500 hover:shadow-2xl">
+      <!-- Form Header -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 space-y-4 sm:space-y-0">
+        <div class="flex items-center space-x-4">
+          <div class="p-3 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
+            <Icon icon="mdi:clipboard-text-outline" class="text-2xl text-emerald-400" />
+          </div>
+          <div>
+            <h2 class="text-2xl font-semibold text-white">Maintenance Request</h2>
+            <p class="text-sm text-gray-300 mt-1">Fields marked with * are required</p>
+          </div>
+        </div>
+        <button
+          @click="resetForm"
+          class="group relative px-6 py-3.5 bg-gradient-to-r from-gray-700/50 to-gray-800/50 rounded-xl flex items-center gap-3 hover:bg-gray-700/70 transition-all duration-300 border border-white/10 hover:border-white/20"
+        >
+          <Icon icon="mdi:autorenew" class="text-blue-400 text-xl transition-transform duration-300 group-hover:rotate-180" />
+          <span class="text-gray-100 font-medium tracking-wide">Reset Form</span>
+        </button>
       </div>
-      <div class="bg-gradient-to-br from-gray-800 via-gray-750 to-gray-700 p-6 rounded-b-lg shadow-lg">
-        <!-- Div trên: Form thông tin phiếu bảo trì -->
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-          <!-- Nhóm bên trái: chiếm 2/5 -->
-          <div class="col-span-2 grid grid-cols-1 gap-y-2 self-start">
-            <div>
-              <label for="requestNumber" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                Số phiếu
-              </label>
-              <input
-                v-model="maintenanceForm.RequestNumber"
-                required
-                readonly
-                :class="[
-                  'w-full px-3 py-2 text-sm text-white bg-transparent border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                  errors.RequestNumber ? 'border-red-500' : 'border-gray-300'
-                ]"
-              />
-              <p v-if="errors.RequestNumber" class="text-red-500 text-xs mt-1">
-                Vui lòng nhập số phiếu.
-              </p>
-            </div>
-            <div>
-              <label for="machineName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                Tên máy
-              </label>
-              <input
-                v-model="maintenanceForm.MachineName"
-                required
-                :class="[
-                  'w-full px-3 py-2 text-sm text-white bg-transparent border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                  errors.MachineName ? 'border-red-500' : 'border-gray-300'
-                ]"
-              />
-              <p v-if="errors.MachineName" class="text-red-500 text-xs mt-1">
-                Vui lòng nhập tên máy.
-              </p>
-            </div>
-            <div>
-              <label for="diagnosis" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                Chuẩn đoán
-              </label>
-              <textarea
-                v-model="maintenanceForm.Diagnosis"
-                rows="4"
-                required
-                :class="[
-                  'w-full px-3 py-2 text-sm text-white bg-transparent border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                  errors.Diagnosis ? 'border-red-500' : 'border-gray-300'
-                ]"
-              ></textarea>
-              <p v-if="errors.Diagnosis" class="text-red-500 text-xs mt-1">
-                Vui lòng nhập chuẩn đoán.
-              </p>
-            </div>
-            <div>
-              <label for="warehouse" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                Kho
-              </label>
-              <select
-                v-model="selectedWarehouse"
-                required
-                :class="[
-                  'w-full px-3 py-2 text-sm text-white bg-transparent border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none',
-                  errors.WarehouseId ? 'border-red-500' : 'border-gray-300'
-                ]"
-              >
-                <option disabled value="">Chọn Kho</option>
-                <option
-                  v-for="warehouse in warehouses"
-                  :key="warehouse.WarehouseID"
-                  :value="warehouse.WarehouseID"
-                >
-                  {{ warehouse.WarehouseName }}
-                </option>
-              </select>
-              <p v-if="errors.WarehouseId" class="text-red-500 text-xs mt-1">
-                Vui lòng chọn Kho.
-              </p>
-            </div> 
-            <div>
-              <label for="requestedBy" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                Người yêu cầu
-              </label>
-              <input
-                v-model="maintenanceForm.RequestedBy"
-                required
-                readonly
-                :class="[
-                  'w-full px-3 py-2 text-sm text-white bg-transparent border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                  errors.RequestedBy ? 'border-red-500' : 'border-gray-300'
-                ]"
-              />
-              <p v-if="errors.RequestedBy" class="text-red-500 text-xs mt-1">
-                Vui lòng nhập người yêu cầu.
-              </p>
-            </div>
-            <div>
-              <label for="requestedDate" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                Ngày yêu cầu
-              </label>
-              <input
-                  v-model="maintenanceForm.RequestDate"
-                  id="requestedDate"
-                  type="date"
-                  required
-                  readonly
-                  :class="[
-                    'w-full px-3 py-2 text-sm text-white bg-transparent border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                    errors.RequestDate ? 'border-red-500' : 'border-gray-300'
-                  ]"
-                />
-                <p v-if="errors.RequestDate" class="text-red-500 text-xs mt-1">
-                  Vui lòng nhập ngày yêu cầu.
-                </p>
+
+      <!-- Main Form Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-8 gap-8">
+        <!-- Left Column - Basic Info -->
+        <div class="lg:col-span-3 space-y-6">
+          <div class="bg-black/20 p-6 rounded-xl border border-white/10">
+            <h3 class="text-lg font-semibold text-white mb-6 flex items-center space-x-2">
+              <Icon icon="mdi:information-outline" class="text-blue-400" />
+              <span>Request Details</span>
+            </h3>
+            <div class="space-y-5">
+              <!-- Các trường input được cập nhật -->
+              <div>
+                <label class="text-sm font-medium text-gray-300 mb-2 flex items-center">
+                  <span>Request Number</span>
+                  <span class="text-rose-500 ml-1">*</span>
+                </label>
+                <div class="relative">
+                  <input
+                    v-model="maintenanceForm.RequestNumber"
+                    class="w-full px-4 py-2.5 text-sm bg-white/5 rounded-lg border border-white/15 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 placeholder-gray-400 transition-all duration-300"
+                    :class="{ 'border-rose-500': errors.RequestNumber }"
+                    readonly
+                  />
+                  <Icon v-if="errors.RequestNumber" icon="mdi:alert-circle" class="absolute right-3 top-3.5 text-rose-500 text-lg" />
+                </div>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-300 mb-2 flex items-center">
+                  <span>Machine Name</span>
+                  <span class="text-rose-500 ml-1">*</span>
+                </label>
+                <div class="relative">
+                  <input
+                    v-model="maintenanceForm.MachineName"
+                    required
+                    placeholder="Enter machine name"
+                    class="w-full px-4 py-2.5 text-sm bg-white/5 rounded-lg border border-white/15 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 placeholder-gray-400 transition-all duration-300"
+                    :class="{ 'border-rose-500': errors.MachineName }"
+                  />
+                  <Icon v-if="errors.MachineName" icon="mdi:alert-circle" class="absolute right-3 top-3.5 text-rose-500 text-lg" />
+                </div>
+                <p v-if="errors.MachineName" class="text-rose-500 text-xs mt-1.5 ml-1">Machine name is required</p>
+              </div>
+
+              <!-- Diagnosis -->
+              <div>
+                <label class="text-sm font-medium text-gray-300 mb-2 flex items-center">
+                  <span>Diagnosis</span>
+                  <span class="text-rose-500 ml-1">*</span>
+                </label>
+                <div class="relative">
+                  <textarea
+                    v-model="maintenanceForm.Diagnosis"
+                    rows="4"
+                    required
+                    placeholder="Enter diagnosis details"
+                    class="w-full px-4 py-2.5 text-sm bg-white/5 rounded-lg border border-white/15 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 placeholder-gray-400 transition-all duration-300"
+                    :class="{ 'border-rose-500': errors.Diagnosis }"
+                  ></textarea>
+                  <Icon v-if="errors.Diagnosis" icon="mdi:alert-circle" class="absolute right-3 top-3.5 text-rose-500 text-lg" />
+                </div>
+                <p v-if="errors.Diagnosis" class="text-rose-500 text-xs mt-1.5 ml-1">Diagnosis is required</p>
+              </div>
+
+              <!-- Warehouse Selection -->
+              <div>
+                <label class="text-sm font-medium text-gray-300 mb-2 flex items-center">
+                  <span>Warehouse</span>
+                  <span class="text-rose-500 ml-1">*</span>
+                </label>
+                <div class="relative group">
+                  <select
+                    v-model="selectedWarehouse"
+                    required
+                    class="w-full pl-4 pr-10 py-3 text-sm bg-white/5 backdrop-blur-sm rounded-xl border
+                          border-white/15 hover:border-white/30 focus:border-blue-400/60
+                          focus:ring-2 focus:ring-blue-400/20 focus:ring-offset-2 focus:ring-offset-gray-900
+                          transition-all duration-300 appearance-none cursor-pointer
+                          text-gray-200 placeholder-gray-400/60
+                          shadow-[0_2px_6px_rgba(0,0,0,0.05)]"
+                    :class="{ 'border-rose-500/60': errors.WarehouseId }"
+                  >
+                    <option 
+                      disabled 
+                      value="" 
+                      class="bg-gray-800 text-gray-400"
+                    >
+                      Select Warehouse
+                    </option>
+                    <option
+                      v-for="warehouse in warehouses"
+                      :key="warehouse.WarehouseID"
+                      :value="warehouse.WarehouseID"
+                      class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
+                    >
+                      🏬 {{ warehouse.WarehouseName }} ({{ warehouse.WarehouseCode }})
+                    </option>
+                  </select>
+
+                  <!-- Custom Chevron -->
+                  <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg 
+                      class="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-300"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path 
+                        stroke-linecap="round" 
+                        stroke-linejoin="round" 
+                        d="M19 9l-7 7-7-7" 
+                      />
+                    </svg>
+                  </div>
+
+                  <!-- Error Indicator -->
+                  <div 
+                    v-if="errors.WarehouseId"
+                    class="absolute right-10 top-1/2 -translate-y-1/2 flex items-center"
+                  >
+                    <svg 
+                      class="w-5 h-5 text-rose-500 animate-pulse"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+
+                  <p 
+                    v-if="errors.WarehouseId"
+                    class="mt-2 ml-1 text-rose-400/80 text-xs font-medium flex items-center"
+                  >
+                    <svg 
+                      class="w-4 h-4 mr-1.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    Please select a valid warehouse
+                  </p>
+                </div>
+              </div>
+
+              <!-- Requester -->
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Requested By</label>
+                <div class="relative">
+                  <input
+                    v-model="maintenanceForm.RequestedBy"
+                    readonly
+                    class="w-full px-4 py-2.5 text-sm bg-white/5 rounded-lg border border-white/15 cursor-not-allowed opacity-75"
+                  />
+                </div>
+              </div>
+
+              <!-- Request Date -->
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Request Date</label>
+                <div class="relative">
+                  <input
+                    v-model="maintenanceForm.RequestDate"
+                    type="date"
+                    readonly
+                    class="w-full px-4 py-2.5 text-sm bg-white/5 rounded-lg border border-white/15 cursor-not-allowed opacity-75"
+                  />
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
-          <!-- Nhóm bên phải: chiếm 3/5 -->
-          <div class="col-span-3 grid grid-cols-1 gap-y-2">
-            <div>
-              <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                Chọn vật tư
-              </label>
-              <!-- Input tìm kiếm vật tư -->
+        <!-- Right Column - Materials Selection -->
+        <div class="lg:col-span-5 space-y-6">
+          <div class="bg-black/20 p-6 rounded-xl border border-white/10 h-full">
+            <h3 class="text-lg font-semibold text-white mb-6 flex items-center space-x-2">
+              <Icon icon="mdi:package-variant" class="text-purple-400" />
+              <span>Material Selection</span>
+            </h3>
+            
+            <!-- Search Input -->
+            <div class="relative mb-4">
               <input
                 v-model="searchMaterial"
-                placeholder="Nhập tên hoặc mã vật tư..."
-                class="w-full px-3 py-2 mb-2 text-sm text-white bg-transparent border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Search materials..."
+                class="w-full pl-4 pr-10 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 transition-all"
               />
-              <!-- Danh sách vật tư có thể scroll -->
-              <div class="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2 shadow-sm bg-gray-800">
+              <Icon icon="mdi:magnify" class="absolute right-3 top-2.5 text-gray-400" />
+            </div>
+
+            <!-- Material List -->
+            <div class="border border-white/10 rounded-xl overflow-hidden">
+              <div class="max-h-60 overflow-y-auto custom-scrollbar bg-white/3">
                 <div
                   v-for="item in filteredMaterials"
                   :key="item.MaterialID"
-                  class="flex justify-between items-center py-2 px-4 my-2 rounded-md transition-all duration-200 ease-in-out hover:bg-gray-700 hover:shadow-lg cursor-pointer"
+                  class="group flex justify-between items-center p-4 hover:bg-white/5 transition-all duration-300 cursor-pointer border-b border-white/5"
                   @click="handleSelect(item)"
                 >
-                  <div class="flex flex-col">
-                    <p class="text-sm font-semibold text-white mb-1 tracking-wide">
-                      {{ item.MaterialName }}
-                    </p>
-                    <p class="text-xs text-gray-300 tracking-tight">
-                      ({{ item.MaterialCode }})
-                    </p>
+                  <div class="flex-1">
+                    <p class="text-sm font-semibold text-white">{{ item.MaterialName }}</p>
+                    <p class="text-xs text-gray-400 mt-1">{{ item.MaterialCode }}</p>
                   </div>
-                  <button class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium py-1 px-3 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                    Thêm
+                  <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg border border-blue-400/30">
+                    <Icon icon="mdi:plus" class="text-blue-400 text-sm" />
                   </button>
                 </div>
               </div>
-            </div>            
-            <div>
-              <label for="LIST" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                Vật tư đã chọn
-              </label>
-              <div>
+            </div>
+
+            <!-- Selected Materials Grid -->
+            <div class="mt-6">
+              <div ref="gridContainer1" class="ag-theme-material-futura rounded-xl overflow-hidden" style="height: 300px">
                 <ag-grid-vue
-                  class="ag-theme-quartz rounded"
-                  style="width: 100%; height: auto;"
+                  :defaultColDef="defaultColDef"
                   :columnDefs="detailColumnDefs"
                   :rowData="selectedMaterials"
                   :gridOptions="detailGridOptions"
-                  domLayout="autoHeight"
-                  @grid-ready="onGridReady"
-                  @first-data-rendered="onFirstDataRendered"
+                  @grid-ready="onGridReady1"
+                  @first-data-rendered="onFirstDataRendered1"
                 />
               </div>
-            </div>     
+            </div>
           </div>
         </div>
+      </div>
 
-        <!-- Div dưới: 2 nút Lưu và Làm mới -->
-        <div class="mt-6 flex justify-end space-x-4">
-          <button
-            @click="saveMaintenanceRequest"
-            class="px-4 py-2 bg-blue-500 text-white rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Lưu phiếu
-          </button>
-          <button
-            @click="resetForm"
-            class="px-4 py-2 bg-gray-500 text-white rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-          >
-            Làm mới
-          </button>
-        </div>
+      <!-- Save Button -->
+      <div class="mt-8 flex justify-end">
+        <button
+          @click="saveMaintenanceRequest"
+          class="group relative px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl flex items-center gap-3 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+        >
+          <Icon icon="mdi:content-save-check" class="text-white text-xl animate-pulse" />
+          <span class="text-white font-semibold text-lg tracking-wide">Save Request</span>
+          <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-xl"></div>
+        </button>
       </div>
     </div>
 
-    <!-- Phần 3: Bảng danh sách phiếu bảo trì -->
-    <div class="mb-6">
-      <div class="bg-gray-700 text-gray-200 px-4 py-2 rounded-t-lg shadow-sm">
-        <h3 class="text-lg font-medium">Danh sách phiếu bảo trì</h3>
-      </div>
-      <div class="mt-2 mb-2 shadow-md rounded">
-        <!-- Quick Filter -->
-        <div class="mb-2 text-left">
-          <input
-            v-model="quickFilterText"
-            placeholder="Tìm kiếm..."
-            class="w-full md:w-1/6 px-3 py-2 text-sm text-white bg-transparent border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
+    <!-- Request List Section -->
+    <div class="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+      <div class="px-8 py-6 border-b border-white/10 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between">
+          <!-- Left Section: Icon, Title, and Status Summary -->
+          <div class="flex items-center space-x-6">
+            <div class="p-3 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-500/30">
+              <Icon icon="mdi:clipboard-list-outline" class="text-2xl text-blue-400" />
+            </div>
+            <div>
+              <h3 class="text-3xl font-bold text-white font-sans">Maintenance Requests</h3>
+              <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-300 bg-blue-500/10 rounded-full mt-1">
+                {{ maintenanceRequests.length }} active requests
+              </span>
+            </div>
+            <div class="flex space-x-4 ml-4">
+              <div class="flex space-x-4 mt-3">
+                <!-- Pending → awaiting approval -->
+                <span class="flex items-center px-2 py-1 bg-gray-800/20 rounded-full text-sm text-gray-300">
+                  <Icon icon="mdi:clock-outline" class="mr-1" />
+                  Pending: {{ statusCounts.pending }}
+                </span>
+
+                <!-- Approved → approved & preparing -->
+                <span class="flex items-center px-2 py-1 bg-blue-800/20 rounded-full text-sm text-blue-300">
+                  <Icon icon="mdi:checkbox-marked-circle-outline" class="mr-1" />
+                  Approved: {{ statusCounts.approved }}
+                </span>
+
+                <!-- In Progress → work in progress -->
+                <span class="flex items-center px-2 py-1 bg-yellow-800/20 rounded-full text-sm text-yellow-300">
+                  <Icon icon="mdi:progress-clock" class="mr-1" />
+                  In Progress: {{ statusCounts.inProgress }}
+                </span>
+
+                <!-- Completed → task completed -->
+                <span class="flex items-center px-2 py-1 bg-green-800/20 rounded-full text-sm text-green-300">
+                  <Icon icon="mdi:check-circle-outline" class="mr-1" />
+                  Completed: {{ statusCounts.completed }}
+                </span>
+
+                <!-- Closed → request closed -->
+                <span class="flex items-center px-2 py-1 bg-red-800/20 rounded-full text-sm text-red-300">
+                  <Icon icon="mdi:folder-open-outline" class="mr-1" />
+                  Closed: {{ statusCounts.closed }}
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Right Section: Filters, Search, and Actions -->
+          <div class="flex items-center space-x-4 mt-4 lg:mt-0">
+            <!-- Status filter -->
+            <div class="relative w-48">
+              <select
+                v-model="filterStatus"
+                class="w-full pl-4 pr-10 py-3 text-sm bg-white/5 backdrop-blur-sm rounded-xl border
+                      border-white/15 hover:border-white/30 focus:border-blue-400/60
+                      focus:ring-2 focus:ring-blue-400/20 focus:ring-offset-2 focus:ring-offset-gray-900
+                      transition-all duration-300 appearance-none cursor-pointer
+                      text-gray-200 placeholder-gray-400/60
+                      shadow-[0_2px_6px_rgba(0,0,0,0.05)]"
+              >
+                <option
+                  value=""
+                  class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
+                >
+                  All Statuses
+                </option>
+                <option
+                  value="Pending"
+                  class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
+                >
+                  Pending
+                </option>
+                <option
+                  value="Approved"
+                  class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
+                >
+                  Approved
+                </option>
+                <option
+                  value="In Progress"
+                  class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
+                >
+                  In Progress
+                </option>
+                <option
+                  value="Completed"
+                  class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
+                >
+                  Completed
+                </option>
+                <option
+                  value="Closed"
+                  class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
+                >
+                  Closed
+                </option>
+              </select>
+
+              <!-- custom down‐chevron, white to match text -->
+              <Icon
+                icon="mdi:chevron-down"
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white pointer-events-none"
+              />
+            </div>
+
+
+            <!-- Search input -->
+            <div class="relative w-72">
+              <input
+                v-model="quickFilterText"
+                placeholder="Search requests..."
+                class="peer w-full pl-4 pr-10 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl text-gray-200
+                      focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 transition-all"
+              />
+              <Icon icon="mdi:magnify" class="absolute right-3 top-2.5 text-gray-400" />
+              <button
+                v-if="quickFilterText"
+                @click="quickFilterText = ''"
+                class="absolute right-8 top-2.5 text-gray-400 hover:text-white transition-colors"
+              >
+                <Icon icon="mdi:close" />
+              </button>
+            </div>
+            <!-- Search Date -->
+            <div class="flex items-center space-x-2">
+              <div class="relative">
+                <input
+                  v-model="filterDate.from"
+                  type="date"
+                  class="pl-8 pr-3 py-2 text-sm bg-white/5 backdrop-blur-sm rounded-xl border border-white/15
+                        focus:border-blue-400/60 focus:ring-2 focus:ring-blue-400/20 focus:ring-offset-2
+                        focus:ring-offset-gray-900 transition duration-300 text-gray-200 w-full"
+                />
+                <span class="absolute left-2.5 top-2.5 text-gray-400 pointer-events-none">
+                  <Icon icon="mdi:calendar-start" width="18" height="18" />
+                </span>
+              </div>
+
+              <span class="text-gray-400">—</span>
+
+              <div class="relative">
+                <input
+                  v-model="filterDate.to"
+                  type="date"
+                  class="pl-8 pr-3 py-2 text-sm bg-white/5 backdrop-blur-sm rounded-xl border border-white/15
+                        focus:border-blue-400/60 focus:ring-2 focus:ring-blue-400/20 focus:ring-offset-2
+                        focus:ring-offset-gray-900 transition duration-300 text-gray-200 w-full"
+                />
+                <span class="absolute left-2.5 top-2.5 text-gray-400 pointer-events-none">
+                  <Icon icon="mdi:calendar-end" width="18" height="18" />
+                </span>
+              </div>
+            </div>
+          </div>
+
         </div>
+      </div>
+
+      <div ref="gridContainer2" class="ag-theme-material-futura h-[600px] border-b border-white/10">
         <ag-grid-vue
-          class="ag-theme-quartz rounded"
-          style="width: 100%;"
+          :defaultColDef="defaultCol"
           :columnDefs="columnDefs"
-          :rowData="maintenanceRequests"
+          :rowData="filteredRequests"
+          :frameworkComponents="frameworkComponents"
           :gridOptions="gridOptions"
           :quickFilterText="quickFilterText"
-          domLayout="autoHeight"
-          @first-data-rendered="onFirstDataRendered"
+          @grid-ready="onGridReady2"
+          @first-data-rendered="onFirstDataRendered2"
         />
       </div>
     </div>
@@ -232,14 +468,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, inject, type Ref, nextTick, watch } from "vue";
+import { ref, onMounted, computed, inject, type Ref, watch, nextTick } from "vue";
 import { AgGridVue } from "ag-grid-vue3";
 import { useMaintenance } from "@/hooks/useMaintenance";
 import { useMaterial } from "@/hooks/useMaterial";
 import { useWarehouse } from "@/hooks/warehouse";
 import { useAuth } from "@/hooks/useAuth";
-import { useAutoSizeGrid } from "@/pages/custom/useAutoSizeGrid";
+import { debounce } from "lodash";
 import { formatDateToYMD, formatDateToDMY } from "@/utils/dateUtils";
+import { useAutoResizeGrid } from '@/composables/useAutoReSizeGrid';
+import { Icon } from '@iconify/vue';
+import RequestFormActionCell from '@/components/ui/RequestFormActionCell.vue';
+import DeleteMaterialCell from '@/components/ui/DeleteMaterialCell.vue';
+import ApproveRequestCell from '@/components/ui/ApproveRequestCell.vue';
 
 import type {
   MaintenanceRequestCreate,
@@ -249,9 +490,8 @@ import type { Material } from "@/models/material";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { showConfirmToast } from "@/utils/confirmToast";
 import 'vue-multiselect/dist/vue-multiselect.css';
-import type { GridApi, GridOptions, SortDirection } from "ag-grid-community";
+import type { GridApi, GridOptions, SortDirection, ColDef } from "ag-grid-community";
 
-// ----------------- PHẦN QUẢN LÝ PHIẾU BẢO TRÌ -----------------
 const {
   fetchMaintenanceRequests,
   addMaintenanceRequest,
@@ -270,7 +510,67 @@ const { warehouses ,fetchWarehouses } = useWarehouse();
 const selectedWarehouse = ref<number | null>(null);
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
 const requestDate = ref(new Date().toISOString().slice(0, 10));
-const { autoSizeColumns, onGridReady, onFirstDataRendered } = useAutoSizeGrid();
+
+const statusCounts = computed(() => ({
+  pending:      maintenanceRequests.value.filter(r => r.Status === 'Pending').length,
+  approved:     maintenanceRequests.value.filter(r => r.Status === 'Approved').length,
+  inProgress:   maintenanceRequests.value.filter(r => r.Status === 'In Progress').length,
+  completed:    maintenanceRequests.value.filter(r => r.Status === 'Completed').length,
+  closed:       maintenanceRequests.value.filter(r => r.Status === 'Closed').length,
+}));
+const filterStatus     = ref<string>('');
+const quickFilterText = ref("");
+const filteredRequests = computed(() => {
+  const txt = quickFilterText.value.toLowerCase()
+  const fromDate = filterDate.value.from ? new Date(filterDate.value.from) : null;
+  const toDate   = filterDate.value.to   ? new Date(filterDate.value.to)   : null;
+  
+  return maintenanceRequests.value
+    // status filter
+    .filter(r => !filterStatus.value || r.Status === filterStatus.value)
+    // text filter (search across multiple fields)
+    .filter(r => {
+      if (!txt) return true
+      return (
+        r.RequestNumber.toString().toLowerCase().includes(txt) ||
+        r.MachineName.toLowerCase().includes(txt) ||
+        r.RequestedBy.toLowerCase().includes(txt)
+      )
+    })
+    //filter date
+    .filter(r => {
+      // cắt bỏ timestamp, chỉ lấy yyyy-MM-dd
+      const dateStr = r.RequestDate.slice(0, 10)
+      const d = new Date(dateStr)
+      if (fromDate && d < fromDate) return false
+      if (toDate   && d > toDate)   return false
+      return true
+    })
+});
+const filterDate = ref<{
+  from: string;
+  to: string;
+}>({
+  from: '',
+  to: ''
+});
+const maintenance = computed(() => maintenanceRequests.value); 
+watch(maintenance, (newVal) => {
+  if (newVal.length === 0) return;
+
+  const validDates = newVal
+    .map(item => item.RequestDate?.slice(0, 10)) 
+    .filter(Boolean)
+    .sort();
+
+  const minDate = validDates[0];
+  const maxDate = validDates[validDates.length - 1];
+
+  filterDate.value = {
+    from: minDate,
+    to: maxDate,
+  };
+}, { immediate: true });
 
 const maintenanceForm = ref<MaintenanceRequestCreate & { RequestID?: number }>({
   RequestNumber: "",
@@ -307,18 +607,19 @@ const validateAll = (): boolean => {
   });
   return isValid;
 };
-// Hàm loadUserData gọi fetchUser và cập nhật maintenanceForm.RequestedBy
+// The loadUserData function calls fetchUser and updates maintenanceForm.RequestedBy
 const loadUserData = async (): Promise<string> => {
   try {
-    await fetchUser(); // fetchUser là hàm wrapper giữ binding của authStore.fetchUser
+    await fetchUser(); // fetchUser is a wrapper function that handles the binding of authStore.fetchUser
     if (user.value && user.value.username) {
       return user.value.username;
     }
   } catch (error) {
-    console.error("Lỗi fetch user:", error);
+    console.error("Error fetching user:", error);
   }
   return "";
 };
+
 //Load data User
 onMounted(async () => {
   const requestedBy = await loadUserData();
@@ -342,18 +643,15 @@ const resetForm = async () => {
     errors.value[key as keyof typeof errors.value] = false;
   });
   selectedEditRowId.value = null;
-  gridApi.value?.refreshCells({ force: true });
+  gridApi.value?.refreshCells({ force: true });  
 };
 
-const quickFilterText = ref("");
-
-// ----------------- PHẦN VẬT TƯ -----------------
+// ----------------- MATERIAL SECTION -----------------
 const { fetchMaterials, materials, fetchMaterialWithStock } = useMaterial();
 onMounted(fetchMaterials);
 
-// selectedMaterials chứa các vật tư được chọn cùng thuộc tính QuantityUsed (mặc định là 0)
-const selectedMaterials = ref<(Material & 
-{ 
+// selectedMaterials contains the selected materials with additional properties like QuantityUsed (default is 0)
+const selectedMaterials = ref<(Material & { 
   QuantityUsed: number; 
   RemainingStock: number; 
   WarehouseID: number;
@@ -362,10 +660,11 @@ const selectedMaterials = ref<(Material &
 })[]>([]);
 
 const searchMaterial = ref("");
-// materialOptions được cập nhật từ materials
+
+// materialOptions is updated from materials
 const materialOptions = computed(() => materials.value);
 
-// Lọc danh sách vật tư dựa trên từ khóa (nếu người dùng gõ trực tiếp)
+// Filter the material list based on the keyword (if the user types directly)
 const filteredMaterials = computed(() => {
   if (!searchMaterial.value) return materialOptions.value;
   return materialOptions.value.filter((mat) =>
@@ -374,103 +673,126 @@ const filteredMaterials = computed(() => {
   );
 });
 
-// Hàm xử lý khi người dùng chọn vật tư
-const handleSelect = async (material: Material) => {
 
+// Function to handle when the user selects a material
+const handleSelect = async (material: Material) => {
   if (!selectedWarehouse.value) {
-    toast.value?.showToast("Vui lòng chọn kho", "error");
+    toast.value?.showToast("Please select a warehouse", "error");
     return;
   }
+
   const insufficientItems = selectedMaterials.value.filter(
     (item) => Number(item.QuantityUsed) > Number(item.RemainingStock)
   );
-  
+
   if (insufficientItems.length) {
     insufficientItems.forEach(item => {
-      toast.value?.showToast(`Mã vật tư ${item.MaterialCode} số lượng trong kho ${item.WarehouseCode} không đủ!`, "error");
+      toast.value?.showToast(`Material code ${item.MaterialCode} does not have enough stock in warehouse ${item.WarehouseCode}!`, "error");
     });
     return;
   }
-  if (material && !selectedMaterials.value.find((m) => m.MaterialID === material.MaterialID &&
-     m.WarehouseID === selectedWarehouse.value)) {
-    const warehouseId = selectedWarehouse.value; 
+
+  if (material && !selectedMaterials.value.find((m) =>
+    m.MaterialID === material.MaterialID && m.WarehouseID === selectedWarehouse.value)) {
+    
+    const warehouseId = selectedWarehouse.value;
+
     try {
-      // Ép kiểu trả về cho fetchMaterialWithStock
+      // Type-casting the return value of fetchMaterialWithStock
       const materialWithStock = await fetchMaterialWithStock(material.MaterialID, warehouseId);
       const remainingStock = materialWithStock?.remaining_quantity || 0;
       const warehouse = warehouses.value.find((w) => w.WarehouseID === warehouseId);
       const WarehouseCode = warehouse ? warehouse.WarehouseCode : "";
-      
+
       selectedMaterials.value.push({
         ...material,
-        QuantityUsed: 0, 
+        QuantityUsed: 0,
         RemainingStock: remainingStock,
         WarehouseID: warehouseId,
         WarehouseCode: WarehouseCode,
         RequestID: 0
       });
-      
+
     } catch (error) {
-      console.error("Lỗi khi lấy thông tin tồn kho:", error);
+      console.error("Error fetching stock information:", error);
     }
   }
 };
-watch(selectedMaterials, () => {
-      nextTick(() => {
-        autoSizeColumns();
-      });
-    });
+
+const defaultColDef: ColDef = { flex:1, minWidth:170, sortable:true, filter:'agTextColumnFilter' };
 // ----------------- AG Grid CHO CHI TIẾT VẬT TƯ -----------------
 const detailColumnDefs = ref([
-  { headerName: "Mã vật tư", field: "MaterialCode", flex: 1 },
-  { headerName: "Tên vật tư", field: "MaterialName", flex: 1, minWidth: 150 },
   { 
-    headerName: "SL sử dụng", 
-    field: "QuantityUsed", 
-    editable: true, 
-    flex: 1,
-    cellEditor: "agNumberCellEditor", 
-    cellEditorParams: {
-            precision: 2,
-            step: 1,
-            showStepperButtons: true,
-        }
+    headerName: "Material Code",
+    field: "MaterialCode" 
   },
   { 
-    headerName: "SL tồn kho", 
+    headerName: "Material Name", 
+    field: "MaterialName",   
+  },
+  { 
+    headerName: "Quantity Used", 
+    field: "QuantityUsed", 
+    editable: true, 
+    cellEditor: "agNumberCellEditor", 
+    cellEditorParams: {
+      precision: 2,
+      step: 1,
+      showStepperButtons: true,
+    }
+  },
+  { 
+    headerName: "Available Stock", 
     field: "RemainingStock", 
-    flex: 1,
     valueFormatter: (params: any) => params.value === 0 ? "" : params.value
-   },
-  { headerName: "Đơn vị tính", field: "Unit", flex: 1 },
-  { headerName: "Kho xuất", field: "WarehouseCode", flex: 1 },
+  },
+  { 
+    headerName: "Unit", 
+    field: "Unit" 
+  },
+  { 
+    headerName: "Warehouse", 
+    field: "WarehouseCode"
+  },
   {
-    headerName: "Hành động",
+    headerName: "Actions",
     field: "actions",
-    flex: 1,
-    cellRenderer: (_params: any) => {
-      const container = document.createElement("div");
-      const deleteIcon = document.createElement("i");
-      deleteIcon.className = "mdi mdi-delete text-gray-500 hover:text-red-500 cursor-pointer";
-      
-      deleteIcon.addEventListener("click", (event) => {
-        event.stopPropagation();
-        _params.colDef.cellRendererParams.onClick(_params);
-      });      
-      container.appendChild(deleteIcon);
-      return container;
-    },
-    cellRendererParams: {
-      onClick: (params: any) => {
-        selectedMaterials.value = selectedMaterials.value.filter(
-          (item) => 
-            item.MaterialID !== params.data.MaterialID ||
-            item.WarehouseID !== params.data.WarehouseID
-        );
-      }
-    },
+    cellRenderer: DeleteMaterialCell,      
   }
 ]);
+
+function handleDeleteMaterial(params: any){
+  selectedMaterials.value = selectedMaterials.value.filter(
+    item =>
+      item.MaterialID  !== params.data.MaterialID ||
+      item.WarehouseID !== params.data.WarehouseID
+  )
+};
+
+const gridApi = ref<GridApi | null>(null);
+
+const gridApi1 = ref(null);
+const gridContainer1 = ref(null);
+const columnsToAutoSize1 = ['MaterialName'];
+
+const gridApi2 = ref(null);
+const gridContainer2 = ref(null);
+const columnsToAutoSize2 = ['MachineName'];
+
+const { onGridReady: onGridReady1, onFirstDataRendered: onFirstDataRendered1, resizeNow: resizeNow1 } = useAutoResizeGrid(gridApi1, gridContainer1, columnsToAutoSize1);
+const { onGridReady: onGridReady2, onFirstDataRendered: onFirstDataRendered2, resizeNow: resizeNow2 } = useAutoResizeGrid(gridApi2, gridContainer2, columnsToAutoSize2);
+
+const debouncedResize = debounce(async () => {
+  await nextTick();
+  resizeNow1();
+  resizeNow2();
+}, 200);
+
+watch(
+  selectedMaterials,
+  debouncedResize,
+  { deep: true }
+);
 
 const detailGridOptions = ref<GridOptions>({
   pagination: true,
@@ -485,62 +807,74 @@ const detailGridOptions = ref<GridOptions>({
         item.WarehouseID === _params.data.WarehouseID
       );
       if (index !== -1) {        
-        // Cập nhật đối tượng bằng splice để kích hoạt reactivity
+        // Update the object using splice to maintain reactivity
         selectedMaterials.value.splice(index, 1, {
           ...selectedMaterials.value[index],
           QuantityUsed: _params.data.QuantityUsed
         });
+
         const insufficientItems = selectedMaterials.value.filter(
           (item) => Number(item.QuantityUsed) > Number(item.RemainingStock)
         );
+
         if (insufficientItems.length) {
           insufficientItems.forEach(item => {
-            toast.value?.showToast(`Mã vật tư ${item.MaterialCode} số lượng trong kho ${item.WarehouseCode} không đủ!`, "error");
+            toast.value?.showToast(
+              `Material code ${item.MaterialCode} in warehouse ${item.WarehouseCode} does not have sufficient stock!`,
+              "error"
+            );
           });
           return;
         }
       }
     }
+  },
+  context: {
+    onDeleteMaterial: handleDeleteMaterial
   }
 });
 
-// ----------------- SAVE PHIẾU BẢO TRÌ -----------------
+
+// ----------------- SAVE MAINTENANCE REQUEST -----------------
 const saveMaintenanceRequest = async () => {
-  // Map vật tư đã chọn thành chi tiết phiếu bảo trì
+  // Map selected materials to maintenance request details
   maintenanceForm.value.Details = selectedMaterials.value.map((item) => ({
     MaterialID: item.MaterialID,
     QuantityUsed: item.QuantityUsed,
     WarehouseID: item.WarehouseID,
     RequestID: item.RequestID
   }));
-  if (maintenanceForm.value.RequestID){
+
+  if (maintenanceForm.value.RequestID) {
     await fetchMaintenanceRequestById(maintenanceForm.value.RequestID);
 
     if (
       selectedMaintenanceRequest.value &&
       selectedMaintenanceRequest.value.Status === "Approved"
     ) {
-      toast?.value?.showToast("Không thể cập nhật vì phiếu đã được duyệt!", "error");
+      toast?.value?.showToast("Unable to update because the request has already been approved!", "error");
       return;
     }
   }
 
   if (!validateAll()) return;
+
   if (selectedMaterials.value.length === 0) {
-    toast?.value?.showToast("Vui lòng chọn vật tư!", "error");
+    toast?.value?.showToast("Please select at least one material!", "error");
     return;
   }
+
   const insufficientItem = selectedMaterials.value.find(
     (item) => Number(item.QuantityUsed) > Number(item.RemainingStock)
   );
 
-  const insufficientQuanityUsedItem = selectedMaterials.value.find(
-    (item) => Number(item.QuantityUsed) == 0
+  const zeroQuantityItem = selectedMaterials.value.find(
+    (item) => Number(item.QuantityUsed) === 0
   );
 
-  if (insufficientQuanityUsedItem) {
+  if (zeroQuantityItem) {
     toast.value?.showToast(
-      `Vui lòng nhập số lượng sử dụng`,
+      `Please enter a usage quantity.`,
       "error"
     );
     return;
@@ -548,7 +882,7 @@ const saveMaintenanceRequest = async () => {
 
   if (insufficientItem) {
     toast.value?.showToast(
-      `Mã vật tư ${insufficientItem.MaterialCode} số lượng trong kho ${insufficientItem.WarehouseCode} không đủ để cung cấp`,
+      `Material code ${insufficientItem.MaterialCode} in warehouse ${insufficientItem.WarehouseCode} does not have sufficient stock.`,
       "error"
     );
     return;
@@ -556,123 +890,110 @@ const saveMaintenanceRequest = async () => {
 
   try {
     if (!maintenanceForm.value.RequestID) {
-      // Tạo mới phiếu bảo trì
-      // console.log(maintenanceForm.value);
+      // Create new maintenance request
       const response = await addMaintenanceRequest(maintenanceForm.value);
       if (response.success && response.data && response.data.RequestID) {
-        toast?.value?.showToast("Tạo phiếu bảo trì thành công!", "success");
+        toast?.value?.showToast("Maintenance request created successfully!", "success");
       } else {
-        // console.log(response.message);
-        toast?.value?.showToast("Có lỗi xảy ra khi tạo phiếu bảo trì!", "error");
+        toast?.value?.showToast("An error occurred while creating the maintenance request.", "error");
       }
     } else {
-      // console.log(maintenanceForm.value.Details);
-      // Cập nhật phiếu bảo trì
+      // Update existing maintenance request
       const response = await updateMaintenanceRequest(
         maintenanceForm.value.RequestID,
         maintenanceForm.value as MaintenanceRequestUpdate
       );
       if (response.success && response.data && response.data.RequestID) {
-        toast?.value?.showToast("Cập nhật phiếu bảo trì thành công!", "success");
+        toast?.value?.showToast("Maintenance request updated successfully!", "success");
       } else {
-        // console.log(response.message);
-        toast?.value?.showToast("Có lỗi xảy ra khi cập nhật phiếu bảo trì!", "error");
+        toast?.value?.showToast("An error occurred while updating the maintenance request.", "error");
       }
     }
+
     resetForm();
     fetchMaintenanceRequests();
   } catch (error) {
-    // console.log(error);
-    toast?.value?.showToast("Có lỗi xảy ra, vui lòng thử lại!", "error");
+    toast?.value?.showToast("An error occurred. Please try again!", "error");
   }
 };
+
+const defaultCol: ColDef = { flex:1, minWidth:170, sortable:true, filter:'agTextColumnFilter' };
 const selectedEditRowId = ref<number | null>(null);
-// ----------------- AG Grid DANH SÁCH PHIẾU BẢO TRÌ -----------------
+// ----------------- AG Grid MAINTENANCE REQUEST LIST -----------------
 const columnDefs = ref([
   { 
-    headerName: "Số phiếu", 
+    headerName: "Request Number", 
     field: "RequestNumber", 
-    sortable: true, 
-    filter: "agTextColumnFilter", 
     sort: 'desc' as SortDirection, 
-    flex: 1 
   },
   { 
-    headerName: "Tên máy", 
+    headerName: "Machine Name", 
     field: "MachineName", 
-    sortable: true, 
-    filter: "agTextColumnFilter", 
-    flex: 1 
   },
   { 
-    headerName: "Ngày yêu cầu", 
+    headerName: "Request Date", 
     field: "RequestDate", 
-    sortable: true, 
-    filter: "agTextColumnFilter", 
-    flex: 1,
     valueFormatter: (_params: any) => formatDateToDMY(_params.value)
   },
   { 
-    headerName: "Người yêu cầu", 
+    headerName: "Requested By", 
     field: "RequestedBy", 
-    sortable: true, 
-    filter: "agTextColumnFilter", 
-    flex: 1 
   },
   { 
-    headerName: "Trạng thái", 
+    headerName: "Status", 
     field: "Status", 
-    sortable: true, 
-    filter: "agTextColumnFilter", 
-    flex: 1 
   },
   {
-    headerName: "Hành động",
+    headerName: "Actions",
     field: "actions",
     sortable: false,
     filter: false,
-    cellRenderer: (params: any) => {
-      const container = document.createElement("div");
-      container.setAttribute("data-row-id", params.data.RequestID);
-
-      // Icon Edit (pencil)
-      const editIcon = document.createElement("i");
-      if (selectedEditRowId.value === params.data.RequestID) {
-        editIcon.className = "mdi mdi-pencil text-yellow-500 text-lg cursor-pointer";
-      } else {
-        editIcon.className = "mdi mdi-pencil text-gray-500 text-lg cursor-pointer";
-      }
-      editIcon.addEventListener("click", (event) => {
-        event.stopPropagation();
-        selectedEditRowId.value = params.data.RequestID;
-        params.api.refreshCells({ force: true });
-        params.colDef.cellRendererParams.onEdit(params.data.RequestID);
-      });
-      container.appendChild(editIcon);
-
-      // Icon Delete (mdi-delete) với hiệu ứng hover chuyển sang màu đỏ
-      const deleteIcon = document.createElement("i");
-      deleteIcon.className = "mdi mdi-delete text-gray-500 text-lg cursor-pointer ml-2 hover:text-red-500";
-      deleteIcon.addEventListener("click", (event) => {
-        event.stopPropagation();
-        params.colDef.cellRendererParams.onDelete(params.data.RequestID);
-      });
-      container.appendChild(deleteIcon);
-
-      return container;
-    },
+    cellRenderer: RequestFormActionCell,
+  },
+  {
+    headerName: "Approve Request",
+    field: "approve",
+    sortable: false,
+    filter: false,
+    cellRenderer: ApproveRequestCell,
     cellRendererParams: {
-      onEdit: async (requestId: number) => {
-        await fetchMaintenanceRequestById(requestId);
-        if (selectedMaintenanceRequest.value) {
-          maintenanceForm.value = {
-            ...selectedMaintenanceRequest.value,   
-            RequestDate: formatDateToYMD(selectedMaintenanceRequest.value.RequestDate)    
-          };
-          if (maintenanceForm.value.Details && maintenanceForm.value.Details.length) {
-            const updatedMaterials = await Promise.all(
-              maintenanceForm.value.Details.map(async (d: any) => {
-                const material = materialOptions.value.find(
+      showLabels: window.innerWidth > 768 // Responsive label
+    },
+    suppressMovable: true,
+    lockPosition: 'right' as 'right'
+  }
+]);
+async function handleApprove(requestId: number) {
+    await fetchMaintenanceRequestById(requestId)
+    if (selectedMaintenanceRequest.value?.Status === 'Approved') {
+      toast?.value?.showToast('This request has already been approved','error')
+      resetForm()
+      return
+    }
+    const confirmed = await showConfirmToast(
+      'Are you sure you want to approve this maintenance request?'
+    )
+    if (confirmed) {
+      const response = await approveMaintenanceRequest(requestId)
+      response.success
+        ? toast?.value?.showToast(response.message,'success')
+        : (toast?.value?.showToast(response.message || 'Error occurred while approving!','error'),
+           resetForm())
+      if (response.success) await fetchMaintenanceRequests()
+    }
+  }
+  async function handleEdit(requestId: number) {
+  await fetchMaintenanceRequestById(requestId);
+  if (selectedMaintenanceRequest.value) {
+    maintenanceForm.value = { 
+      ...selectedMaintenanceRequest.value,
+      RequestDate: formatDateToYMD(selectedMaintenanceRequest.value.RequestDate)    
+    };
+    
+    if (maintenanceForm.value.Details?.length) {
+      const updatedMaterials = await Promise.all(
+        maintenanceForm.value.Details.map(async (d: any) => {
+          const material = materialOptions.value.find(
                   (m) => m.MaterialID === d.MaterialID
                 );
                 let remainingStock = 0;              
@@ -687,8 +1008,7 @@ const columnDefs = ref([
                   );
                   remainingStock = materialWithStock?.remaining_quantity || 0;
                 } catch (error) {
-                  // console.error(d.MaterialID, error);
-                  console.error("Lỗi khi lấy tồn kho cho vật tư");
+                  console.error("Error fetching material stock");
                 }
                 const warehouse = warehouses.value.find(
                   (w) => w.WarehouseID === d.WarehouseID
@@ -706,117 +1026,52 @@ const columnDefs = ref([
                   WarehouseCode: WarehouseCode,
                   RequestID: d.RequestID
                 };
-              })
-            );
-            
-            selectedMaterials.value = updatedMaterials;
-          }
-        }
-      },
-      onDelete: async (requestId: number) => {
-        await fetchMaintenanceRequestById(requestId);
+        })
+      );
+      selectedMaterials.value = updatedMaterials;
+    }
+  }
+};
+async function handleDelete(requestId: number){
+  await fetchMaintenanceRequestById(requestId);
         if (
           selectedMaintenanceRequest.value &&
           selectedMaintenanceRequest.value.Status === "Approved"
         ) {
-          toast?.value?.showToast("Không thể xoá vì số phiếu đã duyệt", "error");
+          toast?.value?.showToast("Cannot delete because the request has been approved", "error");
           resetForm();
           return;
         }
-        const confirmed = await showConfirmToast("Bạn có chắc muốn xoá phiếu này?");
+        const RequestNumber = selectedMaintenanceRequest.value?.RequestNumber;
+        const confirmed = await showConfirmToast(`Are you sure you want to delete request ${RequestNumber}?`);
         if (confirmed) {
           const response = await deleteMaintenanceRequest(requestId);
           if (response.success) {
             const deletedRequestNumber =
               "deletedRequestNumber" in response ? response.deletedRequestNumber : "";
             toast?.value?.showToast(
-              `Số phiếu ${deletedRequestNumber} đã được xoá!`,
+              `Request ${deletedRequestNumber} has been deleted!`,
               "success"
             );
           } else {
-            toast?.value?.showToast("Có lỗi khi xoá phiếu", "error");
+            toast?.value?.showToast("Error deleting the request", "error");
           }
         }
-        resetForm();        
-      }
-    },
-    flex: 1
-  },
-  {
-    headerName: "Duyệt phiếu",
-    field: "approve",
-    sortable: false,
-    filter: false,
-    cellRenderer: (params: any) => {
-      const container = document.createElement("div");
-      container.setAttribute("data-row-id", params.data.RequestID);
-      container.className = "flex items-center gap-2"; // để canh hàng đẹp
-
-      const approveIcon = document.createElement("i");
-
-      const statusText = document.createElement("span");
-      statusText.className = "ml-1 text-sm";
-
-      if (params.data.Status === "Approved") {
-        approveIcon.className = "mdi mdi-check-circle text-gray-500 text-lg";
-        statusText.textContent = "(Phiếu đã duyệt)";
-        statusText.classList.add("text-gray-400");
-      } else {
-        approveIcon.className = "mdi mdi-check-circle text-green-500 text-lg cursor-pointer";
-        statusText.textContent = "(Phiếu chưa duyệt)";
-        statusText.classList.add("text-green-500");
-
-        approveIcon.addEventListener("click", async (event) => {
-          event.stopPropagation();
-          await params.colDef.cellRendererParams.onApprove(params.data.RequestID);
-        });
-      }
-
-      container.appendChild(approveIcon);
-      container.appendChild(statusText);
-      return container;
-    },
-    cellRendererParams: {
-      onApprove: async (requestId: number) => {
-        await fetchMaintenanceRequestById(requestId);
-        if (
-          selectedMaintenanceRequest.value &&
-          selectedMaintenanceRequest.value.Status === "Approved"
-        ) {
-          toast?.value?.showToast("Số phiếu này đã được duyệt", "error");
-          resetForm();
-          return;
-        }
-        const confirmed = await showConfirmToast("Bạn có chắc muốn duyệt phiếu bảo trì này?");
-        if (confirmed) {
-          const response = await approveMaintenanceRequest(requestId);
-          if (response.success) {
-            toast?.value?.showToast(response.message, "success");
-            fetchMaintenanceRequests();
-          } else {
-            toast?.value?.showToast(
-              response.message || "Có lỗi xảy ra khi duyệt phiếu bảo trì!",
-              "error"
-            );
-            resetForm();
-          }
-        }
-      }
-    },
-    flex: 1
-  }
-]);
-
-
-const gridApi = ref<GridApi | null>(null);
+        resetForm();  
+};
+const frameworkComponents = {
+  RequestFormActionCell,
+  DeleteMaterialCell,
+  ApproveRequestCell
+};
 const gridOptions = ref<GridOptions>({
   pagination: true,
   paginationPageSize: 5,
   domLayout: "autoHeight",
-  paginationPageSizeSelector: [5, 20, 50, 100],
+  paginationPageSizeSelector: [5, 10, 20, 50, 100],
   onGridReady: (params) => {
     gridApi.value = params.api;
-    params.api.sizeColumnsToFit();
+    // params.api.sizeColumnsToFit();
     params.api.setGridOption("rowData", maintenanceRequests.value);
   },
   onCellClicked: (event) => {
@@ -830,6 +1085,11 @@ const gridOptions = ref<GridOptions>({
         event.colDef.cellRendererParams?.onApprove(requestId);
       }
     }
-  }
+  },
+  context: {
+      onEdit: handleEdit,
+      onDelete: handleDelete,
+      onApprove: handleApprove
+    }
 });
 </script>
