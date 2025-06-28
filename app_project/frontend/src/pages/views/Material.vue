@@ -362,14 +362,36 @@ const unitOptions = ref(["Piece", "Kg", "Liter", "Meter", "Box", "Package", "Rol
 
 function formatUnit(unit: string): string {
   const unitMap: Record<string, string> = {
-    Piece: "🧩 Piece – Cái",
-    Kg: "⚖️ Kg – Kilogram",
-    Liter: "🧴 Liter – Lít",
-    Meter: "📏 Meter – Mét",
-    Box: "📦 Box – Hộp",
-    Package: "🎁 Package – Gói",
-    Roll: "🌀 Roll – Cuộn",
-    Set: "🧰 Set – Bộ"
+    Piece: "Piece – Cái",
+    Kg: "Kg – Kilogram",
+    Gram: "Gram – Gram",
+    Liter: "Liter – Lít",
+    Ml: "Ml – Milliliter",
+    Meter: "Meter – Mét",
+    Cm: "Cm – Centimeter",
+    Mm: "Mm – Millimeter",
+    Inch: "Inch – Inch",
+    Foot: "Foot – Foot (Feet)",
+    Yard: "Yard – Yard",
+    Box: "Box – Hộp",
+    Package: "Package – Gói",
+    Pack: "Pack – Gói nhỏ",
+    Roll: "Roll – Cuộn",
+    Set: "Set – Bộ",
+    Bag: "Bag – Túi",
+    Pair: "Pair – Đôi",
+    Sheet: "Sheet – Tờ / Tấm",
+    Bottle: "Bottle – Chai",
+    Can: "Can – Lon",
+    Tube: "Tube – Tuýp",
+    Carton: "Carton – Thùng carton",
+    Bundle: "Bundle – Bó",
+    PiecePack: "PiecePack – Gói lẻ",
+    Pallet: "Pallet – Pallet",
+    Case: "Case – Thùng",
+    Barrel: "Barrel – Thùng phi",
+    Drum: "Drum – Thùng phuy",
+    Dozen: "Dozen – Tá"
   }
   return unitMap[unit] || unit
 }

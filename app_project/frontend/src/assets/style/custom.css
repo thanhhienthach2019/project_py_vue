@@ -21,4 +21,10 @@ select {
  .custom-multiselect .vs__placeholder {
   color: white !important;
 }
-/* Detail grid */
+/* Checked Style */
+.styled-checkbox {
+  transition: all 0.2s ease-in-out;
+}
+.styled-checkbox:hover {
+  transform: scale(1.1);
+}

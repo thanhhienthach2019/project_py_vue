@@ -12,6 +12,7 @@ import '@mdi/font/css/materialdesignicons.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { setupRouterGuard } from "@/router/guard";
 import * as lucideIcons from 'lucide-vue-next';
+import { vPermission } from "./directives/permission";
 
 // Đăng ký các module cần thiết
 import { ModuleRegistry } from 'ag-grid-community';
@@ -52,7 +53,7 @@ for (const [key, component] of Object.entries(lucideIcons)) {
     app.component(key, component as Component);
   }
 }
-
+app.directive("permission", vPermission);
 app.use(createPinia());
 app.use(router);
 setupRouterGuard();

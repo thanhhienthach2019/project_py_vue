@@ -1,0 +1,27 @@
+# USER
+p, user, menu:dashboard, view
+
+# MANAGER
+p, manager, menu:dashboard, view
+p, manager, menu:reports, view
+p, manager, menu:stock, view
+p, manager, menu:stock:in, view
+p, manager, menu:stock:out, view
+p, manager, menu:stock:onhand, view
+p, manager, menu:stock:history, view
+
+# ADMIN
+p, admin, menu:dashboard, view
+p, admin, menu:management, view
+p, admin, menu:users, view
+p, admin, menu:settings, view
+p, admin, menu:reports, view
+p, admin, menu:stock, view
+p, admin, menu:stock:in, view
+p, admin, menu:stock:out, view
+p, admin, menu:stock:onhand, view
+p, admin, menu:stock:history, view
+
+g, admin, admin
+g, manager, manager
+g, user, us

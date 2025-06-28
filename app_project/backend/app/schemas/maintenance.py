@@ -44,10 +44,3 @@ class MaintenanceRequestUpdate(BaseModel):
     Diagnosis: Optional[str] = None
     RequestedBy: Optional[str] = None
     Details: Optional[List[MaintenanceRequestDetailUpdate]] = None
-
-
-
-
-
-
-

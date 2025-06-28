@@ -8,6 +8,7 @@ from app.core.config import settings
 
 def login_user(db: Session, username: str, password: str, response: Response):
     user = db.query(User).filter(User.username == username).first()
+
     if not user or not verify_password(password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid username or password")
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)

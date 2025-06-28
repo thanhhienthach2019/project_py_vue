@@ -1,5 +1,3 @@
-// src/hooks/useMaintenance.ts
-
 import { computed } from "vue";
 import { useMaintenanceStore } from "@/store/maintenance";
 import type {
@@ -10,76 +8,66 @@ import type {
 export function useMaintenance() {
   const maintenanceStore = useMaintenanceStore();
 
-  // Lấy danh sách phiếu bảo trì
+  const handleError = (action: string, error: unknown) => {
+    console.error(`An error occurred while ${action}:`, error);
+    return { success: false, message: `Failed to ${action}. Please try again.` };
+  };
+
   const fetchMaintenanceRequests = async () => {
     try {
       await maintenanceStore.fetchMaintenanceRequests();
     } catch (error) {
-      console.error("Lỗi khi lấy danh sách phiếu bảo trì");
+      return handleError("fetching maintenance requests", error);
     }
   };
 
-  // Lấy thông tin phiếu bảo trì theo ID
   const fetchMaintenanceRequestById = async (requestId: number) => {
     try {
       await maintenanceStore.fetchMaintenanceRequestById(requestId);
     } catch (error) {
-      console.error("Lỗi khi lấy phiếu bảo trì");
+      return handleError(`fetching maintenance request #${requestId}`, error);
     }
   };
 
-  // Tạo mới phiếu bảo trì
   const addMaintenanceRequest = async (requestData: MaintenanceRequestCreate) => {
     try {
-      const response = await maintenanceStore.addMaintenanceRequest(requestData);
-      return response;
+      return await maintenanceStore.addMaintenanceRequest(requestData);
     } catch (error) {
-      // console.error("Lỗi khi tạo phiếu bảo trì:", error);
-      return { success: false, message: "Có lỗi xảy ra khi tạo phiếu bảo trì!" };
+      return handleError("creating maintenance request", error);
     }
   };
 
-  // Duyệt phiếu bảo trì
   const approveMaintenanceRequest = async (requestId: number) => {
     try {
-      const response = await maintenanceStore.approveMaintenanceRequest(requestId);
-      return response;
+      return await maintenanceStore.approveMaintenanceRequest(requestId);
     } catch (error) {
-      // console.error("Lỗi khi duyệt phiếu bảo trì:", error);
-      return { success: false, message: "Có lỗi xảy ra khi duyệt phiếu bảo trì!" };
+      return handleError(`approving maintenance request #${requestId}`, error);
     }
   };
 
   const deleteMaintenanceRequest = async (requestId: number) => {
     try {
-      // Lấy thông tin phiếu cần xoá từ store (để lấy RequestNumber)
       const deletedItem = maintenanceStore.maintenanceRequests.find(
         (r) => r.RequestID === requestId
       );
-      // Gọi store để xoá phiếu
       const response = await maintenanceStore.deleteMaintenanceRequest(requestId);
       if (response.success) {
-        // Nếu xoá thành công, trả về thêm trường deletedRequestNumber
         return { ...response, deletedRequestNumber: deletedItem?.RequestNumber };
       }
       return response;
     } catch (error) {
-      // console.error("Lỗi khi xóa phiếu bảo trì:", error);
-      return { success: false, message: "Có lỗi xảy ra khi xóa phiếu bảo trì!" };
+      return handleError(`deleting maintenance request #${requestId}`, error);
     }
   };
 
-  // Cập nhật phiếu bảo trì
   const updateMaintenanceRequest = async (
     requestId: number,
     updateData: MaintenanceRequestUpdate
   ) => {
     try {
-      const response = await maintenanceStore.updateMaintenanceRequest(requestId, updateData);
-      return response;
+      return await maintenanceStore.updateMaintenanceRequest(requestId, updateData);
     } catch (error) {
-      // console.error("Lỗi khi cập nhật phiếu bảo trì:", error);
-      return { success: false, message: "Có lỗi xảy ra khi cập nhật phiếu bảo trì!" };
+      return handleError(`updating maintenance request #${requestId}`, error);
     }
   };
 

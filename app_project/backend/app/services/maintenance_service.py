@@ -13,11 +13,11 @@ from app.schemas.maintenance import (
 from app.services.inventory_service import export_stock
 
 def generate_request_number(db: Session) -> str:
-    # Lấy ngày hiện tại theo định dạng YYYYMMDD
+    # Get the current date in YYYYMMDD format
     today_str = datetime.now().strftime("%Y%m%d")
     prefix = f"REQ-{today_str}-"
     
-    # Truy vấn phiếu bảo trì có RequestNumber có cùng prefix, sắp xếp giảm dần
+    # Query maintenance requests with the same prefix and order them descending
     last_request = (
         db.query(MaintenanceRequests)
         .filter(MaintenanceRequests.RequestNumber.like(f"{prefix}%"))
@@ -26,13 +26,13 @@ def generate_request_number(db: Session) -> str:
     )
     
     if last_request and last_request.RequestNumber:
-        # Lấy phần số thứ tự (giả sử luôn là 3 chữ số ở cuối)
+        # Extract the sequence number (assumed to be 3 digits at the end)
         last_seq = int(last_request.RequestNumber[-3:])
         new_seq = last_seq + 1
     else:
         new_seq = 1
     
-    # Định dạng RequestNumber với 3 chữ số (đệm số 0 nếu cần)
+    # Format the request number with 3 digits (padding with leading zeros if necessary)
     new_request_number = f"{prefix}{new_seq:03d}"
     return new_request_number
 
@@ -52,12 +52,12 @@ def create_maintenance_request(db: Session, request_data: MaintenanceRequestCrea
         db.refresh(new_request)
         
         if not isinstance(request_data.Details, list):
-            raise ValueError("Details phải là danh sách chi tiết vật tư")
+            raise ValueError("Details must be a list of materials.")
         
         details_objects = []
         for detail in request_data.Details:
             if not hasattr(detail, "MaterialID") or not hasattr(detail, "WarehouseID") or not hasattr(detail, "QuantityUsed"):
-                raise ValueError("Mỗi chi tiết phải có MaterialID, WarehouseID và QuantityUsed")
+                raise ValueError("Each detail must have MaterialID, WarehouseID, and QuantityUsed.")
             details_objects.append(
                 MaintenanceRequestDetails(
                     RequestID=new_request.RequestID,
@@ -103,44 +103,44 @@ def create_maintenance_request(db: Session, request_data: MaintenanceRequestCrea
         
     except IntegrityError:
         db.rollback()
-        raise ValueError("RequestNumber đã tồn tại, vui lòng nhập số khác")
+        raise ValueError("RequestNumber already exists, please enter a different number.")
     except Exception as e:
         db.rollback()
-        raise ValueError(f"Lỗi khi tạo yêu cầu bảo trì: {str(e)}")
+        raise ValueError(f"Error creating maintenance request: {str(e)}")
     
 def approve_maintenance_request(db: Session, request_id: int):
     try:
         maintenance_request = db.query(MaintenanceRequests).filter(MaintenanceRequests.RequestID == request_id).first()
         if not maintenance_request:
-            raise ValueError("Phiếu yêu cầu bảo trì không tồn tại")
+            raise ValueError("Maintenance request not found.")
         
         if maintenance_request.Status != "Pending":
-            raise ValueError("Chỉ có thể duyệt phiếu yêu cầu ở trạng thái Pending")
+            raise ValueError("Only pending requests can be approved.")
         
         request_details = db.query(MaintenanceRequestDetails).filter(
             MaintenanceRequestDetails.RequestID == request_id
         ).all()
 
         if not request_details:
-            raise ValueError("Phiếu yêu cầu không có chi tiết vật tư")
+            raise ValueError("No material details found for this request.")
         
         for detail in request_details:
             export_result = export_stock(db, detail.WarehouseID, detail.MaterialID, detail.QuantityUsed)
             if not export_result:
-                raise ValueError(f"Không đủ số lượng trong kho để xuất vật tư ID {detail.MaterialID}")
+                raise ValueError(f"Insufficient stock to export material ID {detail.MaterialID}.")
         maintenance_request.Status = "Approved"
         maintenance_request.ApprovedAt = datetime.now()
 
         db.commit()
         db.refresh(maintenance_request)
-        return {"message":"Phiếu yêu cầu bảo trì đã được duyệt và vật tư đã xuất kho"}
+        return {"message": "Maintenance request approved and materials exported successfully."}
 
     except IntegrityError:
         db.rollback()
-        raise ValueError("Lỗi cơ sở dữ liệu khi duyệt yêu cầu")
+        raise ValueError("Database error occurred while approving the request.")
     except Exception as e:
         db.rollback()
-        raise ValueError(f"Lỗi: {str(e)}")
+        raise ValueError(f"Error: {str(e)}")
     
 def update_maintenance_request(db: Session, request_id: int, update_data: MaintenanceRequestUpdate) -> MaintenanceRequestResponse:
     try:
@@ -149,10 +149,10 @@ def update_maintenance_request(db: Session, request_id: int, update_data: Mainte
         ).first()
 
         if not maintenance_request:
-            raise ValueError("Phiếu yêu cầu bảo trì không tồn tại")
+            raise ValueError("Maintenance request not found.")
 
         if maintenance_request.Status != "Pending":
-            raise ValueError("Chỉ có thể chỉnh sửa phiếu yêu cầu ở trạng thái Pending")
+            raise ValueError("Only pending requests can be updated.")
 
         if update_data.MachineName:
             maintenance_request.MachineName = update_data.MachineName
@@ -226,17 +226,17 @@ def update_maintenance_request(db: Session, request_id: int, update_data: Mainte
 
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=400, detail="Lỗi cập nhật dữ liệu")
+        raise HTTPException(status_code=400, detail="Data update error.")
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Lỗi khi cập nhật phiếu bảo trì: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error updating maintenance request: {str(e)}")
 
 def get_all_maintenance_requests(db: Session) -> list[MaintenanceRequestResponse]:
     maintenance_requests = db.query(MaintenanceRequests).all()
     
     responses = []
     for request in maintenance_requests:
-        # Lấy danh sách chi tiết của mỗi phiếu bảo trì
+        # Get the details for each maintenance request
         request_details = db.query(MaintenanceRequestDetails).filter(
             MaintenanceRequestDetails.RequestID == request.RequestID
         ).all()
@@ -268,15 +268,15 @@ def get_all_maintenance_requests(db: Session) -> list[MaintenanceRequestResponse
     return responses
 
 def get_maintenance_request_by_id(db: Session, request_id: int) -> MaintenanceRequestResponse:
-    # Lấy thông tin phiếu bảo trì theo RequestID
+    # Get the maintenance request by RequestID
     maintenance_request = db.query(MaintenanceRequests).filter(
         MaintenanceRequests.RequestID == request_id
     ).first()
 
     if not maintenance_request:
-        raise HTTPException(status_code=404, detail="Phiếu bảo trì không tồn tại")
+        raise HTTPException(status_code=404, detail="Maintenance request not found.")
     
-    # Lấy danh sách chi tiết của phiếu bảo trì
+    # Get the details of the maintenance request
     request_details = db.query(MaintenanceRequestDetails).filter(
         MaintenanceRequestDetails.RequestID == request_id
     ).all()
@@ -307,37 +307,37 @@ def get_maintenance_request_by_id(db: Session, request_id: int) -> MaintenanceRe
 
 def delete_maintenance_request(db: Session, request_id: int) -> dict:
     try:
-        print(f"Đang lấy phiếu bảo trì với RequestID: {request_id}")
+        print(f"Fetching maintenance request with RequestID: {request_id}")
         maintenance_request = db.query(MaintenanceRequests).filter(
             MaintenanceRequests.RequestID == request_id
         ).first()
 
         if not maintenance_request:
-            print("Phiếu bảo trì không tồn tại")
-            raise HTTPException(status_code=404, detail="Phiếu yêu cầu bảo trì không tồn tại")
+            print("Maintenance request not found.")
+            raise HTTPException(status_code=404, detail="Maintenance request not found.")
 
-        print(f"Trạng thái phiếu: {maintenance_request.Status}")
+        print(f"Request status: {maintenance_request.Status}")
         if maintenance_request.Status != "Pending":
-            print("Phiếu không ở trạng thái Pending")
-            raise HTTPException(status_code=400, detail="Chỉ có thể xóa phiếu yêu cầu ở trạng thái Pending")
+            print("Request is not in Pending status.")
+            raise HTTPException(status_code=400, detail="Only pending requests can be deleted.")
 
-        print("Đang xóa chi tiết liên quan")
+        print("Deleting related details.")
         db.query(MaintenanceRequestDetails).filter(
             MaintenanceRequestDetails.RequestID == request_id
         ).delete(synchronize_session=False)
 
-        print("Đang xóa phiếu bảo trì")
+        print("Deleting maintenance request.")
         db.delete(maintenance_request)
         db.commit()
-        print("Commit thành công, đã xóa phiếu bảo trì")
+        print("Commit successful, maintenance request deleted.")
 
-        return {"message": "Xóa phiếu bảo trì thành công"}
+        return {"message": "Maintenance request deleted successfully."}
     
     except IntegrityError as ie:
         db.rollback()
-        print("Lỗi xóa dữ liệu do ràng buộc liên kết")
-        raise HTTPException(status_code=400, detail="Lỗi xóa dữ liệu do ràng buộc liên kết")
+        print("Data deletion error due to relational constraints.")
+        raise HTTPException(status_code=400, detail="Data deletion error due to relational constraints.")
     except Exception as e:
         db.rollback()
-        print("Lỗi khi xóa phiếu bảo trì")
-        raise HTTPException(status_code=500, detail=f"Lỗi khi xóa phiếu bảo trì: {str(e)}")
+        print("Error deleting maintenance request.")
+        raise HTTPException(status_code=500, detail=f"Error deleting maintenance request: {str(e)}")

@@ -12,23 +12,23 @@ export const createMaintenanceRequest = async (
   requestData: MaintenanceRequestCreate
 ): Promise<{ success: boolean; data?: MaintenanceRequestResponse; message: string }> => {
   try {
-    const response = await apiClient.post("/maintenance-requests", requestData, getAuthHeaders());    
+    const response = await apiClient.post("/maintenance-requests", requestData, getAuthHeaders());
     if (response.status === 200 || response.status === 201) {
       return {
         success: true,
         data: response.data,
-        message: "Tạo phiếu bảo trì thành công!"
+        message: "Maintenance request created successfully."
       };
     } else {
       return {
         success: false,
-        message: "Thêm phiếu bảo trì thất bại!"
+        message: "Failed to create maintenance request."
       };
     }
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "Có lỗi xảy ra khi tạo phiếu bảo trì!"
+      message: error.response?.data?.detail || "An error occurred while creating the maintenance request."
     };
   }
 };
@@ -48,18 +48,18 @@ export const approveMaintenanceRequest = async (
     if (response.status === 200) {
       return {
         success: true,
-        message: response.data.message || "Duyệt phiếu bảo trì thành công!"
+        message: response.data.message || "Maintenance request approved successfully."
       };
     } else {
       return {
         success: false,
-        message: "Duyệt phiếu bảo trì thất bại!"
+        message: "Failed to approve maintenance request."
       };
     }
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "Có lỗi xảy ra khi duyệt phiếu bảo trì!"
+      message: error.response?.data?.detail || "An error occurred while approving the maintenance request."
     };
   }
 };
@@ -68,7 +68,7 @@ export const updateMaintenanceRequest = async (
   requestId: number,
   updateData: MaintenanceRequestUpdate
 ): Promise<{ success: boolean; data?: MaintenanceRequestResponse; message: string }> => {
-  try {  
+  try {
     const response = await apiClient.put(
       `/update-maintenance-request/${requestId}`,
       updateData,
@@ -78,18 +78,18 @@ export const updateMaintenanceRequest = async (
       return {
         success: true,
         data: response.data,
-        message: "Cập nhật phiếu bảo trì thành công!"
+        message: "Maintenance request updated successfully."
       };
     } else {
       return {
         success: false,
-        message: "Cập nhật phiếu bảo trì thất bại!"
+        message: "Failed to update maintenance request."
       };
     }
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "Có lỗi xảy ra khi cập nhật phiếu bảo trì!"
+      message: error.response?.data?.detail || "An error occurred while updating the maintenance request."
     };
   }
 };
@@ -97,7 +97,7 @@ export const updateMaintenanceRequest = async (
 export const deleteMaintenanceRequest = async (
   requestId: number
 ): Promise<{ success: boolean; message: string }> => {
-  try {    
+  try {
     const response = await apiClient.delete(
       `/delete-maintenance-request/${requestId}`,
       getAuthHeaders()
@@ -105,24 +105,21 @@ export const deleteMaintenanceRequest = async (
     if (response.status === 200) {
       return {
         success: true,
-        message: "Xóa phiếu bảo trì thành công!"
+        message: "Maintenance request deleted successfully."
       };
     } else {
       return {
         success: false,
-        message: "Xóa phiếu bảo trì thất bại!"
+        message: "Failed to delete maintenance request."
       };
     }
   } catch (error: any) {
     return {
       success: false,
-      message:
-        error.response?.data?.detail ||
-        "Có lỗi xảy ra khi xóa phiếu bảo trì!"
+      message: error.response?.data?.detail || "An error occurred while deleting the maintenance request."
     };
   }
 };
-
 
 export const getAllMaintenanceRequests = async (): Promise<{ success: boolean; data?: MaintenanceRequestResponse[]; message: string }> => {
   try {
@@ -131,18 +128,18 @@ export const getAllMaintenanceRequests = async (): Promise<{ success: boolean; d
       return {
         success: true,
         data: response.data,
-        message: "Lấy danh sách phiếu bảo trì thành công!"
+        message: "Successfully retrieved maintenance requests."
       };
     } else {
       return {
         success: false,
-        message: "Lấy danh sách phiếu bảo trì thất bại!"
+        message: "Failed to retrieve maintenance requests."
       };
     }
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "Có lỗi xảy ra khi lấy danh sách phiếu bảo trì!"
+      message: error.response?.data?.detail || "An error occurred while retrieving maintenance requests."
     };
   }
 };
@@ -156,18 +153,18 @@ export const getMaintenanceRequestById = async (
       return {
         success: true,
         data: response.data,
-        message: "Lấy thông tin phiếu bảo trì thành công!"
+        message: "Successfully retrieved maintenance request details."
       };
     } else {
       return {
         success: false,
-        message: "Lấy thông tin phiếu bảo trì thất bại!"
+        message: "Failed to retrieve maintenance request details."
       };
     }
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "Có lỗi xảy ra khi lấy thông tin phiếu bảo trì!"
+      message: error.response?.data?.detail || "An error occurred while retrieving maintenance request details."
     };
   }
 };

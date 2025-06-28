@@ -71,7 +71,7 @@ const variant = ref<"success" | "error">("success");
 const toastId = ref("toast");
 
 // Hàm hiển thị toast
-function showToast(msg: string, type: "success" | "error" = "success", duration = 3000) {
+function showToast(msg: string, type: "success" | "error" = "success", duration = 3000) {  
   message.value = msg;
   variant.value = type;
   visible.value = true;

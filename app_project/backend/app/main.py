@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.api.v1 import inventory
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1 import users, auth, material, warehouse, maintenance
+from app.api.v1 import users, auth, material, warehouse, maintenance, machine, menu, policy, permissions
 
 Base.metadata.create_all(bind=engine)
 
@@ -41,6 +41,10 @@ app.include_router(inventory.router, prefix="/api/v1", tags=["Inventory"])
 app.include_router(material.router, prefix="/api/v1", tags=["Material"])
 app.include_router(warehouse.router, prefix="/api/v1", tags=["Warehouse"])
 app.include_router(maintenance.router, prefix="/api/v1", tags=["Maintenance"])
+app.include_router(machine.router, prefix="/api/v1", tags=["Machine"])
+app.include_router(menu.router, prefix="/api/v1", tags=["Menu"])
+app.include_router(policy.router, prefix="/api/v1", tags=["Policy"])
+app.include_router(permissions.router, prefix="/api/v1", tags=["Permission"])
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR")
 app.mount("/public", StaticFiles(directory=UPLOAD_DIR), name="public")

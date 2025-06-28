@@ -24,6 +24,16 @@ from app.models.inventory import Inventory
 from app.models.stock_history import StockHistory
 from app.models.maintenance import MaintenanceRequests, MaintenanceRequestDetails
 from app.models.material import Materials
+from app.models.supplier import Supplier
+from app.models.unit import Unit
+from app.models.stock_movement import StockMovement
+from app.models.purchase_order import PurchaseOrder
+from app.models.purchase_order_item import PurchaseOrderItem
+from app.models.material_request import MaterialRequest
+from app.models.material_request_item import MaterialRequestItem
+from app.models.machine import Machine
+from app.models.log import LoginLog
+from app.models.menu import MenuItem
 
 # Lấy metadata từ tất cả models
 from app.core.database import Base  # Đảm bảo tất cả models kế thừa từ Base

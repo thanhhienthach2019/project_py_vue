@@ -36,7 +36,7 @@ apiClient.interceptors.response.use(
         showToast("Vui lòng thử lại sau vài phút!", "error");
       }
     //   console.log(error);
-      return Promise.reject();
+      return Promise.reject(error);//error
     }
   );
   

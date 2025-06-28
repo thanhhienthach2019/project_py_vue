@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, DateTime, ForeignKey, CheckConstraint
+from sqlalchemy import Column, Integer, DateTime, ForeignKey, CheckConstraint, UniqueConstraint
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 class Inventory(Base):
@@ -12,5 +13,6 @@ class Inventory(Base):
     LastUpdated = Column(DateTime, nullable=False, default=func.now())
 
     __table_args__ = (
+        UniqueConstraint('WarehouseID','MaterialID', name='uq_inventory_warehouse_material'),
         CheckConstraint('Quantity > 0', name='chk_quantity_non_negative'),
     )

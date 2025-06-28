@@ -1,6 +1,7 @@
 // src/store/auth.ts
 import { defineStore } from "pinia";
 import { loginApi, checkAuth, logoutApi } from "@/services/auth"
+import { fetchMyPermissions } from "@/services/permission";
 import router from "@/router";
 
 interface AuthState {
@@ -8,6 +9,7 @@ interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   isFetched: boolean;
+  permissions: string[];
 }
 
 export const useAuthStore = defineStore("auth", {
@@ -16,6 +18,7 @@ export const useAuthStore = defineStore("auth", {
     isAuthenticated: false,
     loading: false,
     isFetched: false,
+    permissions: []
   }),  
   actions: {
     async login(username: string, password: string) {
@@ -39,6 +42,7 @@ export const useAuthStore = defineStore("auth", {
         if (response.data.authenticated) {
           this.user = response.data.user;
           this.isAuthenticated = true;
+          this.permissions = await fetchMyPermissions();
         } else {
           this.resetAuth();
         }

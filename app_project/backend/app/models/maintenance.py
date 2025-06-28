@@ -7,8 +7,8 @@ class MaintenanceRequests(Base):
     __tablename__ = "MaintenanceRequests"
 
     RequestID = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    RequestNumber = Column(NVARCHAR(50), unique=True, nullable=False)
-    MachineName = Column(NVARCHAR(255), nullable=True)
+    RequestNumber = Column(NVARCHAR(50), unique=True, nullable=False)    
+    MachineName = Column(NVARCHAR(500), nullable=True)
     Diagnosis = Column(NVARCHAR(500), nullable=True)
     RequestedBy = Column(NVARCHAR(100), nullable=True)
     RequestDate = Column(DateTime, nullable=False, default=func.now())
@@ -19,7 +19,7 @@ class MaintenanceRequests(Base):
 class MaintenanceRequestDetails(Base):
     __tablename__ = "MaintenanceRequestDetails"
 
-    RequestDetailID = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    RequestDetailID = Column(Integer, primary_key=True, index=True, autoincrement=True)    
     RequestID = Column(Integer, ForeignKey("MaintenanceRequests.RequestID"), nullable=False)
     MaterialID = Column(Integer, ForeignKey("Materials.MaterialID"), nullable=False)
     WarehouseID = Column(Integer, ForeignKey("Warehouses.WarehouseID"), nullable=False)

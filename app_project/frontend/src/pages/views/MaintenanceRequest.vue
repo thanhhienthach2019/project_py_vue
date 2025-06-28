@@ -36,9 +36,9 @@
       </div>
 
       <!-- Main Form Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-8 gap-8">
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
         <!-- Left Column - Basic Info -->
-        <div class="lg:col-span-3 space-y-6">
+        <div class="lg:col-span-2 space-y-6">
           <div class="bg-black/20 p-6 rounded-xl border border-white/10">
             <h3 class="text-lg font-semibold text-white mb-6 flex items-center space-x-2">
               <Icon icon="mdi:information-outline" class="text-blue-400" />
@@ -66,15 +66,91 @@
                   <span>Machine Name</span>
                   <span class="text-rose-500 ml-1">*</span>
                 </label>
-                <div class="relative">
-                  <input
+                <div class="relative group">
+                  <select
                     v-model="maintenanceForm.MachineName"
                     required
-                    placeholder="Enter machine name"
-                    class="w-full px-4 py-2.5 text-sm bg-white/5 rounded-lg border border-white/15 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 placeholder-gray-400 transition-all duration-300"
-                    :class="{ 'border-rose-500': errors.MachineName }"
-                  />
-                  <Icon v-if="errors.MachineName" icon="mdi:alert-circle" class="absolute right-3 top-3.5 text-rose-500 text-lg" />
+                    class="w-full pl-4 pr-10 py-3 text-sm bg-white/5 backdrop-blur-sm rounded-xl border
+                          border-white/15 hover:border-white/30 focus:border-blue-400/60
+                          focus:ring-2 focus:ring-blue-400/20 focus:ring-offset-2 focus:ring-offset-gray-900
+                          transition-all duration-300 appearance-none cursor-pointer
+                          text-gray-200 placeholder-gray-400/60
+                          shadow-[0_2px_6px_rgba(0,0,0,0.05)]"
+                    :class="{ 'border-rose-500/60': errors.MachineName }"
+                  >
+                    <option 
+                      disabled 
+                      value="" 
+                      class="bg-gray-800 text-gray-400"
+                    >
+                      Select Machine Name
+                    </option>
+                    <option
+                      v-for="machine in machines"
+                      :key="machine.Name"
+                      :value="machine.Name"
+                      class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
+                    >
+                       {{ machine.Name }}
+                    </option>
+                  </select>
+
+                  <!-- Custom Chevron -->
+                  <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg 
+                      class="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-300"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path 
+                        stroke-linecap="round" 
+                        stroke-linejoin="round" 
+                        d="M19 9l-7 7-7-7" 
+                      />
+                    </svg>
+                  </div>
+
+                  <!-- Error Indicator -->
+                  <div 
+                    v-if="errors.MachineName"
+                    class="absolute right-10 top-1/2 -translate-y-1/2 flex items-center"
+                  >
+                    <svg 
+                      class="w-5 h-5 text-rose-500 animate-pulse"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+
+                  <p 
+                    v-if="errors.MachineName"
+                    class="mt-2 ml-1 text-rose-400/80 text-xs font-medium flex items-center"
+                  >
+                    <svg 
+                      class="w-4 h-4 mr-1.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    Please select a valid machine name
+                  </p>
                 </div>
                 <p v-if="errors.MachineName" class="text-rose-500 text-xs mt-1.5 ml-1">Machine name is required</p>
               </div>
@@ -222,7 +298,7 @@
         </div>
 
         <!-- Right Column - Materials Selection -->
-        <div class="lg:col-span-5 space-y-6">
+        <div class="lg:col-span-3 space-y-6">
           <div class="bg-black/20 p-6 rounded-xl border border-white/10 h-full">
             <h3 class="text-lg font-semibold text-white mb-6 flex items-center space-x-2">
               <Icon icon="mdi:package-variant" class="text-purple-400" />
@@ -472,7 +548,8 @@ import { ref, onMounted, computed, inject, type Ref, watch, nextTick } from "vue
 import { AgGridVue } from "ag-grid-vue3";
 import { useMaintenance } from "@/hooks/useMaintenance";
 import { useMaterial } from "@/hooks/useMaterial";
-import { useWarehouse } from "@/hooks/warehouse";
+import { useWarehouse } from "@/hooks/useWarehouse";
+import { useMachine } from "@/hooks/useMachine";
 import { useAuth } from "@/hooks/useAuth";
 import { debounce } from "lodash";
 import { formatDateToYMD, formatDateToDMY } from "@/utils/dateUtils";
@@ -506,6 +583,7 @@ const {
 const { fetchUser, user } = useAuth();
 onMounted(fetchMaintenanceRequests);
 const { warehouses ,fetchWarehouses } = useWarehouse();
+const { machines, fetchMachines } = useMachine();
 
 const selectedWarehouse = ref<number | null>(null);
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
@@ -592,6 +670,7 @@ const errors = ref({
 });
 onMounted(() => {
   fetchWarehouses();
+  fetchMachines();
 });
 
 const validateAll = (): boolean => {
@@ -889,31 +968,27 @@ const saveMaintenanceRequest = async () => {
   }
 
   try {
+    let response;
+
     if (!maintenanceForm.value.RequestID) {
       // Create new maintenance request
-      const response = await addMaintenanceRequest(maintenanceForm.value);
-      if (response.success && response.data && response.data.RequestID) {
-        toast?.value?.showToast("Maintenance request created successfully!", "success");
-      } else {
-        toast?.value?.showToast("An error occurred while creating the maintenance request.", "error");
-      }
+      response = await addMaintenanceRequest(maintenanceForm.value);
     } else {
       // Update existing maintenance request
-      const response = await updateMaintenanceRequest(
+      response = await updateMaintenanceRequest(
         maintenanceForm.value.RequestID,
         maintenanceForm.value as MaintenanceRequestUpdate
       );
-      if (response.success && response.data && response.data.RequestID) {
-        toast?.value?.showToast("Maintenance request updated successfully!", "success");
-      } else {
-        toast?.value?.showToast("An error occurred while updating the maintenance request.", "error");
-      }
     }
+    
+    toast?.value?.showToast(response.message, response.success ? "success" : "error");
 
-    resetForm();
-    fetchMaintenanceRequests();
+    if (response.success) {
+      resetForm();
+      fetchMaintenanceRequests();
+    }
   } catch (error) {
-    toast?.value?.showToast("An error occurred. Please try again!", "error");
+    toast?.value?.showToast("An unexpected error occurred. Please try again.", "error");
   }
 };
 

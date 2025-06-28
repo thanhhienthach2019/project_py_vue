@@ -34,5 +34,8 @@ export function useAuth() {
       isAuthenticated: computed(() => authStore.isAuthenticated),
       user: computed(() => authStore.user),
       loading: computed(() => authStore.loading),
+      permissions: computed(() => authStore.permissions),
+      hasPermission: (key: string, action: string) => 
+        authStore.permissions.includes(`${key}:${action}`)
     };
 }
