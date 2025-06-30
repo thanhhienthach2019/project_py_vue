@@ -26,7 +26,7 @@ router = APIRouter(
 @router.get(
     "/all",
     response_model=List[MenuItemResponse],
-    dependencies=[Depends(permission_required("menu:settings:menu", "view"))]
+    dependencies=[Depends(permission_required("menu:settings:menu", "read"))]
 )
 def get_all_menus(
     db: Session = Depends(get_db)
@@ -40,11 +40,11 @@ def get_all_menus(
 @router.get(
     "",
     response_model=List[MenuItemResponse],
-    dependencies=[Depends(permission_required("menu:settings:menu", "view"))]
+    dependencies=[Depends(permission_required("menu:settings:menu", "read"))]
 )
 def get_user_menus(
     db: Session = Depends(get_db),
-    payload: dict = Depends(permission_required("menu:settings:menu", "view"))
+    payload: dict = Depends(permission_required("menu:settings:menu", "read"))
 ):
     """
     Retrieve the hierarchical menu structure that the current user has permission to access.

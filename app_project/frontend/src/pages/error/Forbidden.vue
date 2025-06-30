@@ -2,20 +2,21 @@
   <div class="flex items-center justify-center min-h-screen text-[#E0E0E0] p-6 animated-background">
     <div class="max-w-xl w-full bg-[#2E3A47]/60 backdrop-blur-md rounded-2xl p-10 shadow-2xl border border-white/10 text-center animate-fade-in">
       <div class="mb-6">
-        <!-- Modern Illustration Icon -->
-        <svg class="mx-auto w-24 h-24 text-blue-400 animate-bounce-slow" fill="none" stroke="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-          <path d="M24 4v12M24 32v12M4 24h12M32 24h12M10.343 10.343l8.485 8.485M29.172 29.172l8.485 8.485M10.343 37.657l8.485-8.485M29.172 18.828l8.485-8.485" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Modern Shield-Lock Icon -->
+        <svg class="mx-auto w-24 h-24 text-red-400 animate-pulse-slow" fill="none" stroke="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 4L6 12v10c0 11.046 9.163 20 18 20s18-8.954 18-20V12L24 4z" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M24 22v6M24 32h.01" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <h1 class="text-5xl font-extrabold mb-4 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-400 bg-clip-text text-transparent leading-tight">
-        404 - Page Not Found
+      <h1 class="text-5xl font-extrabold mb-4 bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent leading-tight">
+        403 - Access Denied
       </h1>
       <p class="mb-8 text-gray-300 text-lg">
-        The page you're looking for might have been removed, had its name changed, or is temporarily unavailable.
+        You do not have permission to view this page or access this feature.
       </p>
       <button
         @click="goHome"
-        class="inline-block px-8 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105"
+        class="inline-block px-8 py-3 bg-gradient-to-r from-rose-600 to-red-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105"
       >
         Go Back to Dashboard
       </button>
@@ -44,15 +45,6 @@ function goHome() {
   100% { background-position: 0% 50%; }
 }
 
-@keyframes bounceSlow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-.animate-bounce-slow {
-  animation: bounceSlow 2.5s infinite;
-}
-
 @keyframes fadeIn {
   0% { opacity: 0; transform: translateY(10px); }
   100% { opacity: 1; transform: translateY(0); }
@@ -60,5 +52,14 @@ function goHome() {
 
 .animate-fade-in {
   animation: fadeIn 1.2s ease-out;
+}
+
+@keyframes pulseSlow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.animate-pulse-slow {
+  animation: pulseSlow 2.5s ease-in-out infinite;
 }
 </style>

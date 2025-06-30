@@ -1,40 +1,153 @@
 <template>
-    <header class="bg-[#1A202C] text-white p-4 flex justify-between items-center">
-      <div class="flex items-center">
-        <input
-          type="text"
-          placeholder="Search or type command..."
-          class="bg-[#2D3748] text-white rounded-full px-4 py-2 focus:outline-none"
-        />
-      </div>
-      <div class="flex items-center space-x-4">
-        <button class="text-white">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-          </svg>
-        </button>
-        <button class="text-white relative">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-          </svg>
-          <span class="absolute top-0 right-0 bg-red-500 text-white rounded-full px-1 text-xs">2</span>
-        </button>
-        <div class="flex items-center">
-          <img src="https://via.placeholder.com/32" alt="User" class="h-8 w-8 rounded-full">
-          <span class="ml-2">Musharof</span>
-          <button class="ml-2 text-white">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </button>
+  <header class="bg-[#2E3A47] p-4 flex items-center justify-between shadow-md border-b border-white/10">
+    <!-- Toggle Sidebar -->
+    <button
+      @click="$emit('toggleSidebar')"
+      class="text-gray-300 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors duration-200"
+    >
+      <Icon icon="mdi:menu" class="text-2xl" />
+    </button>
+
+    <!-- Title -->
+    <h2 class="text-lg font-semibold text-gray-200 hidden md:block">Dashboard</h2>
+
+    <!-- Right Section: User + Settings -->
+    <div class="flex items-center space-x-4">
+      <!-- User Dropdown -->
+      <div class="relative" @mouseenter="showUserDropdown" @mouseleave="hideUserDropdown">
+        <div class="flex items-center space-x-2 cursor-pointer px-3 py-2 rounded-lg hover:bg-white/10 transition">
+          <div class="w-8 h-8 rounded-full bg-blue-400/20 flex items-center justify-center border border-blue-400/30">
+            <Icon icon="mdi:account" class="text-blue-400" />
+          </div>
+          <span class="text-sm font-medium text-gray-200">{{ username }}</span>
+          <Icon icon="mdi:chevron-down" class="text-gray-400 text-sm" />
         </div>
-        <button class="bg-[#3182CE] px-4 py-2 rounded text-white">Verify it's you</button>
+
+        <div
+          v-show="userDropdownOpen"
+          class="absolute right-0 top-full mt-2 w-52 bg-[#2F3A48] rounded-xl shadow-2xl border border-white/10 z-50 transition-all duration-200 origin-top-right"
+        >
+          <ul class="py-2">
+            <li>
+              <button class="w-full flex items-center px-5 py-3 text-sm text-gray-100 hover:bg-[#3B4856] hover:text-blue-400">
+                <Icon icon="mdi:account-circle-outline" class="text-lg mr-3 text-blue-300" />
+                My Profile
+              </button>
+            </li>
+            <li>
+              <button class="w-full flex items-center px-5 py-3 text-sm text-gray-100 hover:bg-[#3B4856] hover:text-blue-400">
+                <Icon icon="mdi:lock-reset" class="text-lg mr-3 text-blue-300" />
+                Change Password
+              </button>
+            </li>
+            <li>
+              <button
+                @click="logout"
+                class="w-full flex items-center px-5 py-3 text-sm text-red-400 hover:bg-red-600/10 hover:text-white"
+              >
+                <Icon icon="mdi:logout" class="text-lg mr-3 text-red-300" />
+                Logout
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
-    </header>
-  </template>
-  
-  <script>
-  export default {
-    name: 'Header'
-  }
-  </script>
+
+      <!-- Settings Dropdown -->
+      <div class="relative" @mouseenter="showSettingsDropdown" @mouseleave="hideSettingsDropdown">
+        <button class="p-2 rounded-full bg-[#2E3A47] hover:bg-[#3B4856] text-gray-300 hover:text-blue-400 transition-colors duration-200">
+          <Icon icon="mdi:cog-outline" class="text-2xl" />
+        </button>
+
+        <div
+          v-show="settingsDropdownOpen"
+          class="absolute right-0 top-full mt-2 w-60 bg-[#2F3A48] rounded-xl shadow-2xl border border-white/10 z-50 transition-all duration-200 origin-top-right"
+        >
+          <ul class="py-2">
+            <li>
+              <button @click="navigateTo('/settings/policies')" class="menu-item">
+                <Icon icon="mdi:shield-key-outline" class="icon" />
+                Setup Policy
+              </button>
+            </li>
+            <li>
+              <button @click="navigateTo('/settings/roles')" class="menu-item">
+                <Icon icon="mdi:account-group-outline" class="icon" />
+                Manage Roles
+              </button>
+            </li>
+            <li>
+              <button @click="navigateTo('/settings/users')" class="menu-item">
+                <Icon icon="mdi:account-outline" class="icon" />
+                Manage Users
+              </button>
+            </li>
+            <li>
+              <button @click="navigateTo('/settings/menus')" class="menu-item">
+                <Icon icon="mdi:menu" class="icon" />
+                Menu Management
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </header>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useAuthStore } from '@/store/auth'
+import { useRouter } from 'vue-router'
+import { Icon } from '@iconify/vue'
+import { useAuth } from '@/hooks/useAuth'
+
+const authStore = useAuthStore()
+const router = useRouter()
+const { user } = useAuth()
+
+// Dropdown states
+const userDropdownOpen = ref(false)
+const settingsDropdownOpen = ref(false)
+let userTimeout: ReturnType<typeof setTimeout> | null = null
+let settingsTimeout: ReturnType<typeof setTimeout> | null = null
+
+const username = computed(() => user.value?.username ?? 'User')
+
+function logout() {
+  authStore.logout()
+}
+
+function showUserDropdown() {
+  if (userTimeout) clearTimeout(userTimeout)
+  userDropdownOpen.value = true
+}
+function hideUserDropdown() {
+  userTimeout = setTimeout(() => {
+    userDropdownOpen.value = false
+  }, 200)
+}
+
+function showSettingsDropdown() {
+  if (settingsTimeout) clearTimeout(settingsTimeout)
+  settingsDropdownOpen.value = true
+}
+function hideSettingsDropdown() {
+  settingsTimeout = setTimeout(() => {
+    settingsDropdownOpen.value = false
+  }, 200)
+}
+
+function navigateTo(path: string) {
+  router.push(path)
+}
+</script>
+
+<style scoped>
+.menu-item {
+  @apply w-full flex items-center px-5 py-3 text-sm text-gray-100 hover:bg-[#3B4856] hover:text-blue-400 transition duration-150;
+}
+.icon {
+  @apply text-lg mr-3 text-blue-300;
+}
+</style>

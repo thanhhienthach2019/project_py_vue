@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.get("/get_machines")
 def fetch_machines(db: Session = Depends(get_db),
-                   _: None = Depends(permission_required("menu:machines", "view"))):
+                   _: None = Depends(permission_required("menu:machines", "read"))):
     try:
         return get_all_machines(db)
     except HTTPException as e:
@@ -20,7 +20,7 @@ def fetch_machines(db: Session = Depends(get_db),
 @router.get("/get_machine/{machine_id}")
 def fetch_machine_by_id(machine_id: int, 
                         db: Session = Depends(get_db), 
-                        _: None = Depends(permission_required("menu:machines", "view"))):
+                        _: None = Depends(permission_required("menu:machines", "read"))):
     try:
         return get_machine_by_id(db, machine_id)
     except HTTPException as e:

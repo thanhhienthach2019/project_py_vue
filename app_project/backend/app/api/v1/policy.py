@@ -27,22 +27,32 @@ class PolicyCreate(BaseModel):
 
 # --- Endpoints ---
 @router.get(
-    "/policies",
+    "/policies/permission",
     response_model=List[PolicyItem],
-    dependencies=[Depends(permission_required("menu:settings:policy", "view"))]
+    dependencies=[Depends(permission_required("menu:settings:policy", "read"))]
 )
-def list_policies():
-    """List all policies (p and g)."""
+def list_policies_permission():
+    """List all policies (p)."""
     items: List[PolicyItem] = []
 
     for row in enforcer.get_policy():
         items.append(PolicyItem(ptype="p", **dict(zip(["v0", "v1", "v2", "v3", "v4", "v5"], row))))
 
+    return items
+
+@router.get(
+    "/policies/group",
+    response_model=List[PolicyItem],
+    dependencies=[Depends(permission_required("menu:settings:policy", "read"))]
+)
+def list_policies_group():
+    """List all policies (g)."""
+    items: List[PolicyItem] = []
+
     for row in enforcer.get_grouping_policy():
         items.append(PolicyItem(ptype="g", **dict(zip(["v0", "v1"], row))))
 
     return items
-
 
 @router.post(
     "/policies",

@@ -2,7 +2,8 @@ import { defineStore } from "pinia";
 import {
   fetchPolicies,
   addPolicy,
-  deletePolicy
+  deletePolicy,
+  fetchPoliciesGroup
 } from "@/services/policy";
 import type { PolicyItem, PolicyCreate } from "@/models/policy";
 
@@ -22,6 +23,22 @@ export const usePolicyStore = defineStore("policy", {
       this.loading = true;
       try {
         const response = await fetchPolicies();
+        if (response.success && response.data) {
+          this.policies = response.data;
+        } else {
+          console.error(response.message);
+        }
+      } catch (error) {
+        console.error("An error occurred while fetching policies:", error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async loadPoliciesGroup() {
+      this.loading = true;
+      try {
+        const response = await fetchPoliciesGroup();
         if (response.success && response.data) {
           this.policies = response.data;
         } else {

@@ -24,7 +24,6 @@
           <label class="block text-sm font-medium text-gray-300 mb-2">Type</label>
           <select v-model="form.ptype" class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white focus:ring-purple-400/30 focus:border-purple-50">
             <option class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20" value="p">p (permission)</option>
-            <option class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20" value="g">g (grouping)</option>
           </select>
         </div>
 

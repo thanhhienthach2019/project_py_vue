@@ -11,7 +11,7 @@
                shadow-[0_1px_1px_rgba(96,165,250,0.1)] hover:shadow-[0_2px_4px_rgba(96,165,250,0.2)]
                group"
       >
-        <Pencil class="w-5 h-5 text-blue-400 group-hover:text-blue-300 transition-colors" />
+        <Pencil v-permission.disable="'menu:machines:update'" class="w-5 h-5 text-blue-400 group-hover:text-blue-300 transition-colors" />
       </div>
   
       <!-- Delete Icon (Trash) -->
@@ -24,13 +24,14 @@
                shadow-[0_1px_1px_rgba(239,68,68,0.1)] hover:shadow-[0_2px_4px_rgba(239,68,68,0.2)]
                group"
       >
-        <Trash2 class="w-5 h-5 text-red-400 group-hover:text-red-300 transition-colors" />
+        <Trash2 v-permission.disable="'menu:machines:delete'" class="w-5 h-5 text-red-400 group-hover:text-red-300 transition-colors" />
       </div>
     </div>
   </template>
   
   <script lang="ts">
   import { Pencil, Trash2 } from 'lucide-vue-next';
+  import { useAuthStore } from '@/store/auth';
   
   export default {
     props: {
@@ -45,9 +46,13 @@
     },
     methods: {
       handleEdit() {
+        const auth = useAuthStore();
+            if (!auth.permissions.includes('menu:machines:update')) return;
         this.params.context?.onEdit?.(this.params.data.MachineID);
       },
       handleDelete() {
+        const auth = useAuthStore();
+            if (!auth.permissions.includes('menu:machines:delete')) return;
         this.params.context?.onDelete?.(this.params.data.MachineID);
       },
     },

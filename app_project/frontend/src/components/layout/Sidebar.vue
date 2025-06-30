@@ -1,58 +1,137 @@
 <template>
-    <div class="w-64 bg-white shadow-md h-full">
-      <!-- Logo -->
-      <div class="p-4">
-        <h1 class="text-2xl font-bold text-[#3B82F6] flex items-center">
-          <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-          </svg>
-          TailAdmin
-        </h1>
-      </div>
-      <!-- Menu -->
-      <nav class="mt-4">
-        <h3 class="px-4 text-xs font-semibold text-[#A0AEC0] uppercase">Menu</h3>
-        <ul>
-          <li class="px-4 py-2 hover:bg-gray-100 text-[#A0AEC0] flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-            </svg>
-            Dashboard
-          </li>
-          <li class="px-4 py-2 hover:bg-gray-100 text-[#A0AEC0] flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-            </svg>
-            Calendar
-          </li>
-          <li class="px-4 py-2 bg-[#EBF8FF] text-[#3B82F6] flex flex-col">
-            <div class="flex items-center">
-              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-              </svg>
-              Tables
-            </div>
-            <ul class="ml-6 mt-1">
-              <li class="py-1 text-[#3B82F6]">Basic Tables</li>
-              <li class="py-1 text-[#A0AEC0]">Data Tables</li>
-            </ul>
-          </li>
-        </ul>
-        <h3 class="px-4 text-xs font-semibold text-[#A0AEC0] uppercase mt-4">Support</h3>
-        <ul>
-          <li class="px-4 py-2 hover:bg-gray-100 text-[#A0AEC0] flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5v-2a2 2 0 012-2h10a2 2 0 012 2v2h-4m-6 0h6"></path>
-            </svg>
-            Chat
-          </li>
-        </ul>
-      </nav>
+  <aside
+    :class="[
+      'w-64 bg-[#2E3A47] shadow-xl transition-all duration-300 border-r border-white/10 flex flex-col',
+      props.sidebarOpen ? 'block' : 'hidden'
+    ]"
+  >
+    <div class="p-5 flex items-center space-x-3 border-b border-white/10">
+      <Icon icon="mdi:view-dashboard" class="text-blue-400 text-3xl" />
+      <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+        Admin Portal
+      </h1>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    name: 'Sidebar'
-  }
-  </script>
+
+    <nav class="mt-6 flex-1 overflow-y-auto">
+      <ul class="space-y-1">
+        <li>
+          <RouterLink
+            to="/"
+            class="sidebar-item group hover:bg-[#3B4856] hover:text-blue-400"
+            active-class="bg-[#3B4856] text-blue-400"
+          >
+            <Icon icon="mdi:home" class="sidebar-icon group-hover:text-blue-400" />
+            <span>Dashboard Overview</span>
+          </RouterLink>
+        </li>
+
+        <li>
+          <RouterLink
+            to="/material"
+            class="sidebar-item group hover:bg-[#3B4856] hover:text-blue-400"
+          >
+            <Icon icon="mdi:archive" class="sidebar-icon group-hover:text-blue-400" />
+            <span>Material Catalog</span>
+          </RouterLink>
+        </li>
+
+        <li>
+          <RouterLink
+            to="/maintenance-requests"
+            class="sidebar-item group hover:bg-[#3B4856] hover:text-blue-400"
+          >
+            <Icon icon="mdi:clipboard-check" class="sidebar-icon group-hover:text-blue-400" />
+            <span>Maintenance Requests</span>
+          </RouterLink>
+        </li>
+
+        <li class="relative group">
+          <RouterLink
+            to="/stock-management"
+            class="sidebar-item group hover:bg-[#3B4856] hover:text-blue-400"
+          >
+            <Icon icon="mdi:warehouse" class="sidebar-icon group-hover:text-blue-400" />
+            <span>Stock & Inventory</span>
+            <Icon icon="mdi:chevron-down" class="ml-auto text-sm text-blue-300 group-hover:text-blue-400" />
+          </RouterLink>
+          <ul
+            class="absolute left-0 top-full mt-0 ml-8 min-w-max bg-[#2E3A47] rounded-lg shadow-lg
+              opacity-0 invisible scale-y-0 origin-top
+              group-hover:opacity-100 group-hover:visible group-hover:scale-y-100
+              transform transition-all duration-200 z-10"
+          >
+            <li>
+              <RouterLink
+                to="/stock-management/ip-stock-in"
+                class="submenu-item group hover:bg-[#3B4856] hover:text-blue-400 rounded-t-lg"
+              >
+                <Icon icon="mdi:tray-arrow-down" class="submenu-icon group-hover:text-blue-400" />
+                <span>IP Stock In</span>
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink
+                to="/stock-management/ip-stock-out"
+                class="submenu-item group hover:bg-[#3B4856] hover:text-blue-400"
+              >
+                <Icon icon="mdi:tray-arrow-up" class="submenu-icon group-hover:text-blue-400" />
+                <span>IP Stock Out</span>
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink
+                to="/stock-management/ip-stock-onhand"
+                class="submenu-item group hover:bg-[#3B4856] hover:text-blue-400"
+              >
+                <Icon icon="mdi:clipboard-list" class="submenu-icon group-hover:text-blue-400" />
+                <span>IP Stock On Hand</span>
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink
+                to="/inventory-history"
+                class="submenu-item group hover:bg-[#3B4856] hover:text-blue-400 rounded-b-lg"
+              >
+                <Icon icon="mdi:history" class="submenu-icon group-hover:text-blue-400" />
+                <span>Transaction History</span>
+              </RouterLink>
+            </li>
+          </ul>
+        </li>
+
+        <li>
+          <RouterLink
+            to="/machine"
+            class="sidebar-item group hover:bg-[#3B4856] hover:text-blue-400"
+          >
+            <Icon icon="mdi:robot-industrial" class="sidebar-icon group-hover:text-blue-400" />
+            <span>Machine Operations</span>
+          </RouterLink>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+</template>
+
+<script setup lang="ts">
+import { RouterLink } from 'vue-router';
+import { Icon } from '@iconify/vue';
+import { defineProps } from 'vue';
+
+const props = defineProps<{ sidebarOpen: boolean }>();
+</script>
+
+<style scoped>
+.sidebar-item {
+  @apply flex items-center px-6 py-3 transition-colors duration-200 rounded-lg mx-2;
+}
+.sidebar-icon {
+  @apply text-lg mr-3 text-blue-300;
+}
+.submenu-item {
+  @apply flex items-center px-4 py-3 whitespace-nowrap text-gray-200 transition-colors duration-150;
+}
+.submenu-icon {
+  @apply text-base mr-3 text-blue-300;
+}
+</style>

@@ -8,11 +8,32 @@ export const fetchPolicies = async (): Promise<{
   message: string;
 }> => {
   try {
-    const response = await apiClient.get("/policies", getAuthHeaders());
+    const response = await apiClient.get("/policies/permission", getAuthHeaders());
     return {
       success: true,
       data: response.data,
-      message: "Fetched policies successfully",
+      message: "Fetched policies permission successfully",
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.response?.data?.detail || "Failed to fetch policies",
+    };
+  }
+};
+
+export const fetchPoliciesGroup = async (): Promise<{
+  success: boolean;
+  data?: PolicyItem[];
+  message: string;
+}> => {
+  try {
+    const response = await apiClient.get("/policies/group", getAuthHeaders());
+
+    return {
+      success: true,
+      data: response.data,
+      message: "Fetched policies group successfully",
     };
   } catch (error: any) {
     return {

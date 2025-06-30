@@ -13,6 +13,14 @@ export function usePolicy() {
     }
   };
 
+  const fetchPoliciesGroup = async () => {
+    try {
+      await policyStore.loadPoliciesGroup();
+    } catch (error) {
+      console.error("Failed to fetch policies:", error);
+    }
+  };
+
   const addNewPolicy = async (policy: PolicyCreate) => {
     try {
       const response = await policyStore.addNewPolicy(policy);
@@ -35,6 +43,7 @@ export function usePolicy() {
 
   return {
     fetchPolicies,
+    fetchPoliciesGroup,
     addNewPolicy,
     removePolicy,
     policies: computed(() => policyStore.policies || []),

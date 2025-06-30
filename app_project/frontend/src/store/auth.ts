@@ -68,6 +68,7 @@ export const useAuthStore = defineStore("auth", {
       this.user = null;
       this.isAuthenticated = false;
       this.isFetched = true;
+      this.permissions = [];
     }
   },
 });
