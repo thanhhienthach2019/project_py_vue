@@ -6,7 +6,7 @@ import {
   approveMaintenanceRequest,
   updateMaintenanceRequest,
   deleteMaintenanceRequest
-} from "@/services/maintenance";
+} from "@/services/maintenanceService";
 
 import type {
   MaintenanceRequestCreate,

@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { useWarehouseStore } from "@/store/warehouse";
+import { useWarehouseStore } from "@/store/warehouseStore";
 
 export function useWarehouse() {
   const warehouseStore = useWarehouseStore();

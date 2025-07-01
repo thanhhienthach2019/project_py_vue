@@ -4,7 +4,7 @@ import {
   createWarehouse,
   updateWarehouse,
   deleteWarehouse
-} from "@/services/warehouse";
+} from "@/services/warehouseService";
 import type { Warehouse } from "@/models/warehouse";
 
 interface WarehouseState {

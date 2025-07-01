@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { useAuthStore } from "@/store/auth";
+import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "vue-router";
 
 export function useAuth() {

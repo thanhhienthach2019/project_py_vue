@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { useMenuStore } from "@/store/menu"
+import { useMenuStore } from "@/store/menuStore"
 import type { MenuItemCreate, MenuItemUpdate } from "@/models/menu";
 
 export function useMenu() {

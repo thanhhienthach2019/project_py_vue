@@ -4,17 +4,19 @@ import {
   addPolicy,
   deletePolicy,
   fetchPoliciesGroup
-} from "@/services/policy";
+} from "@/services/policyService";
 import type { PolicyItem, PolicyCreate } from "@/models/policy";
 
 interface PolicyState {
   policies: PolicyItem[];
+  policiesGroup: PolicyItem[];
   loading: boolean;
 }
 
 export const usePolicyStore = defineStore("policy", {
   state: (): PolicyState => ({
     policies: [],
+    policiesGroup: [],
     loading: false
   }),
 
@@ -40,7 +42,7 @@ export const usePolicyStore = defineStore("policy", {
       try {
         const response = await fetchPoliciesGroup();
         if (response.success && response.data) {
-          this.policies = response.data;
+          this.policiesGroup = response.data;
         } else {
           console.error(response.message);
         }
@@ -66,11 +68,41 @@ export const usePolicyStore = defineStore("policy", {
       }
     },
 
+    async addNewPolicyGroup(newPolicy: PolicyCreate) {
+      try {
+        const response = await addPolicy(newPolicy);
+        if (response.success) {
+          await this.loadPoliciesGroup();
+        } else {
+          console.error(response.message);
+        }
+        return response;
+      } catch (error) {
+        console.error("An error occurred while adding policy:", error);
+        return { success: false, message: "Unexpected error when adding policy." };
+      }
+    },
+
     async removeExistingPolicy(policy: PolicyCreate) {
       try {
         const response = await deletePolicy(policy);
         if (response.success) {
           await this.loadPolicies();
+        } else {
+          console.error(response.message);
+        }
+        return response;
+      } catch (error) {
+        console.error("An error occurred while deleting policy:", error);
+        return { success: false, message: "Unexpected error when deleting policy." };
+      }
+    },
+
+    async removeExistingPolicyGroup(policy: PolicyCreate) {
+      try {
+        const response = await deletePolicy(policy);
+        if (response.success) {
+          await this.loadPoliciesGroup();
         } else {
           console.error(response.message);
         }

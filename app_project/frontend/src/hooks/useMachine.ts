@@ -1,7 +1,7 @@
 // src/hooks/useMachine.ts
 
 import { computed } from "vue";
-import { useMachineStore } from "@/store/machine";
+import { useMachineStore } from "@/store/machineStore";
 import type { Machine } from "@/models/machine";
 
 export function useMachine() {

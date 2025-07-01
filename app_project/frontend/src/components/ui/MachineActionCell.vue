@@ -31,7 +31,7 @@
   
   <script lang="ts">
   import { Pencil, Trash2 } from 'lucide-vue-next';
-  import { useAuthStore } from '@/store/auth';
+  import { useAuthStore } from '@/store/authStore';
   
   export default {
     props: {

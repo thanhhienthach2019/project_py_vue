@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import NotFound from '@/pages/error/NotFound.vue';
-import { useAuthStore } from "@/store/auth";
+import { useAuthStore } from "@/store/authStore";
 
 
 const routes: RouteRecordRaw[] = [
@@ -80,6 +80,15 @@ const routes: RouteRecordRaw[] = [
         meta: {
           requiresAuth: true,
           permission: 'menu:settings:role:view',
+        },
+      },
+      {
+        path: 'settings/users',
+        name: 'UserManager',
+        component: () => import('@/pages/views/settings/UserManager.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'menu:settings:user:view',
         },
       },
       { 

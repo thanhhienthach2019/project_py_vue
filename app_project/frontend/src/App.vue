@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, provide } from 'vue';
-import { useAuthStore } from '@/store/auth';
+import { useAuthStore } from '@/store/authStore';
 import ToastTailwind from '@/pages/Toast/ToastTailwind.vue';
 
 const authStore = useAuthStore();

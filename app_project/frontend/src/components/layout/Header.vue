@@ -97,7 +97,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useAuthStore } from '@/store/auth'
+import { useAuthStore } from '@/store/authStore'
 import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import { useAuth } from '@/hooks/useAuth'

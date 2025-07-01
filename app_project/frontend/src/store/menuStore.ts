@@ -5,7 +5,7 @@ import {
   createMenu,
   updateMenu,
   deleteMenu,
-} from "@/services/menu";
+} from "@/services/menuService";
 import type { MenuItemResponse, MenuItemCreate, MenuItemUpdate } from "@/models/menu";
 
 interface MenuState {

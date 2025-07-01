@@ -1,17 +1,22 @@
 <template>
   <div class="w-full max-w-12xl mx-auto p-2 my-2 space-y-6 transition-all duration-300">
     <!-- Header -->
-    <div class="bg-gradient-to-r from-indigo-600/30 to-purple-600/30 backdrop-blur-xl rounded-2xl p-8 border border-white/20 shadow-2xl">
+    <div
+      class="bg-gradient-to-r from-blue-600/40 via-purple-600/40 to-pink-500/40 backdrop-blur-lg rounded-2xl p-8 border border-white/10 shadow-2xl ring-1 ring-white/20 transition-all duration-300"
+    >
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-3xl font-bold text-white tracking-tight">Policy Management</h1>
+          <h1 class="text-3xl font-extrabold text-white tracking-tight">Policy Management</h1>
           <p class="text-purple-200 mt-2 font-medium">Manage access control rules using Casbin policies</p>
         </div>
         <button
           @click="resetForm()"
-          class="group relative px-6 py-3.5 bg-gradient-to-r from-gray-700/50 to-gray-800/50 rounded-xl flex items-center gap-3 hover:bg-gray-700/70 transition-all duration-300 border border-white/10 hover:border-white/20"
+          class="group relative flex items-center gap-3 px-6 py-3.5 bg-gradient-to-r from-gray-700/60 to-gray-800/60 rounded-xl border border-white/10 hover:bg-gray-700/80 hover:border-white/20 transition-all duration-300"
         >
-          <Icon icon="mdi:autorenew" class="text-purple-400 text-xl group-hover:rotate-180 transition-transform duration-300" />
+          <Icon
+            icon="mdi:autorenew"
+            class="text-purple-400 text-xl group-hover:rotate-180 transition-transform duration-300"
+          />
           <span class="text-gray-100 font-medium tracking-wide">Reset Form</span>
         </button>
       </div>
@@ -29,8 +34,15 @@
 
         <div>
           <label class="block text-sm font-medium text-gray-300 mb-2">Subject</label>
-          <input v-model="form.v0" placeholder="Enter subject (user/role)"
-                 class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white placeholder-gray-400 focus:ring-purple-400/30 focus:border-purple-50" />
+          <select
+                v-model="form.v0"
+                class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white placeholder-gray-400 focus:ring-purple-400/30 focus:border-purple-50"
+            >
+                <option class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20" disabled value="">Select a role</option>
+                <option class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20" v-for="role in casbinRoles" :key="role" :value="role">
+                {{ role }}
+                </option>
+            </select>
         </div>
 
         <div>
@@ -177,6 +189,17 @@ const casbinActions = [
   "execute",
   "manage",
   "access"
+];
+const casbinRoles = [
+  "admin",
+  "user",
+  "guest",
+  "manager",
+  "team_lead",
+  "supervisor",
+  "root",
+  "auditor",
+  "support"
 ];
 
 const form = ref<PolicyCreate>({ ptype: 'p', v0: '', v1: '', v2: '' });

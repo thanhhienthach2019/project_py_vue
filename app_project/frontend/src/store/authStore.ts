@@ -1,7 +1,7 @@
 // src/store/auth.ts
 import { defineStore } from "pinia";
-import { loginApi, checkAuth, logoutApi } from "@/services/auth"
-import { fetchMyPermissions } from "@/services/permission";
+import { loginApi, checkAuth, logoutApi } from "@/services/authService"
+import { fetchMyPermissions } from "@/services/permissionService";
 import router from "@/router";
 
 interface AuthState {

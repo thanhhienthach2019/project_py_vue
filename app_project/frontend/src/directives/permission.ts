@@ -1,5 +1,5 @@
 import type { Directive } from "vue";
-import { useAuthStore } from "@/store/auth";
+import { useAuthStore } from "@/store/authStore";
 
 /**
  * Usage:

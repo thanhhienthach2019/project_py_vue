@@ -6,7 +6,7 @@ import {
   updateMaterial, 
   deleteMaterial,
   getMaterialWithStock 
-} from "@/services/material";
+} from "@/services/materialService";
 import type { Material } from "@/models/material";
 import type { MaterialWithStock } from "@/models/materialWithStock";
 

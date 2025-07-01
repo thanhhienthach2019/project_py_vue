@@ -5,7 +5,7 @@ import {
   updateMachine,
   deleteMachine,
   getMachineById,
-} from "@/services/machine";
+} from "@/services/machineService";
 import type { Machine } from "@/models/machine";
 
 interface MachineState {

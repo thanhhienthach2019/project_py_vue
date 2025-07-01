@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { useMaterialStore } from "@/store/material";
+import { useMaterialStore } from "@/store/materialStore";
 
 export function useMaterial() {
     const materialStore = useMaterialStore();

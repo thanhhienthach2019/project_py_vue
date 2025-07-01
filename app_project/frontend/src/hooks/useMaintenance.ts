@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { useMaintenanceStore } from "@/store/maintenance";
+import { useMaintenanceStore } from "@/store/maintenanceStore";
 import type {
   MaintenanceRequestCreate,
   MaintenanceRequestUpdate
