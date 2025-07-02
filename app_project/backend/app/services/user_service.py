@@ -50,7 +50,8 @@ def update_user(db: Session, user_id: int, user_update: UserUpdate) -> Optional[
 
     for field, value in user_update.dict(exclude_unset=True).items():
         if field == "password":
-            setattr(db_user, "hashed_password", pwd_context.hash(value))
+            if value:
+                setattr(db_user, "hashed_password", pwd_context.hash(value))
         else:
             setattr(db_user, field, value)
 

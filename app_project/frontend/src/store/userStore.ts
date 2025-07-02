@@ -54,9 +54,9 @@ export const useUserStore = defineStore("user", {
       }
     },
 
-    async createNewUser(user: UserCreate) {
+    async createNewUser(user: UserCreate, imageFile?: File | null) {
       try {
-        const response = await createUser(user);
+        const response = await createUser(user, imageFile); 
         if (response.success) {
           await this.loadUsers();
         } else {
@@ -69,9 +69,9 @@ export const useUserStore = defineStore("user", {
       }
     },
 
-    async updateExistingUser(userId: number, data: UserUpdate) {
+    async updateExistingUser(userId: number, data: UserUpdate, imageFile?: File | null) {
       try {
-        const response = await updateUser(userId, data);
+        const response = await updateUser(userId, data, imageFile); 
         if (response.success) {
           await this.loadUsers();
         } else {
@@ -83,7 +83,6 @@ export const useUserStore = defineStore("user", {
         return { success: false, message: "Unexpected error when updating user." };
       }
     },
-
     async removeUser(userId: number) {
       try {
         const response = await deleteUser(userId);

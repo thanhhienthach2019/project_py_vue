@@ -91,6 +91,15 @@ const routes: RouteRecordRaw[] = [
           permission: 'menu:settings:user:view',
         },
       },
+      {
+        path: '/settings/menus',
+        name: 'MenuManager',
+        component: () => import('@/pages/views/settings/MenuManager.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'menu:settings:menu:view',
+        },
+      },
       { 
         path: '/403', 
         name: 'Forbidden', 

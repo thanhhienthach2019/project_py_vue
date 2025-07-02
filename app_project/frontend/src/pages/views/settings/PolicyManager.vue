@@ -131,7 +131,9 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="p in filteredPolicies" :key="`${p.ptype}-${p.v0}-${p.v1}-${p.v2}`" class="bg-[#1E2A38] hover:bg-[#27313f]">
+            <tr  v-for="p in paginatedPolicies"
+        :key="`${p.ptype}-${p.v0}-${p.v1}-${p.v2}`"
+        class="bg-[#1E2A38] hover:bg-[#27313f] transition duration-200 ease-in-out">
               <td class="px-4 py-2 text-white">{{ p.ptype }}</td>
               <td class="px-4 py-2 text-white">{{ p.v0 }}</td>
               <td class="px-4 py-2 text-white">{{ p.v1 }}</td>
@@ -146,21 +148,67 @@
                 </button>
               </td>
             </tr>
+            <tr
+              v-for="index in emptyRowCount"
+              :key="'empty-' + index"
+              class="bg-[#1E2A38]"
+            >
+              <td class="px-4 py-2" colspan="5">&nbsp;</td>
+            </tr>
           </tbody>
         </table>
 
-        <div v-if="!filteredPolicies.length && !loading" class="text-center text-gray-400 py-6">
+         <!-- No Data / Loading -->
+        <div v-if="!filteredPoliciesRaw.length && !loading" class="text-center text-gray-400 py-6">
           No policies found.
         </div>
-        <div class="text-center text-gray-400 py-6" v-if="loading">Loading...</div>
-
+        <div v-if="loading" class="text-center text-gray-400 py-6">Loading...</div>
         <!-- Pagination -->
-        <div class="flex justify-end items-center px-8 pb-6 space-x-4" v-if="totalPages > 1">
-          <button @click="currentPage--" :disabled="currentPage === 1"
-                  class="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50">Previous</button>
-          <span class="text-white">Page {{ currentPage }} of {{ totalPages }}</span>
-          <button @click="currentPage++" :disabled="currentPage === totalPages"
-                  class="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50">Next</button>
+        <div
+          v-if="totalPages > 1"
+          class="flex justify-center items-center space-x-2 px-6 py-4 border-t border-white/10 bg-gradient-to-r from-gray-800/30 via-gray-900/30 to-gray-800/30 backdrop-blur-lg rounded-b-2xl"
+        >
+          <!-- Previous -->
+          <button
+            @click="currentPage--"
+            :disabled="currentPage === 1"
+            class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
+          >
+            <Icon icon="mdi:chevron-left" class="text-lg" />
+            <span class="ml-1 text-sm">Prev</span>
+          </button>
+
+          <!-- Dynamic Page Numbers with Dots -->
+          <template v-for="(page, idx) in pagesToShow" :key="idx">
+            <span
+              v-if="page === '...'"
+              class="w-9 h-9 flex items-center justify-center text-gray-400"
+            >
+              ...
+            </span>
+            <button
+              v-else
+              @click="currentPage = page as number"
+              :class="[
+                'w-9 h-9 rounded-full text-sm font-semibold transition',
+                currentPage === page
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+              ]"
+            >
+              {{ page }}
+            </button>
+          </template>
+
+          <!-- Next -->
+          <button
+            @click="currentPage++"
+            :disabled="currentPage === totalPages"
+            class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
+          >
+            <span class="mr-1 text-sm">Next</span>
+            <Icon icon="mdi:chevron-right" class="text-lg" />
+          </button>
         </div>
       </div>
     </div>
@@ -168,7 +216,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject, type Ref } from "vue";
+import { ref, computed, onMounted, inject, type Ref, watch } from "vue";
 import { usePolicy } from "@/hooks/usePolicy";
 import type { PolicyItem, PolicyCreate } from "@/models/policy";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
@@ -203,40 +251,75 @@ const casbinRoles = [
 ];
 
 const form = ref<PolicyCreate>({ ptype: 'p', v0: '', v1: '', v2: '' });
+
 const searchText = ref('');
 const currentPage = ref(1);
-const itemsPerPage = 10;
+const pageSize = ref(5);
 
-const filteredPolicies = computed(() => {
-  const filtered = policies.value.filter((p) => {
-    const search = searchText.value.toLowerCase();
-    return (
-      p.ptype.toLowerCase().includes(search) ||
-      p.v0.toLowerCase().includes(search) ||
-      p.v1.toLowerCase().includes(search) ||
-      (p.v2 && p.v2.toLowerCase().includes(search))
-    );
-  });
-  const start = (currentPage.value - 1) * itemsPerPage;
-  return filtered.slice(start, start + itemsPerPage);
+// Raw list sau filter
+const filteredPoliciesRaw = computed(() => {
+  const s = searchText.value.toLowerCase();
+  return policies.value.filter(p =>
+    [p.ptype, p.v0, p.v1, p.v2].some(field =>
+      (field || '').toLowerCase().includes(s)
+    )
+  );
 });
+
+const totalPages = computed(() =>
+  Math.ceil(filteredPoliciesRaw.value.length / pageSize.value)
+);
+
+const emptyRowCount = computed(() => {
+  return pageSize.value - paginatedPolicies.value.length;
+});
+
+const paginatedPolicies = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  return filteredPoliciesRaw.value.slice(start, start + pageSize.value);
+});
+
+const pagesToShow = computed(() => {
+  const total = totalPages.value;
+  const current = currentPage.value;
+  const delta = 1;
+  const range: (number | string)[] = [];
+  const rangeWithDots: (number | string)[] = [];
+  let last: number | undefined;
+
+  for (let i = 1; i <= total; i++) {
+    if (i === 1 || i === total || (i >= current - delta && i <= current + delta)) {
+      range.push(i);
+    }
+  }
+
+  for (const page of range) {
+    if (last !== undefined) {
+      if (typeof page === 'number' && typeof last === 'number') {
+        if (page - last === 2) {
+          rangeWithDots.push(last + 1);
+        } else if (page - last > 2) {
+          rangeWithDots.push('...');
+        }
+      }
+    }
+    rangeWithDots.push(page);
+    last = page as number;
+  }
+
+  return rangeWithDots;
+});
+
+// Reset page khi search
+watch(searchText, () => {
+  currentPage.value = 1;
+});
+
 
 onMounted(() => {
   fetchAllMenus(); 
 });
 
-const totalPages = computed(() => {
-  const count = policies.value.filter((p) => {
-    const search = searchText.value.toLowerCase();
-    return (
-      p.ptype.toLowerCase().includes(search) ||
-      p.v0.toLowerCase().includes(search) ||
-      p.v1.toLowerCase().includes(search) ||
-      (p.v2 && p.v2.toLowerCase().includes(search))
-    );
-  }).length;
-  return Math.ceil(count / itemsPerPage);
-});
 
 onMounted(fetchPolicies);
 

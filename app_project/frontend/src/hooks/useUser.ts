@@ -25,9 +25,9 @@ export function useUser() {
     }
   };
 
-  const createUser = async (user: UserCreate) => {
+  const createUser = async (user: UserCreate, imageFile?: File | null) => {
     try {
-      const response = await userStore.createNewUser(user);
+      const response = await userStore.createNewUser(user, imageFile);
       return response;
     } catch (error) {
       console.error("Failed to create user:", error);
@@ -35,9 +35,9 @@ export function useUser() {
     }
   };
 
-  const updateUser = async (userId: number, data: UserUpdate) => {
+  const updateUser = async (userId: number, data: UserUpdate, imageFile?: File | null) => {
     try {
-      const response = await userStore.updateExistingUser(userId, data);
+      const response = await userStore.updateExistingUser(userId, data, imageFile); // ✅ Thêm imageFile
       return response;
     } catch (error) {
       console.error("Failed to update user:", error);

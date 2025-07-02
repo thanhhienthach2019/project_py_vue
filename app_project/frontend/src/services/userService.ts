@@ -46,10 +46,28 @@ export const fetchUserById = async (
 };
 
 export const createUser = async (
-  user: UserCreate
+  user: UserCreate,              
+  imageFile?: File | null       
 ): Promise<{ success: boolean; data?: UserResponse; message: string }> => {
   try {
-    const response = await apiClient.post("/users", user, getAuthHeaders());
+    const formData = new FormData();
+
+    formData.append("username", user.username);
+    formData.append("email", user.email);
+    formData.append("password", user.password);
+    if (user.full_name) formData.append("full_name", user.full_name);
+    if (user.phone_number) formData.append("phone_number", user.phone_number);
+
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
+
+    const response = await apiClient.post("/users/", formData, {
+      headers: {
+        ...getAuthHeaders().headers,
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
     return {
       success: true,
@@ -66,10 +84,31 @@ export const createUser = async (
 
 export const updateUser = async (
   userId: number,
-  userUpdate: UserUpdate
+  userUpdate: UserUpdate,
+  imageFile?: File | null
 ): Promise<{ success: boolean; data?: UserResponse; message: string }> => {
   try {
-    const response = await apiClient.put(`/users/${userId}`, userUpdate, getAuthHeaders());
+    const formData = new FormData();
+
+    if (userUpdate.email) formData.append("email", userUpdate.email);
+    if (userUpdate.full_name) formData.append("full_name", userUpdate.full_name);
+    if (userUpdate.phone_number) formData.append("phone_number", userUpdate.phone_number);
+    if (userUpdate.password) formData.append("password", userUpdate.password);
+    if (typeof userUpdate.is_active === "boolean")
+      formData.append("is_active", String(userUpdate.is_active));
+    if (typeof userUpdate.is_verified === "boolean")
+      formData.append("is_verified", String(userUpdate.is_verified));
+
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
+
+    const response = await apiClient.put(`/users/${userId}`, formData, {
+      headers: {
+        ...getAuthHeaders().headers,
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
     return {
       success: true,
@@ -83,6 +122,7 @@ export const updateUser = async (
     };
   }
 };
+
 
 export const deleteUser = async (
   userId: number

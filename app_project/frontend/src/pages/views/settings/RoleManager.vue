@@ -34,7 +34,7 @@
 
         <div>
           <label class="block text-sm font-medium text-gray-300 mb-2">Subject</label>
-           <select
+          <select
             v-model="form.v0"
             class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white focus:ring-purple-400/30 focus:border-purple-50"
           >
@@ -52,39 +52,35 @@
 
         <div v-if="form.ptype === 'g'">
           <label class="block text-sm font-medium text-gray-300 mb-2">Roles/Resource</label>
-           <select
-                v-model="form.v1"
-                class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white placeholder-gray-400 focus:ring-purple-400/30 focus:border-purple-50"
-            >
-                <option class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20" disabled value="">Select a role</option>
-                <option class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20" v-for="role in casbinRoles" :key="role" :value="role">
-                {{ role }}
-                </option>
-            </select>
+          <select
+            v-model="form.v1"
+            class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white placeholder-gray-400 focus:ring-purple-400/30 focus:border-purple-50"
+          >
+            <option class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20" disabled value="">Select a role</option>
+            <option v-for="r in roles" :key="r" :value="r" class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20">{{ r }}</option>
+          </select>
         </div>
 
         <div class="md:col-span-5 flex space-x-4 mt-2">
-          <!-- Add Policy Button -->
-            <button
+          <button
             v-permission.disable="'menu:settings:policy:create'"
             @click="onAdd()"
             class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 text-white font-semibold shadow-md hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+          >
             <Icon icon="mdi:shield-plus" class="text-lg group-hover:animate-pulse transition-transform duration-300" />
             <span>Add Roles</span>
             <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"></div>
-            </button>
+          </button>
 
-            <!-- Remove Policy Button -->
-            <button
+          <button
             v-permission.disable="'menu:settings:policy:delete'"
             @click="onRemove()"
             class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-500 text-white font-semibold shadow-md hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+          >
             <Icon icon="mdi:shield-remove" class="text-lg group-hover:animate-pulse transition-transform duration-300" />
             <span>Remove Roles</span>
             <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"></div>
-            </button>
+          </button>
         </div>
       </div>
     </div>
@@ -122,7 +118,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="g in filteredPolicies" :key="`${g.ptype}-${g.v0}-${g.v1}-${g.v2}`" class="bg-[#1E2A38] hover:bg-[#27313f]">
+            <tr v-for="g in paginatedPolicies" :key="`${g.ptype}-${g.v0}-${g.v1}-${g.v2}`" class="bg-[#1E2A38] hover:bg-[#27313f]">
               <td class="px-4 py-2 text-white">{{ g.ptype }}</td>
               <td class="px-4 py-2 text-white">{{ g.v0 }}</td>
               <td class="px-4 py-2 text-white">{{ g.v1 }}</td>
@@ -137,6 +133,10 @@
                 </button>
               </td>
             </tr>
+            <!-- Empty Rows for Consistent Height -->
+            <tr v-for="index in emptyRowCount" :key="'empty-' + index" class="bg-[#1E2A38]">
+              <td colspan="5" class="px-4 py-2">&nbsp;</td>
+            </tr>
           </tbody>
         </table>
 
@@ -145,13 +145,44 @@
         </div>
         <div class="text-center text-gray-400 py-6" v-if="loading">Loading...</div>
 
-        <!-- Pagination -->
-        <div class="flex justify-end items-center px-8 pb-6 space-x-4" v-if="totalPages > 1">
-          <button @click="currentPage--" :disabled="currentPage === 1"
-                  class="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50">Previous</button>
-          <span class="text-white">Page {{ currentPage }} of {{ totalPages }}</span>
-          <button @click="currentPage++" :disabled="currentPage === totalPages"
-                  class="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50">Next</button>
+        <!-- Enhanced Pagination -->
+        <div
+          v-if="totalPages > 1"
+          class="flex justify-center items-center space-x-2 px-6 py-4 border-t border-white/10 bg-gradient-to-r from-gray-800/30 via-gray-900/30 to-gray-800/30 backdrop-blur-lg rounded-b-2xl"
+        >
+          <button
+            @click="currentPage--"
+            :disabled="currentPage === 1"
+            class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
+          >
+            <Icon icon="mdi:chevron-left" class="text-lg" />
+            <span class="ml-1 text-sm">Prev</span>
+          </button>
+
+          <template v-for="(page, idx) in pagesToShow" :key="idx">
+            <span v-if="page === '...'" class="w-9 h-9 flex items-center justify织center text-gray-400">
+              ...
+            </span>
+            <button
+              v-else
+              @click="typeof page === 'number' && (currentPage = page)"
+              :class="[
+                'w-9 h-9 rounded-full text-sm font-semibold transition',
+                currentPage === page ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+              ]"
+            >
+              {{ page }}
+            </button>
+          </template>
+
+          <button
+            @click="currentPage++"
+            :disabled="currentPage === totalPages"
+            class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
+          >
+            <span class="mr-1 text-sm">Next</span>
+            <Icon icon="mdi:chevron-right" class="text-lg" />
+          </button>
         </div>
       </div>
     </div>
@@ -159,73 +190,98 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject, type Ref } from "vue";
+import { ref, computed, onMounted, inject, type Ref, watch } from "vue";
 import { usePolicy } from "@/hooks/usePolicy";
 import type { PolicyItem, PolicyCreate } from "@/models/policy";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { Icon } from "@iconify/vue";
 import { useUser } from "@/hooks/useUser";
+import { UserRole } from '@/models/user';
 
 const { fetchPoliciesGroup, addNewPolicyGroup, removePolicyGroup, policiesGroup, loading } = usePolicy();
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>('toast')!;
 const { fetchUsers, users } = useUser();
 
-const casbinRoles = [
-  "admin",
-  "user",
-  "guest",
-  "manager",
-  "team_lead",
-  "supervisor",
-  "root",
-  "auditor",
-  "support"
-];
+const roles = Object.values(UserRole);
 
 const form = ref<PolicyCreate>({ ptype: 'g', v0: '', v1: '', v2: '' });
 const searchText = ref('');
 const currentPage = ref(1);
-const itemsPerPage = 10;
+const itemsPerPage = 5;
 
+// Filtered Policies (without slicing)
 const filteredPolicies = computed(() => {
-  const filtered = policiesGroup.value.filter((g) => {
-    const search = searchText.value.toLowerCase();
-    return (
-      g.ptype.toLowerCase().includes(search) ||
-      g.v0.toLowerCase().includes(search) ||
-      g.v1.toLowerCase().includes(search) ||
-      (g.v2 && g.v2.toLowerCase().includes(search))
-    );
-  });
+  const search = searchText.value.toLowerCase();
+  return policiesGroup.value.filter(g =>
+    [g.ptype, g.v0, g.v1, g.v2].some(field => field?.toLowerCase().includes(search))
+  );
+});
+
+// Total Pages
+const totalPages = computed(() => Math.ceil(filteredPolicies.value.length / itemsPerPage));
+
+// Paginated Policies
+const paginatedPolicies = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
-  return filtered.slice(start, start + itemsPerPage);
+  return filteredPolicies.value.slice(start, start + itemsPerPage);
+});
+
+// Empty Row Count for Consistent Table Height
+const emptyRowCount = computed(() => {
+  if (filteredPolicies.value.length === 0) return 0;
+  const remainder = filteredPolicies.value.length % itemsPerPage;
+  return currentPage.value === totalPages.value && remainder !== 0 ? itemsPerPage - remainder : 0;
+});
+
+// Dynamic Page Numbers with Ellipses
+const pagesToShow = computed(() => {
+  const total = totalPages.value;
+  const current = currentPage.value;
+  const delta = 2;
+  const range: number[] = [];
+  const rangeWithDots: (number | string)[] = [];
+
+  range.push(1);
+  for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+    range.push(i);
+  }
+  if (total > 1) range.push(total);
+
+  let prev: number | undefined;
+  for (const page of range) {
+    if (prev !== undefined) {
+      if (page - prev === 2) rangeWithDots.push(prev + 1);
+      else if (page - prev > 2) rangeWithDots.push('...');
+    }
+    rangeWithDots.push(page);
+    prev = page;
+  }
+  return rangeWithDots;
 });
 
 onMounted(() => {
-  fetchUsers();           
+  fetchUsers();
+  fetchPoliciesGroup();
 });
 
-const totalPages = computed(() => {
-  const count = policiesGroup.value.filter((g) => {
-    const search = searchText.value.toLowerCase();
-    return (
-      g.ptype.toLowerCase().includes(search) ||
-      g.v0.toLowerCase().includes(search) ||
-      g.v1.toLowerCase().includes(search) ||
-      (g.v2 && g.v2.toLowerCase().includes(search))
-    );
-  }).length;
-  return Math.ceil(count / itemsPerPage);
+// Reset Current Page on Search
+watch(searchText, () => {
+  currentPage.value = 1;
 });
 
-onMounted(fetchPoliciesGroup);
+// Adjust Current Page if Exceeds Total Pages
+watch(totalPages, (newTotal) => {
+  if (currentPage.value > newTotal) {
+    currentPage.value = newTotal || 1;
+  }
+});
 
 function resetForm() {
   form.value = { ptype: 'g', v0: '', v1: '', v2: '' };
 }
 
 async function onAdd() {
-  if (!form.value.v0 || !form.value.v1 ) {
+  if (!form.value.v0 || !form.value.v1) {
     toast.value?.showToast('Please fill subject, resource.', 'error');
     return;
   }

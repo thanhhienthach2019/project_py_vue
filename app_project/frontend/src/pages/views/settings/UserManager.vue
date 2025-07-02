@@ -41,15 +41,7 @@
         <div>
           <label class="block text-sm font-medium text-gray-300 mb-2">Phone Number</label>
           <input v-model="form.phone_number" type="tel" placeholder="Enter phone number" class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white focus:ring-purple-400/30 focus:border-purple-50" />
-        </div>
-        <!-- Role -->
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Role</label>
-          <select v-model="form.role" class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white focus:ring-purple-400/30 focus:border-purple-50">
-            <option disabled value="">Select a role</option>
-            <option v-for="r in roles" :key="r" :value="r" class="bg-gray-800 text-gray-200">{{ r }}</option>
-          </select>
-        </div>
+        </div>        
         <!-- Active & Verified -->
         <div class="flex items-center space-x-4">
           <div>
@@ -62,9 +54,22 @@
           </div>
         </div>
         <!-- Profile Picture Upload -->
-        <div class="md:col-span-2 lg:col-span-4">
-          <label class="block text-sm font-medium text-gray-300 mb-2">Profile Picture</label>
-          <input type="file" @change="onFileChange" accept="image/*" class="w-full text-sm text-gray-200" />
+        <div class="col-span-full">
+          <div class="grid grid-cols-4 gap-6">
+            <!-- Title: full width -->
+            <div class="col-span-4 flex items-center space-x-2 mb-2">
+              <Icon icon="mdi:image-filter" class="text-amber-400 text-xl" />
+              <h3 class="text-lg font-semibold text-white">Profile Picture</h3>
+            </div>
+            <!-- ImageUploader: only 1 column -->
+            <div class="col-span-1">
+              <ImageUploader
+                v-model:previewUrl="previewUrl"
+                @update:file="handleImageUpload"
+                class="h-full min-h-[150px]"
+              />
+            </div>
+          </div>
         </div>
         <!-- Actions -->
         <div class="md:col-span-4 flex space-x-4 mt-2">
@@ -104,14 +109,15 @@
             <th class="px-4 py-2 text-gray-400">Username</th>
             <th class="px-4 py-2 text-gray-400">Email</th>
             <th class="px-4 py-2 text-gray-400">Active</th>
-            <th class="px-4 py-2 text-gray-400">Verified</th>
+            <th class="px-4(py-2 text-gray-400">Verified</th>
             <th class="px-4 py-2 text-gray-400">Role</th>
             <th class="px-4 py-2 text-gray-400">Last Login</th>
             <th class="px-4 py-2 text-right text-gray-400">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in filteredUsers" :key="user.id" class="bg-[#1E2A38] hover:bg-[#27313f]">
+          <!-- Data Rows -->
+          <tr v-for="user in paginatedUsers" :key="user.id" class="bg-[#1E2A38] hover:bg-[#27313f]">
             <td class="px-4 py-2 text-white">{{ user.full_name }}</td>
             <td class="px-4 py-2 text-white">{{ user.username }}</td>
             <td class="px-4 py-2 text-white">{{ user.email }}</td>
@@ -123,6 +129,14 @@
               <button @click="onEdit(user)" class="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-400">Edit</button>
             </td>
           </tr>
+          <!-- Empty Rows to Fill Up to itemsPerPage -->
+          <tr
+            v-for="index in emptyRowCount"
+            :key="'empty-' + index"
+            class="bg-[#1E2A38]"
+          >
+            <td class="px-4 py-2" colspan="8">&nbsp;</td>
+          </tr>
         </tbody>
       </table>
 
@@ -130,23 +144,64 @@
       <div v-if="loading" class="text-center text-gray-400 py-6">Loading...</div>
 
       <!-- Pagination -->
-      <div v-if="totalPages > 1" class="flex justify-end items-center px-8 pb-6 space-x-4">
-        <button @click="currentPage--" :disabled="currentPage === 1" class="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50">Previous</button>
-        <span class="text-white">Page {{ currentPage }} of {{ totalPages }}</span>
-        <button @click="currentPage++" :disabled="currentPage === totalPages" class="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50">Next</button>
+      <div
+        v-if="totalPages > 1"
+        class="flex justify-center items-center space-x-2 px-6 py-4 border-t border-white/10 bg-gradient-to-r from-gray-800/30 via-gray-900/30 to-gray-800/30 backdrop-blur-lg rounded-b-2xl"
+      >
+        <!-- Previous -->
+        <button
+          @click="currentPage--"
+          :disabled="currentPage === 1"
+          class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
+        >
+          <Icon icon="mdi:chevron-left" class="text-lg" />
+          <span class="ml-1 text-sm">Prev</span>
+        </button>
+
+        <!-- Dynamic Page Numbers with Dots -->
+        <template v-for="(page, idx) in pagesToShow" :key="idx">
+          <span
+            v-if="page === '...'"
+            class="w-9 h-9|Hflex items-center justify-center text-gray-400"
+          >
+            ...
+          </span>
+          <button
+            v-else
+            @click="typeof page === 'number' && (currentPage = page)"
+            :class="[
+              'w-9 h-9 rounded-full text-sm font-semibold transition',
+              currentPage === page
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+            ]"
+          >
+            {{ page }}
+          </button>
+        </template>
+
+        <!-- Next -->
+        <button
+          @click="currentPage++"
+          :disabled="currentPage === totalPages"
+          class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
+        >
+          <span class="mr-1 text-sm">Next</span>
+          <Icon icon="mdi:chevron-right" class="text-lg" />
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject, type Ref } from 'vue';
+import { ref, computed, onMounted, inject, type Ref, watch } from 'vue';
 import { Icon } from '@iconify/vue';
 import ToastTailwind from '@/pages/Toast/ToastTailwind.vue';
 import { useUser } from '@/hooks/useUser';
 import type { UserResponse, UserCreate, UserUpdate } from '@/models/user';
-import { UserRole } from '@/models/user';
 import dayjs from 'dayjs';
+import ImageUploader from '@/components/ui/ImageUploader.vue';
 
 // Define UserForm interface directly if not in models/user.ts
 interface UserForm {
@@ -158,7 +213,6 @@ interface UserForm {
   profile_picture?: string;
   is_active: boolean;
   is_verified: boolean;
-  role?: UserRole;
 }
 
 const { fetchUsers, createUser, updateUser, deleteUser, users, loading } = useUser();
@@ -174,34 +228,87 @@ const form = ref<UserForm>({
   profile_picture: '',
   is_active: true,
   is_verified: false,
-  role: undefined,
 });
 const editMode = ref(false);
 const currentEditId = ref<number | null>(null);
 
-// Roles list
-const roles = Object.values(UserRole);
+// Image
+const imageFile = ref<File | null>(null);
 
 // Table state
 const searchText = ref('');
 const currentPage = ref(1);
-const itemsPerPage = 10;
+const itemsPerPage = 5;
 
 // Computed filtered & paginated users
 const filteredUsers = computed(() => {
   const search = searchText.value.toLowerCase();
-  const filtered = users.value.filter(u =>
+  return users.value.filter(u =>
     [u.full_name, u.username, u.email].some(field => field?.toLowerCase().includes(search))
   );
-  const start = (currentPage.value - 1) * itemsPerPage;
-  return filtered.slice(start, start + itemsPerPage);
 });
 
-const totalPages = computed(() => Math.ceil(
-  users.value.filter(u =>
-    [u.full_name, u.username, u.email].some(field => field?.toLowerCase().includes(searchText.value.toLowerCase()))
-  ).length / itemsPerPage
-));
+const totalPages = computed(() =>
+  Math.ceil(filteredUsers.value.length / itemsPerPage)
+);
+
+const emptyRowCount = computed(() => {
+  return itemsPerPage - paginatedUsers.value.length;
+});
+
+const paginatedUsers = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  return filteredUsers.value.slice(start, start + itemsPerPage);
+});
+
+const pagesToShow = computed(() => {
+  const total = totalPages.value;
+  const current = currentPage.value;
+  const delta = 1;
+  const range: number[] = [];
+  const rangeWithDots: (number | string)[] = [];
+
+  // Add page 1
+  range.push(1);
+
+  // Add pages near currentPage
+  for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+    range.push(i);
+  }
+
+  // Add last page if total > 1
+  if (total > 1) {
+    range.push(total);
+  }
+
+  // Create rangeWithDots
+  let prev: number | undefined;
+  for (const page of range) {
+    if (prev !== undefined) {
+      if (page - prev === 2) {
+        rangeWithDots.push(prev + 1);
+      } else if (page - prev > 2) {
+        rangeWithDots.push('...');
+      }
+    }
+    rangeWithDots.push(page);
+    prev = page;
+  }
+
+  return rangeWithDots;
+});
+
+// Adjust currentPage if it exceeds totalPages after filtering
+watch(totalPages, (newTotal) => {
+  if (currentPage.value > newTotal) {
+    currentPage.value = newTotal || 1;
+  }
+});
+
+// Reset currentPage to 1 when searchText changes
+watch(searchText, () => {
+  currentPage.value = 1;
+});
 
 // Lifecycle
 onMounted(() => fetchUsers());
@@ -217,26 +324,24 @@ function resetForm() {
     profile_picture: '',
     is_active: true,
     is_verified: false,
-    role: undefined,
   };
+  imageFile.value = null;
+  previewUrl.value = undefined;
   editMode.value = false;
   currentEditId.value = null;
 }
+
+// Preview
+const previewUrl = ref<string | undefined>(undefined);
 
 function formatDate(dateStr: string) {
   return dayjs(dateStr).format('DD/MM/YYYY HH:mm');
 }
 
 // File upload handler
-function onFileChange(e: Event) {
-  const file = (e.target as HTMLInputElement).files?.[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    form.value.profile_picture = reader.result as string;
-  };
-  reader.readAsDataURL(file);
-}
+const handleImageUpload = (file: File | null) => {
+  imageFile.value = file;
+};
 
 // CRUD actions
 async function onAdd() {
@@ -251,9 +356,8 @@ async function onAdd() {
     full_name: form.value.full_name,
     phone_number: form.value.phone_number,
     profile_picture: form.value.profile_picture,
-    role: form.value.role,
   };
-  const resp = await createUser(userCreate);
+  const resp = await createUser(userCreate, imageFile.value);
   if (resp.success) {
     toast.value?.showToast('User created.', 'success');
     await fetchUsers();
@@ -266,6 +370,7 @@ async function onAdd() {
 function onEdit(user: UserResponse) {
   editMode.value = true;
   currentEditId.value = user.id;
+  imageFile.value = null;
   form.value = {
     username: user.username,
     email: user.email,
@@ -275,12 +380,12 @@ function onEdit(user: UserResponse) {
     profile_picture: user.profile_picture,
     is_active: user.is_active,
     is_verified: user.is_verified,
-    role: user.role,
   };
 }
 
 async function onUpdate() {
   if (currentEditId.value === null) return;
+
   const updateData: UserUpdate = {
     email: form.value.email,
     full_name: form.value.full_name,
@@ -288,12 +393,14 @@ async function onUpdate() {
     profile_picture: form.value.profile_picture,
     is_active: form.value.is_active,
     is_verified: form.value.is_verified,
-    role: form.value.role,
   };
+
   if (form.value.password) {
     updateData.password = form.value.password;
   }
-  const resp = await updateUser(currentEditId.value, updateData);
+
+  const resp = await updateUser(currentEditId.value, updateData, imageFile.value);
+
   if (resp.success) {
     toast.value?.showToast('User updated.', 'success');
     await fetchUsers();

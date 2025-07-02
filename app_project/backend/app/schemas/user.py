@@ -7,10 +7,10 @@ from datetime import datetime
 class UserBase(BaseModel):
     username: str = Field(..., max_length=50)
     email: EmailStr
-    role: str = Field(default="user", description="Role of the user, e.g., admin, user, etc.")
+    role: str = Field(None, max_length=20)
     full_name: Optional[str] = Field(None, max_length=255)
     phone_number: Optional[str] = Field(None, max_length=20)
-    profile_picture: Optional[str] = Field(None, max_length=500)
+    profile_picture: Optional[str] = None
 
 
 # Create - thêm mới
@@ -25,7 +25,7 @@ class UserUpdate(BaseModel):
     phone_number: Optional[str]
     profile_picture: Optional[str]
     is_active: Optional[bool]
-    role: Optional[str]
+    role: Optional[str] = Field(default=None)
     is_verified: Optional[bool]
     password: Optional[str] = Field(None, min_length=6)
 
@@ -38,8 +38,13 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: EmailStr
-    role: str
+    full_name: Optional[str]
+    phone_number: Optional[str]
+    profile_picture: Optional[str]
     is_active: bool
+    is_verified: bool
+    role: Optional[str]  
+    last_login: Optional[datetime]
 
     class Config:
         from_attributes = True
