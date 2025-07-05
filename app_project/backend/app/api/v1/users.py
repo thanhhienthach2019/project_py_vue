@@ -5,7 +5,7 @@ from typing import List
 from app.core.database import get_db
 from app.schemas.user import UserCreate, UserUpdate, UserResponse
 from app.services import user_service  
-from app.core.permissions import permission_required
+from app.core.permissions import permission_required_root
 import os, datetime
 from app.core.config import settings
 
@@ -17,7 +17,7 @@ router = APIRouter(
 @router.get(
     "/",
     response_model=List[UserResponse],
-    dependencies=[Depends(permission_required("menu:settings:user", "read"))]
+    dependencies=[Depends(permission_required_root("menu:settings:user", "read"))]
 )
 def read_users(
     skip: int = 0,
@@ -30,7 +30,7 @@ def read_users(
 @router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(permission_required("menu:settings:user", "create"))]
+    dependencies=[Depends(permission_required_root("menu:settings:user", "create"))]
 )
 def create_user(
     username: str = Form(...),
@@ -82,7 +82,7 @@ def create_user(
 @router.get(
     "/{user_id}",
     response_model=UserResponse,
-    dependencies=[Depends(permission_required("menu:settings:user", "read"))]
+    dependencies=[Depends(permission_required_root("menu:settings:user", "read"))]
 )
 def read_user(user_id: int, db: Session = Depends(get_db)):
     user = user_service.get_user_by_id(db, user_id)
@@ -93,7 +93,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 @router.put(
     "/{user_id}",
     response_model=UserResponse,
-    dependencies=[Depends(permission_required("menu:settings:user", "update"))]
+    dependencies=[Depends(permission_required_root("menu:settings:user", "update"))]
 )
 def update_user(
     user_id: int,
@@ -146,7 +146,7 @@ def update_user(
 @router.delete(
     "/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(permission_required("menu:settings:user", "delete"))]
+    dependencies=[Depends(permission_required_root("menu:settings:user", "delete"))]
 )
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     deleted = user_service.delete_user(db, user_id)

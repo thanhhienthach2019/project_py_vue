@@ -48,6 +48,18 @@ export enum UserRole {
   SUPPORT     = 'support',
 }
 
+export enum Action {
+  VIEW       = 'view',
+  CREATE        = 'create',
+  UPDATE       = 'update',
+  DELETE     = 'delete',
+  READ   = 'read',
+  WRITE  = 'write',
+  EXECUTE        = 'execute',
+  MANAGER     = 'manager',
+  ACCESS     = 'access',
+}
+
 export interface UserListParams {
   skip?: number;
   limit?: number;

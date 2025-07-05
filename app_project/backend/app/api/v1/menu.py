@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.core.database import get_db
+from app.core.permissions import permission_required_root
 from app.core.permissions import permission_required
 
 from app.schemas.menu.MenuItem import (
@@ -26,7 +27,7 @@ router = APIRouter(
 @router.get(
     "/all",
     response_model=List[MenuItemResponse],
-    dependencies=[Depends(permission_required("menu:settings:menu", "read"))]
+    dependencies=[Depends(permission_required)]
 )
 def get_all_menus(
     db: Session = Depends(get_db)
@@ -40,11 +41,11 @@ def get_all_menus(
 @router.get(
     "",
     response_model=List[MenuItemResponse],
-    dependencies=[Depends(permission_required("menu:settings:menu", "read"))]
+    dependencies=[Depends(permission_required)]
 )
 def get_user_menus(
     db: Session = Depends(get_db),
-    payload: dict = Depends(permission_required("menu:settings:menu", "read"))
+    payload: dict = [Depends(permission_required)]
 ):
     """
     Retrieve the hierarchical menu structure that the current user has permission to access.
@@ -58,7 +59,7 @@ def get_user_menus(
     "",
     response_model=MenuItemResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(permission_required("menu:settings:menu", "create"))]
+    dependencies=[Depends(permission_required())]
 )
 def create_menu(
     data: MenuItemCreate,
@@ -66,7 +67,6 @@ def create_menu(
 ):
     """
     Create a new menu item.  
-    Requires the 'menu:settings:menu:create' permission.
     """
     return create_menu_item(db, data)
 
@@ -75,7 +75,7 @@ def create_menu(
 @router.put(
     "/{menu_id}",
     response_model=MenuItemResponse,
-    dependencies=[Depends(permission_required("menu:settings:menu", "update"))]
+    dependencies=[Depends(permission_required())]
 )
 def update_menu(
     menu_id: int,
@@ -84,7 +84,6 @@ def update_menu(
 ):
     """
     Update a specific menu item by its ID.  
-    Requires the 'menu:settings:menu:update' permission.
     """
     return update_menu_item(db, menu_id, data)
 
@@ -93,7 +92,7 @@ def update_menu(
 @router.delete(
     "/{menu_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(permission_required("menu:settings:menu", "delete"))]
+    dependencies=[Depends(permission_required())]
 )
 def delete_menu(
     menu_id: int,

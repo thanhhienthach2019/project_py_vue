@@ -21,6 +21,9 @@ rabbitmqctl set_user_tags hien_dev administrator
 Cấp quyền vhost mặc định /:
 rabbitmqctl set_permissions -p / hien_dev ".*" ".*" ".*"
 
+***Khởi động lại rabbit:
+docker restart rabbitmq
+
 **Nếu bạn muốn xóa user guest để tăng bảo mật:rabbitmqctl delete_user guest
 
 ***Xoá Redis:

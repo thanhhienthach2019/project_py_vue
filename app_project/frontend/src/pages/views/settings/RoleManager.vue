@@ -1,13 +1,19 @@
 <template>
-  <div class="w-full max-w-12xl mx-auto p-2 my-2 space-y-6 transition-all duration-300">
+  <div
+    class="w-full max-w-12xl mx-auto p-2 my-2 space-y-6 transition-all duration-300"
+  >
     <!-- Header -->
     <div
       class="bg-gradient-to-r from-blue-600/40 via-purple-600/40 to-pink-500/40 backdrop-blur-lg rounded-2xl p-8 border border-white/10 shadow-2xl ring-1 ring-white/20 transition-all duration-300"
     >
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-3xl font-extrabold text-white tracking-tight">Role Management</h1>
-          <p class="text-purple-200 mt-2 font-medium">Manage user-role assignments</p>
+          <h1 class="text-3xl font-extrabold text-white tracking-tight">
+            Role Management
+          </h1>
+          <p class="text-purple-200 mt-2 font-medium">
+            Manage user-role assignments
+          </p>
         </div>
         <button
           @click="resetForm()"
@@ -17,47 +23,71 @@
             icon="mdi:autorenew"
             class="text-purple-400 text-xl group-hover:rotate-180 transition-transform duration-300"
           />
-          <span class="text-gray-100 font-medium tracking-wide">Reset Form</span>
+          <span class="text-gray-100 font-medium tracking-wide"
+            >Reset Form</span
+          >
         </button>
       </div>
     </div>
 
     <!-- Form -->
-    <div class="bg-white/5 backdrop-blur-2xl rounded-2xl p-8 border border-white/15 shadow-xl">
+    <div
+      class="bg-white/5 backdrop-blur-2xl rounded-2xl p-8 border border-white/15 shadow-xl"
+    >
       <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Type</label>
-          <select v-model="form.ptype" class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white focus:ring-purple-400/30 focus:border-purple-50">
-            <option class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20" value="g">g (grouping)</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Subject</label>
+          <label class="block text-sm font-medium text-gray-300 mb-2"
+            >Type</label
+          >
           <select
-            v-model="form.v0"
+            v-model="form.ptype"
             class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white focus:ring-purple-400/30 focus:border-purple-50"
           >
-            <option class="bg-gray-800 text-gray-200" disabled value="">Select a user</option>
             <option
-              class="bg-gray-800 text-gray-200"
-              v-for="user in users"
-              :key="user.id"
-              :value="user.username"
+              class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
+              value="g"
             >
-              {{ user.full_name || user.username }} ({{ user.username }})
+              g (grouping)
             </option>
           </select>
         </div>
 
+        <div class="relative w-full">
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Subject
+          </label>
+          <SearchableSelect
+            v-model="form.v0"
+            :options="userOptions"
+            label-key="label"
+            value-key="username"
+            placeholder="Select a user"
+          />
+        </div>
+
         <div v-if="form.ptype === 'g'">
-          <label class="block text-sm font-medium text-gray-300 mb-2">Roles/Resource</label>
+          <label class="block text-sm font-medium text-gray-300 mb-2"
+            >Roles/Resource</label
+          >
           <select
             v-model="form.v1"
             class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white placeholder-gray-400 focus:ring-purple-400/30 focus:border-purple-50"
           >
-            <option class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20" disabled value="">Select a role</option>
-            <option v-for="r in roles" :key="r" :value="r" class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20">{{ r }}</option>
+            <option
+              class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
+              disabled
+              value=""
+            >
+              Select a role
+            </option>
+            <option
+              v-for="r in roles"
+              :key="r"
+              :value="r"
+              class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
+            >
+              {{ r }}
+            </option>
           </select>
         </div>
 
@@ -67,9 +97,14 @@
             @click="onAdd()"
             class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 text-white font-semibold shadow-md hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Icon icon="mdi:shield-plus" class="text-lg group-hover:animate-pulse transition-transform duration-300" />
+            <Icon
+              icon="mdi:shield-plus"
+              class="text-lg group-hover:animate-pulse transition-transform duration-300"
+            />
             <span>Add Roles</span>
-            <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"></div>
+            <div
+              class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"
+            ></div>
           </button>
 
           <button
@@ -77,19 +112,30 @@
             @click="onRemove()"
             class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-500 text-white font-semibold shadow-md hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Icon icon="mdi:shield-remove" class="text-lg group-hover:animate-pulse transition-transform duration-300" />
+            <Icon
+              icon="mdi:shield-remove"
+              class="text-lg group-hover:animate-pulse transition-transform duration-300"
+            />
             <span>Remove Roles</span>
-            <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"></div>
+            <div
+              class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"
+            ></div>
           </button>
         </div>
       </div>
     </div>
 
     <!-- Table Card -->
-    <div class="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
-      <div class="px-8 py-6 border-b border-white/10 flex items-center justify-between">
+    <div
+      class="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+    >
+      <div
+        class="px-8 py-6 border-b border-white/10 flex items-center justify-between"
+      >
         <div>
-          <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
+          <h2
+            class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300"
+          >
             User Roles
           </h2>
           <p class="text-sm text-gray-400 mt-1">
@@ -102,12 +148,17 @@
             placeholder="Search Roles..."
             class="w-full pl-4 pr-10 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:ring-2 focus:ring-purple-400/30 transition-all"
           />
-          <Icon icon="mdi:magnify" class="absolute right-3 top-2.5 text-gray-400" />
+          <Icon
+            icon="mdi:magnify"
+            class="absolute right-3 top-2.5 text-gray-400"
+          />
         </div>
       </div>
 
       <div>
-        <table class="w-full text-left table-auto border-separate border-spacing-y-2">
+        <table
+          class="w-full text-left table-auto border-separate border-spacing-y-2"
+        >
           <thead>
             <tr class="bg-[#1E2A38]">
               <th class="px-4 py-2 text-gray-400">Type</th>
@@ -118,11 +169,15 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="g in paginatedPolicies" :key="`${g.ptype}-${g.v0}-${g.v1}-${g.v2}`" class="bg-[#1E2A38] hover:bg-[#27313f]">
+            <tr
+              v-for="g in paginatedPolicies"
+              :key="`${g.ptype}-${g.v0}-${g.v1}-${g.v2}`"
+              class="bg-[#1E2A38] hover:bg-[#27313f]"
+            >
               <td class="px-4 py-2 text-white">{{ g.ptype }}</td>
               <td class="px-4 py-2 text-white">{{ g.v0 }}</td>
               <td class="px-4 py-2 text-white">{{ g.v1 }}</td>
-              <td class="px-4 py-2 text-white">{{ g.v2 || '-' }}</td>
+              <td class="px-4 py-2 text-white">{{ g.v2 || "-" }}</td>
               <td class="px-4 py-2 text-right">
                 <button
                   v-permission.disable="'menu:settings:policy:delete'"
@@ -134,16 +189,25 @@
               </td>
             </tr>
             <!-- Empty Rows for Consistent Height -->
-            <tr v-for="index in emptyRowCount" :key="'empty-' + index" class="bg-[#1E2A38]">
+            <tr
+              v-for="index in emptyRowCount"
+              :key="'empty-' + index"
+              class="bg-[#1E2A38]"
+            >
               <td colspan="5" class="px-4 py-2">&nbsp;</td>
             </tr>
           </tbody>
         </table>
 
-        <div v-if="!filteredPolicies.length && !loading" class="text-center text-gray-400 py-6">
+        <div
+          v-if="!filteredPolicies.length && !loading"
+          class="text-center text-gray-400 py-6"
+        >
           No Roles found.
         </div>
-        <div class="text-center text-gray-400 py-6" v-if="loading">Loading...</div>
+        <div class="text-center text-gray-400 py-6" v-if="loading">
+          Loading...
+        </div>
 
         <!-- Enhanced Pagination -->
         <div
@@ -160,7 +224,10 @@
           </button>
 
           <template v-for="(page, idx) in pagesToShow" :key="idx">
-            <span v-if="page === '...'" class="w-9 h-9 flex items-center justify织center text-gray-400">
+            <span
+              v-if="page === '...'"
+              class="w-9 h-9 flex items-center justify织center text-gray-400"
+            >
               ...
             </span>
             <button
@@ -168,7 +235,9 @@
               @click="typeof page === 'number' && (currentPage = page)"
               :class="[
                 'w-9 h-9 rounded-full text-sm font-semibold transition',
-                currentPage === page ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                currentPage === page
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white',
               ]"
             >
               {{ page }}
@@ -196,29 +265,48 @@ import type { PolicyItem, PolicyCreate } from "@/models/policy";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { Icon } from "@iconify/vue";
 import { useUser } from "@/hooks/useUser";
-import { UserRole } from '@/models/user';
+import { UserRole } from "@/models/user";
+import SearchableSelect from "@/components/ui/SearchableSelect.vue";
 
-const { fetchPoliciesGroup, addNewPolicyGroup, removePolicyGroup, policiesGroup, loading } = usePolicy();
-const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>('toast')!;
+const {
+  fetchPoliciesGroup,
+  addNewPolicyGroup,
+  removePolicyGroup,
+  policiesGroup,
+  loading,
+} = usePolicy();
+const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
 const { fetchUsers, users } = useUser();
 
 const roles = Object.values(UserRole);
 
-const form = ref<PolicyCreate>({ ptype: 'g', v0: '', v1: '', v2: '' });
-const searchText = ref('');
+const form = ref<PolicyCreate>({ ptype: "g", v0: "", v1: "", v2: "" });
+const searchText = ref("");
 const currentPage = ref(1);
 const itemsPerPage = 5;
 
 // Filtered Policies (without slicing)
 const filteredPolicies = computed(() => {
   const search = searchText.value.toLowerCase();
-  return policiesGroup.value.filter(g =>
-    [g.ptype, g.v0, g.v1, g.v2].some(field => field?.toLowerCase().includes(search))
+  return policiesGroup.value.filter((g) =>
+    [g.ptype, g.v0, g.v1, g.v2].some((field) =>
+      field?.toLowerCase().includes(search)
+    )
   );
 });
 
+const userOptions = computed(() =>
+  Array.isArray(users.value)
+    ? users.value.map((user) => ({
+        ...user,
+        label: `${user.full_name || user.username} (${user.username})`,
+      }))
+    : []
+);
 // Total Pages
-const totalPages = computed(() => Math.ceil(filteredPolicies.value.length / itemsPerPage));
+const totalPages = computed(() =>
+  Math.ceil(filteredPolicies.value.length / itemsPerPage)
+);
 
 // Paginated Policies
 const paginatedPolicies = computed(() => {
@@ -230,7 +318,9 @@ const paginatedPolicies = computed(() => {
 const emptyRowCount = computed(() => {
   if (filteredPolicies.value.length === 0) return 0;
   const remainder = filteredPolicies.value.length % itemsPerPage;
-  return currentPage.value === totalPages.value && remainder !== 0 ? itemsPerPage - remainder : 0;
+  return currentPage.value === totalPages.value && remainder !== 0
+    ? itemsPerPage - remainder
+    : 0;
 });
 
 // Dynamic Page Numbers with Ellipses
@@ -242,7 +332,11 @@ const pagesToShow = computed(() => {
   const rangeWithDots: (number | string)[] = [];
 
   range.push(1);
-  for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+  for (
+    let i = Math.max(2, current - delta);
+    i <= Math.min(total - 1, current + delta);
+    i++
+  ) {
     range.push(i);
   }
   if (total > 1) range.push(total);
@@ -251,7 +345,7 @@ const pagesToShow = computed(() => {
   for (const page of range) {
     if (prev !== undefined) {
       if (page - prev === 2) rangeWithDots.push(prev + 1);
-      else if (page - prev > 2) rangeWithDots.push('...');
+      else if (page - prev > 2) rangeWithDots.push("...");
     }
     rangeWithDots.push(page);
     prev = page;
@@ -277,44 +371,49 @@ watch(totalPages, (newTotal) => {
 });
 
 function resetForm() {
-  form.value = { ptype: 'g', v0: '', v1: '', v2: '' };
+  form.value = { ptype: "g", v0: "", v1: "", v2: "" };
 }
 
 async function onAdd() {
   if (!form.value.v0 || !form.value.v1) {
-    toast.value?.showToast('Please fill subject, resource.', 'error');
+    toast.value?.showToast("Please fill subject, resource.", "error");
     return;
   }
   const resp = await addNewPolicyGroup(form.value);
   if (resp.success) {
-    toast.value?.showToast('Role added.', 'success');
+    toast.value?.showToast("Role added.", "success");
     resetForm();
   } else {
-    toast.value?.showToast(resp.message, 'error');
+    toast.value?.showToast(resp.message, "error");
   }
 }
 
 async function onRemove() {
   if (!form.value.v0 || !form.value.v1) {
-    toast.value?.showToast('Please fill subject and resource.', 'error');
+    toast.value?.showToast("Please fill subject and resource.", "error");
     return;
   }
   const resp = await removePolicyGroup(form.value);
   if (resp.success) {
-    toast.value?.showToast('Role removed.', 'success');
+    toast.value?.showToast("Role removed.", "success");
     resetForm();
   } else {
-    toast.value?.showToast(resp.message, 'error');
+    toast.value?.showToast(resp.message, "error");
   }
 }
 
 async function removeInline(g: PolicyItem) {
-  const payload: PolicyCreate = { ptype: g.ptype, v0: g.v0, v1: g.v1, v2: g.v2 };
+  const payload: PolicyCreate = {
+    ptype: g.ptype,
+    v0: g.v0,
+    v1: g.v1,
+    v2: g.v2,
+  };
   const resp = await removePolicyGroup(payload);
   if (resp.success) {
-    toast.value?.showToast('Role removed.', 'success');
+    toast.value?.showToast("Role removed.", "success");
   } else {
-    toast.value?.showToast(resp.message, 'error');
+    toast.value?.showToast(resp.message, "error");
   }
 }
 </script>

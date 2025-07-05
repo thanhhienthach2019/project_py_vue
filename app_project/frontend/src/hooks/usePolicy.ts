@@ -21,6 +21,14 @@ export function usePolicy() {
     }
   };
 
+  const fetchViewPolicies = async () => {
+    try {
+      await policyStore.loadViewPolicies();
+    } catch (error) {
+      console.error("Failed to fetch view policies:", error);
+    }
+  };
+
   const addNewPolicy = async (policy: PolicyCreate) => {
     try {
       const response = await policyStore.addNewPolicy(policy);
@@ -37,6 +45,16 @@ export function usePolicy() {
       return response;
     } catch (error) {
       console.error("Failed to add policy:", error);
+      return { success: false, message: "An error occurred while adding the policy." };
+    }
+  };
+
+  const addNewViewPolicyGroup = async (policy: PolicyCreate) => {
+    try {
+      const response = await policyStore.addNewViewPolicyGroup(policy);
+      return response;
+    } catch (error) {
+      console.error("Failed to add view policy group:", error);
       return { success: false, message: "An error occurred while adding the policy." };
     }
   };
@@ -61,15 +79,29 @@ export function usePolicy() {
     }
   };
 
+  const removeViewPolicyGroup = async (policy: PolicyCreate) => {
+    try {
+      const response = await policyStore.removeExistingViewPolicyGroup(policy);
+      return response;
+    } catch (error) {
+      console.error("Failed to remove view policy group:", error);
+      return { success: false, message: "An error occurred while removing the policy." };
+    }
+  };
+
   return {
     fetchPolicies,
     fetchPoliciesGroup,
+    fetchViewPolicies,
     addNewPolicy,
+    addNewViewPolicyGroup,
     removePolicy,
     addNewPolicyGroup,
     removePolicyGroup,
+    removeViewPolicyGroup,
     policies: computed(() => policyStore.policies || []),
     policiesGroup: computed(() => policyStore.policiesGroup || []),
+    viewPolicies: computed(() => policyStore.viewPolicies || []),
     loading: computed(() => policyStore.loading),
   };
 }

@@ -43,6 +43,26 @@ export const fetchPoliciesGroup = async (): Promise<{
   }
 };
 
+export const fetchViewPolicies = async (): Promise<{
+  success: boolean;
+  data?: PolicyItem[];
+  message: string;
+}> => {
+  try {
+    const response = await apiClient.get("/policies/permission/view", getAuthHeaders());
+    return {
+      success: true,
+      data: response.data,
+      message: "Fetched view policies successfully",
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.response?.data?.detail || "Failed to fetch view policies",
+    };
+  }
+};
+
 export const addPolicy = async (
   policy: PolicyCreate
 ): Promise<{ success: boolean; message: string }> => {

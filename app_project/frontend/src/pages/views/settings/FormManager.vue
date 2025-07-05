@@ -9,10 +9,10 @@
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-3xl font-extrabold text-white tracking-tight">
-            Policy Management
+            Form Access Management
           </h1>
           <p class="text-purple-200 mt-2 font-medium">
-            Manage access control rules using Casbin policies
+            Define and control user permissions on system forms using Casbin
           </p>
         </div>
         <button
@@ -34,9 +34,7 @@
     <div
       class="bg-white/5 backdrop-blur-2xl rounded-2xl p-8 border border-white/15 shadow-xl"
     >
-      <!-- Dòng đầu tiên: Type, Subject, Resource -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <!-- Type -->
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
         <div>
           <label class="block text-sm font-medium text-gray-300 mb-2"
             >Type</label
@@ -45,12 +43,16 @@
             v-model="form.ptype"
             class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white focus:ring-purple-400/30 focus:border-purple-50"
           >
-            <option value="p">p (permission)</option>
+            <option
+              class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
+              value="p"
+            >
+              p (permission)
+            </option>
           </select>
         </div>
 
-        <!-- Subject -->
-        <div>
+        <div class="relative w-full">
           <label class="block text-sm font-medium text-gray-300 mb-2"
             >Subject</label
           >
@@ -63,106 +65,71 @@
           />
         </div>
 
-        <!-- Resource -->
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2"
-            >Resource</label
-          >
+        <div class="relative z-[999] overflow-visible">
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Resource
+          </label>
           <SearchableSelect
-            v-model="bindingForm.v1"
-            :options="routerOptions"
+            v-model="form.v1"
+            :options="menuOptions"
             label-key="label"
-            value-key="value"
-            placeholder="Select a router"
+            value-key="permission_key"
+            placeholder="Select a resource"
           />
         </div>
-      </div>
 
-      <!-- Dòng thứ hai: Action, Path, Method -->
-      <div
-        class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6"
-        v-if="form.ptype === 'p'"
-      >
-        <!-- Action -->
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2"
-            >Action</label
+        <div v-if="form.ptype === 'p'">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2"
+              >Action</label
+            >
+            <select
+              v-model="form.v2"
+              class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white focus:ring-purple-400/30 focus:border-purple-50"
+            >
+              <option
+                class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
+                value="view"
+              >
+                View
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="md:col-span-5 flex space-x-4 mt-2">
+          <!-- Add Policy Button -->
+          <button
+            v-permission.disable="'menu:settings:policy:create'"
+            @click="onAdd()"
+            class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 text-white font-semibold shadow-md hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-          <input
-            v-model="bindingForm.v2"
-            readonly
-            placeholder="e.g. read"
-            class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white"
-          />
-        </div>
+            <Icon
+              icon="mdi:shield-plus"
+              class="text-lg group-hover:animate-pulse transition-transform duration-300"
+            />
+            <span>Add Policy</span>
+            <div
+              class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"
+            ></div>
+          </button>
 
-        <!-- Path -->
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2"
-            >Path</label
+          <!-- Remove Policy Button -->
+          <button
+            v-permission.disable="'menu:settings:policy:delete'"
+            @click="onRemove()"
+            class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-500 text-white font-semibold shadow-md hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-          <input
-            v-model="bindingForm.path"
-            readonly
-            placeholder="e.g. /menus/all"
-            class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white"
-          />
+            <Icon
+              icon="mdi:shield-remove"
+              class="text-lg group-hover:animate-pulse transition-transform duration-300"
+            />
+            <span>Remove Policy</span>
+            <div
+              class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"
+            ></div>
+          </button>
         </div>
-
-        <!-- Method -->
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2"
-            >Method</label
-          >
-          <input
-            v-model="bindingForm.method"
-            readonly
-            placeholder="e.g. GET"
-            class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white uppercase tracking-wide"
-          />
-        </div>
-
-        <!-- Resource -->
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2"
-            >Resource</label
-          >
-          <input
-            v-model="bindingForm.resource"
-            readonly
-            placeholder="e.g. menu:settings:menu"
-            class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white"
-          />
-        </div>
-      </div>
-
-      <!-- Buttons -->
-      <div class="flex space-x-4 mt-2">
-        <!-- Add Policy Button -->
-        <button
-          v-permission.disable="'menu:settings:policy:create'"
-          @click="onAdd()"
-          class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 text-white font-semibold shadow-md hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Icon
-            icon="mdi:shield-plus"
-            class="text-lg group-hover:animate-pulse transition-transform duration-300"
-          />
-          <span>Add Policy</span>
-        </button>
-
-        <!-- Remove Policy Button -->
-        <button
-          v-permission.disable="'menu:settings:policy:delete'"
-          @click="onRemove()"
-          class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-500 text-white font-semibold shadow-md hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Icon
-            icon="mdi:shield-remove"
-            class="text-lg group-hover:animate-pulse transition-transform duration-300"
-          />
-          <span>Remove Policy</span>
-        </button>
       </div>
     </div>
 
@@ -177,10 +144,10 @@
           <h2
             class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300"
           >
-            Existing Policies
+            Form Policy Table
           </h2>
           <p class="text-sm text-gray-400 mt-1">
-            Manage all current Casbin rules
+            Casbin rules applied to form access
           </p>
         </div>
         <div class="relative w-72">
@@ -307,14 +274,19 @@ import { usePolicy } from "@/hooks/usePolicy";
 import type { PolicyItem, PolicyCreate } from "@/models/policy";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { Icon } from "@iconify/vue";
+import { useMenu } from "@/hooks/useMenu";
 import SearchableSelect from "@/components/ui/SearchableSelect.vue";
 import { UserRole } from "@/models/user";
-import { usePermissionRouter } from "@/hooks/usePermissionRouter";
-import type { RouterPermissionWithDetails } from "@/models/permissionRouter";
 
-const { fetchPolicies, addNewPolicy, removePolicy, policies, loading } =
-  usePolicy();
+const {
+  fetchViewPolicies,
+  addNewViewPolicyGroup,
+  removeViewPolicyGroup,
+  viewPolicies,
+  loading,
+} = usePolicy();
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
+const { fetchAllMenus, allMenus } = useMenu();
 
 const casbinRoles = Object.values(UserRole).filter(
   (v) => typeof v === "string"
@@ -327,51 +299,16 @@ const roleOptions = computed(() =>
   }))
 );
 
-//Router permission with details
-const { fetchDetailedBindings, detailedBindings } = usePermissionRouter();
-
-// Form reactive
-const bindingForm = ref({
-  ptype: "p",
-  v0: null as number | null,
-  v1: null as number | null,
-  v2: "",
-  path: "",
-  method: "",
-  resource: "",
-});
-
-const routerOptions = computed(() =>
-  Array.isArray(detailedBindings.value)
-    ? detailedBindings.value.map((b: RouterPermissionWithDetails) => ({
-        value: b.router_id,
-        label: b.router?.name ?? "—",
-        router: b.router!,
-        permission: b.permission!,
+const menuOptions = computed(() =>
+  Array.isArray(allMenus.value)
+    ? allMenus.value.map((item) => ({
+        ...item,
+        label: `${item.title} - ${item.permission_key}`,
       }))
     : []
 );
 
-onMounted(fetchDetailedBindings);
-
-watch(
-  () => bindingForm.value.v1,
-  (newId) => {
-    const sel = routerOptions.value.find((o) => o.value === newId);
-    if (sel) {
-      bindingForm.value.path = sel.router.path;
-      bindingForm.value.method = sel.router.method;
-      bindingForm.value.v2 = sel.permission.action;
-      bindingForm.value.resource = sel.permission.resource;
-    } else {
-      bindingForm.value.path = "";
-      bindingForm.value.method = "";
-      bindingForm.value.v2 = "";
-      bindingForm.value.resource = "";
-    }
-  }
-);
-const form = ref<PolicyCreate>({ ptype: "p", v0: "", v1: "", v2: "" });
+const form = ref<PolicyCreate>({ ptype: "p", v0: "", v1: "", v2: "view" });
 
 const searchText = ref("");
 const currentPage = ref(1);
@@ -380,7 +317,7 @@ const pageSize = ref(5);
 // Raw list sau filter
 const filteredPoliciesRaw = computed(() => {
   const s = searchText.value.toLowerCase();
-  return policies.value.filter((p) =>
+  return viewPolicies.value.filter((p) =>
     [p.ptype, p.v0, p.v1, p.v2].some((field) =>
       (field || "").toLowerCase().includes(s)
     )
@@ -440,29 +377,17 @@ watch(searchText, () => {
   currentPage.value = 1;
 });
 
-onMounted(fetchPolicies);
+onMounted(() => {
+  fetchAllMenus();
+});
+
+onMounted(fetchViewPolicies);
 
 function resetForm() {
-  form.value = {
-    ptype: "p",
-    v0: "",
-    v1: "",
-    v2: "",
-  };
-
-  bindingForm.value.v0 = null;
-  bindingForm.value.v1 = null;
-  bindingForm.value.v2 = "";
-  bindingForm.value.path = "";
-  bindingForm.value.method = "";
-  bindingForm.value.resource = "";
+  form.value = { ptype: "p", v0: "", v1: "", v2: "view" };
 }
 
 async function onAdd() {
-  form.value.v1 = bindingForm.value.resource;
-  form.value.v2 = bindingForm.value.v2;
-
-  // Validate
   if (
     !form.value.v0 ||
     !form.value.v1 ||
@@ -474,8 +399,7 @@ async function onAdd() {
     );
     return;
   }
-
-  const resp = await addNewPolicy(form.value);
+  const resp = await addNewViewPolicyGroup(form.value);
   if (resp.success) {
     toast.value?.showToast("Policy added.", "success");
     resetForm();
@@ -489,7 +413,7 @@ async function onRemove() {
     toast.value?.showToast("Please fill subject and resource.", "error");
     return;
   }
-  const resp = await removePolicy(form.value);
+  const resp = await removeViewPolicyGroup(form.value);
   if (resp.success) {
     toast.value?.showToast("Policy removed.", "success");
     resetForm();
@@ -505,7 +429,7 @@ async function removeInline(p: PolicyItem) {
     v1: p.v1,
     v2: p.v2,
   };
-  const resp = await removePolicy(payload);
+  const resp = await removeViewPolicyGroup(payload);
   if (resp.success) {
     toast.value?.showToast("Policy removed.", "success");
   } else {

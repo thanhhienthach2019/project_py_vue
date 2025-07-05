@@ -100,6 +100,24 @@ const routes: RouteRecordRaw[] = [
           permission: 'menu:settings:menu:view',
         },
       },
+      {
+        path: '/settings/routers',
+        name: 'RouterManager',
+        component: () => import('@/pages/views/settings/PermissionManager.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'menu:settings:router:view',
+        },
+      },
+      {
+        path: '/settings/forms',
+        name: 'FormManager',
+        component: () => import('@/pages/views/settings/FormManager.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'menu:settings:form:view',
+        },
+      },
       { 
         path: '/403', 
         name: 'Forbidden', 

@@ -34,6 +34,7 @@ from app.models.material_request_item import MaterialRequestItem
 from app.models.machine import Machine
 from app.models.log import LoginLog
 from app.models.menu import MenuItem
+from app.models.router import router_permission
 
 # Lấy metadata từ tất cả models
 from app.core.database import Base  # Đảm bảo tất cả models kế thừa từ Base
