@@ -47,12 +47,17 @@ export const fetchUserMenus = async (): Promise<{
 // 🔹 Create new menu item
 export const createMenu = async (
   data: MenuItemCreate
-): Promise<{ success: boolean; message: string }> => {
+): Promise<{
+  success: boolean;
+  message: string;
+  data?: MenuItemResponse;
+}> => {
   try {
-    await apiClient.post("/menus", data, getAuthHeaders());
+    const response = await apiClient.post("/menus", data, getAuthHeaders());
     return {
       success: true,
       message: "Menu item created successfully",
+      data: response.data,
     };
   } catch (error: any) {
     return {
@@ -66,12 +71,17 @@ export const createMenu = async (
 export const updateMenu = async (
   menuId: number,
   data: MenuItemUpdate
-): Promise<{ success: boolean; message: string }> => {
+): Promise<{
+  success: boolean;
+  message: string;
+  data?: MenuItemResponse;
+}> => {
   try {
-    await apiClient.put(`/menus/${menuId}`, data, getAuthHeaders());
+    const response = await apiClient.put(`/menus/${menuId}`, data, getAuthHeaders());
     return {
       success: true,
       message: "Menu item updated successfully",
+      data: response.data,
     };
   } catch (error: any) {
     return {
@@ -84,7 +94,10 @@ export const updateMenu = async (
 // 🔹 Delete menu item by ID
 export const deleteMenu = async (
   menuId: number
-): Promise<{ success: boolean; message: string }> => {
+): Promise<{
+  success: boolean;
+  message: string;
+}> => {
   try {
     await apiClient.delete(`/menus/${menuId}`, getAuthHeaders());
     return {

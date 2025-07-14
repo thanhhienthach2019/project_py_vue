@@ -1,34 +1,65 @@
-/* Custom AG Grid Theme */
+/* Container bo góc & shadow: apply trực tiếp lên wrapper div */
+.grid-wrapper {
+  @apply p-4 bg-gray-800 rounded-2xl shadow-lg;
+}
+
 .ag-theme-material-futura {
-  --ag-background-color: transparent;
-  --ag-foreground-color: #ffffff;
-  --ag-header-background-color: rgba(255, 255, 255, 0.05);
-  --ag-row-hover-color: rgba(255, 255, 255, 0.03);
-  --ag-border-color: rgba(255, 255, 255, 0.1);
+  --ag-background-color: rgba(30,41,59,0.8);
+  --ag-foreground-color: #fff;
+  --ag-header-background-color: transparent;
+  --ag-row-hover-color: rgba(59,130,246,0.1);
+  --ag-border-color: rgba(255,255,255,0.15);
   --ag-font-family: 'Inter', sans-serif;
   --ag-font-size: 14px;
 }
 
+/* Header gradient & shadow */
 .ag-theme-material-futura .ag-header {
-  @apply border-b border-white/10;
+  background: linear-gradient(90deg, rgba(59,130,246,0.3), rgba(139,92,246,0.3));
+  box-shadow: inset 0 -2px 4px rgba(0,0,0,0.4);
+  border-bottom: none;
 }
 
+/* Header cell text */
 .ag-theme-material-futura .ag-header-cell {
-  @apply font-medium text-gray-300 uppercase tracking-wider text-xs;
+  @apply font-medium text-gray-200 uppercase tracking-wide text-xs;
 }
 
+/* Row striping */
+.ag-theme-material-futura .ag-row:nth-child(odd) {
+  background-color: rgba(255,255,255,0.02);
+}
+.ag-theme-material-futura .ag-row:nth-child(even) {
+  background-color: rgba(255,255,255,0.005);
+}
+
+/* Hover effect */
+.ag-theme-material-futura .ag-row-hover {
+  background-color: rgba(59,130,246,0.1) !important;
+  transition: background-color 0.2s ease;
+}
+
+/* Cell padding */
 .ag-theme-material-futura .ag-cell {
-  @apply flex items-center;
+  @apply px-4 py-2 flex items-center;
+  border-right: 1px solid var(--ag-border-color);
 }
 
-
-/* Custom Glow Effect */
-.hover\:shadow-blue-glow:hover {
-  box-shadow: 0 4px 24px -4px rgba(59, 130, 246, 0.4);
-}
-.ag-cell[col-id="actions"],
-.ag-cell[col-id="ImageUrl"],
-.ag-cell[col-id="approve"] {
+.ag-theme-material-futura .ag-cell[col-id="actions"],
+.ag-theme-material-futura .ag-cell[col-id="ImageUrl"],
+.ag-theme-material-futura .ag-cell[col-id="approve"] {
   border: none !important;
-  outline: none !important;
+}
+
+/* Popup styling */
+.ag-theme-material-futura .ag-popup {
+  z-index: 1050 !important;
+  background-color: rgba(31,41,55,0.95) !important;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.ag-theme-material-futura .btn-action {
+  @apply px-3 py-1 rounded-lg transition shadow-sm hover:shadow-lg hover:shadow-blue-500/40;
 }

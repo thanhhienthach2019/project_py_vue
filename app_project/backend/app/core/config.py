@@ -9,6 +9,7 @@ load_dotenv(dotenv_path)
 
 class Settings(BaseSettings):
     DATABASE_URL: str
+    DATABASE_URL_SQLITE: str
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
     BASE_URL: str

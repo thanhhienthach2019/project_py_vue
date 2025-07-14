@@ -65,12 +65,13 @@ export const fetchViewPolicies = async (): Promise<{
 
 export const addPolicy = async (
   policy: PolicyCreate
-): Promise<{ success: boolean; message: string }> => {
+): Promise<{ success: boolean; message: string; data?: PolicyItem }> => {
   try {
     const response = await apiClient.post("/policies", policy, getAuthHeaders());
     return {
       success: true,
       message: response.data?.msg || "Policy added successfully",
+      data: response.data?.data,  
     };
   } catch (error: any) {
     return {
@@ -79,6 +80,7 @@ export const addPolicy = async (
     };
   }
 };
+
 
 export const deletePolicy = async (
   policy: PolicyCreate

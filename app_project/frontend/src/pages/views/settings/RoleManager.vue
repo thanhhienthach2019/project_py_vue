@@ -129,137 +129,97 @@
     <div
       class="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
     >
-      <div
-        class="px-8 py-6 border-b border-white/10 flex items-center justify-between"
-      >
-        <div>
-          <h2
-            class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300"
-          >
-            User Roles
-          </h2>
-          <p class="text-sm text-gray-400 mt-1">
-            Assign and manage roles for your users
-          </p>
-        </div>
-        <div class="relative w-72">
-          <input
-            v-model="searchText"
-            placeholder="Search Roles..."
-            class="w-full pl-4 pr-10 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:ring-2 focus:ring-purple-400/30 transition-all"
-          />
-          <Icon
-            icon="mdi:magnify"
-            class="absolute right-3 top-2.5 text-gray-400"
-          />
+      <div class="px-8 py-6 border-b border-white/10">
+        <div class="flex items-start justify-between">
+          <!-- Left: icon + title + info -->
+          <div class="flex items-center space-x-4">
+            <div class="relative group">
+              <div
+                class="w-14 h-10 bg-white/10 backdrop-blur-lg rounded-xl border border-white/10 group-hover:border-green-400/40 transition-all duration-300 flex items-center justify-center"
+              >
+                <Icon icon="mdi:database" class="w-8 h-8 text-white" />
+              </div>
+              <div
+                class="absolute -bottom-1 left-4 right-4 h-1 bg-white/5 blur-sm rounded-full group-hover:bg-green-400/30 transition-colors"
+              ></div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3
+                class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 tracking-tight"
+              >
+                User Roles Data
+              </h3>
+              <p class="text-sm text-gray-400 mt-1">
+                Assign and manage roles for your users
+              </p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-sm font-medium text-gray-400"
+                  >Total Roles:</span
+                >
+                <span
+                  class="text-sm font-semibold text-green-300 bg-green-400/10 px-2 py-0.5 rounded-full flex items-center"
+                >
+                  {{ policiesGroup.length }} active
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: search box -->
+          <div class="relative w-72">
+            <input
+              v-model="quickFilterText"
+              :disabled="loading"
+              placeholder="Search Roles..."
+              class="w-full pl-4 pr-10 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-400/30 transition-all"
+            />
+            <Icon
+              icon="mdi:magnify"
+              class="absolute right-3 top-2.5 text-gray-400"
+            />
+          </div>
         </div>
       </div>
 
-      <div>
-        <table
-          class="w-full text-left table-auto border-separate border-spacing-y-2"
-        >
-          <thead>
-            <tr class="bg-[#1E2A38]">
-              <th class="px-4 py-2 text-gray-400">Type</th>
-              <th class="px-4 py-2 text-gray-400">Subject</th>
-              <th class="px-4 py-2 text-gray-400">Resource</th>
-              <th class="px-4 py-2 text-gray-400">Action</th>
-              <th class="px-4 py-2 text-right text-gray-400">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="g in paginatedPolicies"
-              :key="`${g.ptype}-${g.v0}-${g.v1}-${g.v2}`"
-              class="bg-[#1E2A38] hover:bg-[#27313f]"
-            >
-              <td class="px-4 py-2 text-white">{{ g.ptype }}</td>
-              <td class="px-4 py-2 text-white">{{ g.v0 }}</td>
-              <td class="px-4 py-2 text-white">{{ g.v1 }}</td>
-              <td class="px-4 py-2 text-white">{{ g.v2 || "-" }}</td>
-              <td class="px-4 py-2 text-right">
-                <button
-                  v-permission.disable="'menu:settings:policy:delete'"
-                  @click="removeInline(g)"
-                  class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-400 disabled:opacity-50"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-            <!-- Empty Rows for Consistent Height -->
-            <tr
-              v-for="index in emptyRowCount"
-              :key="'empty-' + index"
-              class="bg-[#1E2A38]"
-            >
-              <td colspan="5" class="px-4 py-2">&nbsp;</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div
-          v-if="!filteredPolicies.length && !loading"
-          class="text-center text-gray-400 py-6"
-        >
-          No Roles found.
-        </div>
-        <div class="text-center text-gray-400 py-6" v-if="loading">
-          Loading...
+      <div
+        ref="gridContainer"
+        class="grid-wrapper overflow-x-auto overflow-y-visible relative p-4 bg-gray-800 rounded-2xl shadow-xl border border-white/10 transition-all"
+        style="overflow-x: auto"
+      >
+        <div v-if="loading" class="flex items-center justify-center h-[600px]">
+          <Icon icon="mdi:loading" class="animate-spin w-8 h-8 text-blue-400" />
         </div>
 
-        <!-- Enhanced Pagination -->
-        <div
-          v-if="totalPages > 1"
-          class="flex justify-center items-center space-x-2 px-6 py-4 border-t border-white/10 bg-gradient-to-r from-gray-800/30 via-gray-900/30 to-gray-800/30 backdrop-blur-lg rounded-b-2xl"
-        >
-          <button
-            @click="currentPage--"
-            :disabled="currentPage === 1"
-            class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
-          >
-            <Icon icon="mdi:chevron-left" class="text-lg" />
-            <span class="ml-1 text-sm">Prev</span>
-          </button>
-
-          <template v-for="(page, idx) in pagesToShow" :key="idx">
-            <span
-              v-if="page === '...'"
-              class="w-9 h-9 flex items-center justify织center text-gray-400"
-            >
-              ...
-            </span>
-            <button
-              v-else
-              @click="typeof page === 'number' && (currentPage = page)"
-              :class="[
-                'w-9 h-9 rounded-full text-sm font-semibold transition',
-                currentPage === page
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white',
-              ]"
-            >
-              {{ page }}
-            </button>
-          </template>
-
-          <button
-            @click="currentPage++"
-            :disabled="currentPage === totalPages"
-            class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
-          >
-            <span class="mr-1 text-sm">Next</span>
-            <Icon icon="mdi:chevron-right" class="text-lg" />
-          </button>
-        </div>
+        <ag-grid-vue
+          v-if="!loading"
+          class="ag-theme-material-futura h-[600px] w-full"
+          :defaultColDef="defaultColDef"
+          :columnDefs="columnDefs"
+          :rowData="policiesGroup"
+          :frameworkComponents="frameworkComponents"
+          :gridOptions="gridOptions"
+          :quickFilterText="quickFilterText"
+          @grid-ready="onGridReady"
+          @first-data-rendered="onFirstDataRendered"
+          :rowModelType="'clientSide'"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject, type Ref, watch } from "vue";
+import {
+  ref,
+  computed,
+  onMounted,
+  inject,
+  type Ref,
+  watch,
+  nextTick,
+} from "vue";
+import { AgGridVue } from "ag-grid-vue3";
+import type { ColDef, GridApi, GridOptions } from "ag-grid-community";
 import { usePolicy } from "@/hooks/usePolicy";
 import type { PolicyItem, PolicyCreate } from "@/models/policy";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
@@ -267,33 +227,23 @@ import { Icon } from "@iconify/vue";
 import { useUser } from "@/hooks/useUser";
 import { UserRole } from "@/models/user";
 import SearchableSelect from "@/components/ui/SearchableSelect.vue";
+import RoleActionCell from "@/components/ui/RoleActionCell.vue";
+import { useAutoResizeGrid } from "@/composables/useAutoReSizeGrid";
+import { showConfirmToast } from "@/utils/confirmToast";
+import { setQuickFilterSafe } from "@/utils/agGrid";
 
-const {
-  fetchPoliciesGroup,
-  addNewPolicyGroup,
-  removePolicyGroup,
-  policiesGroup,
-  loading,
-} = usePolicy();
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
-const { fetchUsers, users } = useUser();
 
+const { fetchPoliciesGroup, addNewPolicyGroup, removePolicyGroup, loading } =
+  usePolicy();
+
+const policiesGroup = computed(() => usePolicy().policiesGroup.value);
+const { fetchUsers, users } = useUser();
 const roles = Object.values(UserRole);
 
 const form = ref<PolicyCreate>({ ptype: "g", v0: "", v1: "", v2: "" });
-const searchText = ref("");
-const currentPage = ref(1);
-const itemsPerPage = 5;
-
-// Filtered Policies (without slicing)
-const filteredPolicies = computed(() => {
-  const search = searchText.value.toLowerCase();
-  return policiesGroup.value.filter((g) =>
-    [g.ptype, g.v0, g.v1, g.v2].some((field) =>
-      field?.toLowerCase().includes(search)
-    )
-  );
-});
+const inputRef = ref<HTMLInputElement | null>(null);
+const quickFilterText = ref("");
 
 const userOptions = computed(() =>
   Array.isArray(users.value)
@@ -303,54 +253,103 @@ const userOptions = computed(() =>
       }))
     : []
 );
-// Total Pages
-const totalPages = computed(() =>
-  Math.ceil(filteredPolicies.value.length / itemsPerPage)
+
+const columnDefs = ref<ColDef[]>([
+  { headerName: "Type", field: "ptype", minWidth: 150 },
+  { headerName: "Subject", field: "v0", minWidth: 150 },
+  { headerName: "Resource", field: "v1", minWidth: 150 },
+  {
+    headerName: "Action",
+    field: "v2",
+    minWidth: 150,
+    flex: 1,
+  },
+  {
+    headerName: "Domain",
+    field: "v3",
+    minWidth: 150,
+    flex: 1,
+  },
+  {
+    headerName: "Time",
+    field: "v4",
+    minWidth: 150,
+    flex: 1,
+  },
+  {
+    headerName: "IP",
+    field: "v5",
+    minWidth: 150,
+    flex: 1,
+  },
+  {
+    headerName: "Actions",
+    field: "actions",
+    sortable: false,
+    filter: false,
+    width: 100,
+    cellRenderer: RoleActionCell,
+  },
+]);
+
+const frameworkComponents = { RoleActionCell };
+const gridApi = ref<GridApi | null>(null);
+const gridContainer = ref<HTMLElement | null>(null);
+
+const defaultColDef: ColDef = {
+  sortable: true,
+  filter: "agTextColumnFilter",
+  valueFormatter: (params) => params.value || "-",
+};
+
+const columnsToAutoSize = ["ptype", "v0", "v1"];
+const { onGridReady, onFirstDataRendered, resizeNow } = useAutoResizeGrid(
+  gridApi,
+  gridContainer,
+  columnsToAutoSize
 );
 
-// Paginated Policies
-const paginatedPolicies = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  return filteredPolicies.value.slice(start, start + itemsPerPage);
-});
+const itemsPerPage = ref(5);
+const currentPage = ref(1);
 
-// Empty Row Count for Consistent Table Height
-const emptyRowCount = computed(() => {
-  if (filteredPolicies.value.length === 0) return 0;
-  const remainder = filteredPolicies.value.length % itemsPerPage;
-  return currentPage.value === totalPages.value && remainder !== 0
-    ? itemsPerPage - remainder
-    : 0;
-});
-
-// Dynamic Page Numbers with Ellipses
-const pagesToShow = computed(() => {
-  const total = totalPages.value;
-  const current = currentPage.value;
-  const delta = 2;
-  const range: number[] = [];
-  const rangeWithDots: (number | string)[] = [];
-
-  range.push(1);
-  for (
-    let i = Math.max(2, current - delta);
-    i <= Math.min(total - 1, current + delta);
-    i++
-  ) {
-    range.push(i);
-  }
-  if (total > 1) range.push(total);
-
-  let prev: number | undefined;
-  for (const page of range) {
-    if (prev !== undefined) {
-      if (page - prev === 2) rangeWithDots.push(prev + 1);
-      else if (page - prev > 2) rangeWithDots.push("...");
+const gridOptions = ref<GridOptions>({
+  pagination: true,
+  paginationPageSize: itemsPerPage.value,
+  paginationPageSizeSelector: [5, 10, 20, 50],
+  onPaginationChanged: () => {
+    if (gridApi.value) {
+      currentPage.value = gridApi.value.paginationGetCurrentPage() + 1;
+      nextTick(resizeNow);
     }
-    rangeWithDots.push(page);
-    prev = page;
-  }
-  return rangeWithDots;
+  },
+  domLayout: "autoHeight",
+  onGridReady: (params) => {
+    gridApi.value = params.api;
+    params.api.sizeColumnsToFit();
+  },
+  context: {
+    onDelete: handleDeletePolicyLine,
+  },
+  rowModelType: "clientSide",
+  animateRows: true,
+  suppressColumnVirtualisation: false,
+  suppressRowTransform: false,
+  enableCellTextSelection: true,
+  suppressCellFocus: true,
+  suppressHorizontalScroll: true,
+  tooltipShowDelay: 300,
+  tooltipHideDelay: 200,
+});
+
+watch(policiesGroup, () => {
+  nextTick(() => {
+    setQuickFilterSafe(gridApi.value, quickFilterText.value);
+    resizeNow();
+  });
+});
+
+watch(quickFilterText, (val) => {
+  setQuickFilterSafe(gridApi.value, val);
 });
 
 onMounted(() => {
@@ -358,20 +357,9 @@ onMounted(() => {
   fetchPoliciesGroup();
 });
 
-// Reset Current Page on Search
-watch(searchText, () => {
-  currentPage.value = 1;
-});
-
-// Adjust Current Page if Exceeds Total Pages
-watch(totalPages, (newTotal) => {
-  if (currentPage.value > newTotal) {
-    currentPage.value = newTotal || 1;
-  }
-});
-
 function resetForm() {
   form.value = { ptype: "g", v0: "", v1: "", v2: "" };
+  nextTick(() => inputRef.value?.focus());
 }
 
 async function onAdd() {
@@ -381,8 +369,12 @@ async function onAdd() {
   }
   const resp = await addNewPolicyGroup(form.value);
   if (resp.success) {
-    toast.value?.showToast("Role added.", "success");
+    toast.value?.showToast(resp.message, "success");
     resetForm();
+    quickFilterText.value = "";
+    setQuickFilterSafe(gridApi.value, "");
+    await nextTick();
+    gridApi.value?.paginationGoToLastPage();
   } else {
     toast.value?.showToast(resp.message, "error");
   }
@@ -402,28 +394,23 @@ async function onRemove() {
   }
 }
 
-async function removeInline(g: PolicyItem) {
+async function handleDeletePolicyLine(g: PolicyItem) {
   const payload: PolicyCreate = {
     ptype: g.ptype,
     v0: g.v0,
     v1: g.v1,
     v2: g.v2,
   };
+  const confirmed = await showConfirmToast(
+    `Are you sure you want to delete this Role Policy?`
+  );
+  if (!confirmed) return;
+
   const resp = await removePolicyGroup(payload);
   if (resp.success) {
-    toast.value?.showToast("Role removed.", "success");
+    toast.value?.showToast("Policy removed successfully", "success");
   } else {
     toast.value?.showToast(resp.message, "error");
   }
 }
 </script>
-
-<style scoped>
-table::-webkit-scrollbar {
-  height: 6px;
-}
-table::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-</style>

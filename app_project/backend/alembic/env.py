@@ -4,40 +4,48 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
-# Load biến môi trường từ .env
 load_dotenv()
 
-# Lấy Alembic config object
 config = context.config
 
-# Ghi đè `sqlalchemy.url` bằng DATABASE_URL từ .env
-config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
+USE_SQLITE = True
 
-# Cấu hình logging
+if USE_SQLITE:
+    db_url = os.getenv("DATABASE_URL_SQLITE")
+else:
+    db_url = os.getenv("DATABASE_URL")
+
+config.set_main_option("sqlalchemy.url", db_url)
+
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Import tất cả các models
-from app.models.user import User
-from app.models.warehouse import Warehouses
-from app.models.inventory import Inventory
-from app.models.stock_history import StockHistory
-from app.models.maintenance import MaintenanceRequests, MaintenanceRequestDetails
-from app.models.material import Materials
-from app.models.supplier import Supplier
-from app.models.unit import Unit
-from app.models.stock_movement import StockMovement
-from app.models.purchase_order import PurchaseOrder
-from app.models.purchase_order_item import PurchaseOrderItem
-from app.models.material_request import MaterialRequest
-from app.models.material_request_item import MaterialRequestItem
-from app.models.machine import Machine
-from app.models.log import LoginLog
-from app.models.menu import MenuItem
-from app.models.router import router_permission
+from app.models.auth.user import User
+# from app.models.inventory.warehouse import Warehouses
+# from app.models.inventory.inventory import Inventory
+# from app.models.inventory.stock_history import StockHistory
+# from app.models.inventory.maintenance import MaintenanceRequests, MaintenanceRequestDetails
+# from app.models.inventory.material import Materials
+# from app.models.inventory.supplier import Supplier
+# from app.models.inventory.unit import Unit
+# from app.models.inventory.stock_movement import StockMovement
+# from app.models.inventory.purchase_order import PurchaseOrder
+# from app.models.inventory.purchase_order_item import PurchaseOrderItem
+# from app.models.inventory.material_request import MaterialRequest
+# from app.models.inventory.material_request_item import MaterialRequestItem
+# from app.models.inventory.machine import Machine
+from app.models.auth.log import LoginLog
+from app.models.settings import MenuItem
+from app.models.settings import router_permission
+from app.models.news.announcement import Announcement
+from app.models.news.document import DocumentCategory, Document
+from app.models.news.donor import Donor
+from app.models.news.festival import Festival
+from app.models.news.news import NewsArticle, NewsCategory
+from app.models.news.scripture import Scripture, ScriptureCategory
+from app.models.news.slide import Slide
 
-# Lấy metadata từ tất cả models
-from app.core.database import Base  # Đảm bảo tất cả models kế thừa từ Base
+from app.core.database import Base  
 
 target_metadata = Base.metadata
 

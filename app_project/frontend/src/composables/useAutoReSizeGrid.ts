@@ -3,11 +3,16 @@ import { onMounted, onBeforeUnmount, watch, type Ref, nextTick } from "vue";
 import { debounce } from "lodash";
 import type { GridApi, FirstDataRenderedEvent, GridReadyEvent } from "ag-grid-community";
 
+type UseAutoResizeGridOptions = {
+  afterFirstRender?: (api: GridApi) => void;
+};
+
 // composables/useAutoResizeGrid.ts
 export function useAutoResizeGrid(
   gridApi: Ref<GridApi | null>,
   containerRef: Ref<HTMLElement | null>,
-  columnsToAutoSize: string[] = []
+  columnsToAutoSize: string[] = [],
+  options: UseAutoResizeGridOptions = {}
 ) {
   let resizeObserver: ResizeObserver | null = null;
 
@@ -28,9 +33,14 @@ export function useAutoResizeGrid(
     handleResize();
   };
 
-  const onFirstDataRendered = async (_: FirstDataRenderedEvent) => {
+  const onFirstDataRendered = async (e: FirstDataRenderedEvent) => {
     await nextTick();
     handleResize();
+
+    const api = gridApi.value;
+    if (api && !api.isDestroyed?.() && typeof options.afterFirstRender === "function") {
+      options.afterFirstRender(api);
+    }
   };
 
   const init = () => {
@@ -40,19 +50,22 @@ export function useAutoResizeGrid(
   };
 
   onMounted(init);
-  
+
   watch(containerRef, (newEl, oldEl) => {
     if (oldEl && resizeObserver) resizeObserver.unobserve(oldEl);
     if (newEl && resizeObserver) resizeObserver.observe(newEl);
   });
+
   onBeforeUnmount(() => {
-    if (containerRef.value && resizeObserver) resizeObserver.unobserve(containerRef.value);
+    if (containerRef.value && resizeObserver) {
+      resizeObserver.unobserve(containerRef.value);
+    }
     resizeObserver = null;
   });
 
   return {
     onGridReady,
     onFirstDataRendered,
-    resizeNow: handleResize // expose function này ra ngoài
+    resizeNow: handleResize,
   };
 }

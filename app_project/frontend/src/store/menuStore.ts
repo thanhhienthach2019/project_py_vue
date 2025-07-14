@@ -6,12 +6,19 @@ import {
   updateMenu,
   deleteMenu,
 } from "@/services/menuService";
-import type { MenuItemResponse, MenuItemCreate, MenuItemUpdate } from "@/models/menu";
+import type {
+  MenuItemResponse,
+  MenuItemCreate,
+  MenuItemUpdate,
+} from "@/models/menu";
 
 interface MenuState {
   userMenus: MenuItemResponse[];
   allMenus: MenuItemResponse[];
   loading: boolean;
+  creating: boolean;
+  updating: boolean;
+  deleting: boolean;
 }
 
 export const useMenuStore = defineStore("menu", {
@@ -19,10 +26,12 @@ export const useMenuStore = defineStore("menu", {
     userMenus: [],
     allMenus: [],
     loading: false,
+    creating: false,
+    updating: false,
+    deleting: false,
   }),
 
   actions: {
-    // Load menu tree filtered by current user's permissions
     async loadUserMenus() {
       this.loading = true;
       try {
@@ -33,13 +42,12 @@ export const useMenuStore = defineStore("menu", {
           console.error(response.message);
         }
       } catch (error) {
-        console.error("An error occurred while fetching user menus:", error);
+        console.error("Error loading user menus:", error);
       } finally {
         this.loading = false;
       }
     },
 
-    // Load all menus from database
     async loadAllMenus() {
       this.loading = true;
       try {
@@ -50,58 +58,96 @@ export const useMenuStore = defineStore("menu", {
           console.error(response.message);
         }
       } catch (error) {
-        console.error("An error occurred while fetching all menus:", error);
+        console.error("Error loading all menus:", error);
       } finally {
         this.loading = false;
       }
     },
 
-    // Create new menu item
     async addNewMenu(menu: MenuItemCreate) {
+      const tempId = -Date.now();
+      const optimisticMenu: MenuItemResponse = {
+        ...menu,
+        id: tempId,
+        children: [],
+      };
+      this.allMenus.push(optimisticMenu);
+      this.creating = true;
+
       try {
         const response = await createMenu(menu);
-        if (response.success) {
-          await this.loadAllMenus();
+        if (response.success && response.data) {
+          const index = this.allMenus.findIndex((m) => m.id === tempId);
+          if (index !== -1) {
+            this.allMenus.splice(index, 1, response.data);
+          }
+          return {
+            success: true,
+            message: "Menu created successfully",
+            data: response.data,
+          };
         } else {
-          console.error(response.message);
+          throw new Error(response.message);
         }
-        return response;
       } catch (error) {
-        console.error("An error occurred while creating menu:", error);
-        return { success: false, message: "Unexpected error when creating menu." };
+        this.allMenus = this.allMenus.filter((m) => m.id !== tempId);
+        console.error("Create menu failed:", error);
+        return { success: false, message: "Failed to create menu." };
+      } finally {
+        this.creating = false;
       }
     },
 
-    // Update existing menu item
     async updateExistingMenu(menuId: number, updatedData: MenuItemUpdate) {
+      const index = this.allMenus.findIndex((m) => m.id === menuId);
+      if (index === -1) {
+        return { success: false, message: "Menu not found." };
+      }
+
+      const backup = { ...this.allMenus[index] };
+      this.allMenus[index] = { ...backup, ...updatedData };
+      this.updating = true;
+
       try {
         const response = await updateMenu(menuId, updatedData);
-        if (response.success) {
-          await this.loadAllMenus();
+        if (response.success && response.data) {
+          this.allMenus[index] = response.data;
+          return {
+            success: true,
+            message: "Menu updated successfully",
+            data: response.data,
+          };
         } else {
-          console.error(response.message);
+          throw new Error(response.message);
         }
-        return response;
       } catch (error) {
-        console.error("An error occurred while updating menu:", error);
-        return { success: false, message: "Unexpected error when updating menu." };
+        this.allMenus[index] = backup;
+        console.error("Update menu failed:", error);
+        return { success: false, message: "Failed to update menu." };
+      } finally {
+        this.updating = false;
       }
     },
 
-    // Delete menu item
     async removeMenu(menuId: number) {
+      const backup = [...this.allMenus];
+      this.allMenus = this.allMenus.filter((m) => m.id !== menuId);
+      this.deleting = true;
+
       try {
         const response = await deleteMenu(menuId);
         if (response.success) {
-          await this.loadAllMenus();
+          return { success: true, message: "Menu deleted successfully" };
         } else {
-          console.error(response.message);
+          throw new Error(response.message);
         }
-        return response;
       } catch (error) {
-        console.error("An error occurred while deleting menu:", error);
-        return { success: false, message: "Unexpected error when deleting menu." };
+        this.allMenus = backup;
+        console.error("Delete menu failed:", error);
+        return { success: false, message: "Failed to delete menu." };
+      } finally {
+        this.deleting = false;
       }
-    }
-  }
+    },
+  },
 });

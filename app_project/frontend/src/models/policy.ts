@@ -1,6 +1,7 @@
 export type PolicyType = "p" | "g";
 
 export interface PolicyItem {
+  id: string | number;
   ptype: PolicyType;   // "p" = policy, "g" = grouping
   v0: string;          // subject: user/role
   v1: string;          // object: resource/menu

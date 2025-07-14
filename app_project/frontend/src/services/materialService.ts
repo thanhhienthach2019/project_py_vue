@@ -31,7 +31,7 @@ export const createMaterial = async (
         if (materialData.Weight) formData.append("Weight", materialData.Weight.toString());
         if (materialData.Dimensions) formData.append("Dimensions", materialData.Dimensions);
 
-        const response = await apiClient.post("/add_material", formData, {
+        const response = await apiClient.post("/materials", formData, {
             headers: {
                 ...(getAuthHeaders().headers || {}),
             "Content-Type": "multipart/form-data"
@@ -64,7 +64,7 @@ export const updateMaterial = async (materialId: number, materialData: Material)
             }
             if (materialData.Weight) formData.append("Weight", materialData.Weight.toString());
             if (materialData.Dimensions) formData.append("Dimensions", materialData.Dimensions);
-            const response = await apiClient.put(`/update_material/${materialId}`, formData, {
+            const response = await apiClient.put(`/materials/${materialId}`, formData, {
               headers: {
                   ...(getAuthHeaders().headers || {}),
                   "Content-Type": "multipart/form-data"
@@ -82,21 +82,21 @@ export const updateMaterial = async (materialId: number, materialData: Material)
   };
 
 export const deleteMaterial = async (materialId: number): Promise<{ message: string }> => {
-    const response = await apiClient.delete(`/delete_material/${materialId}`, getAuthHeaders());
+    const response = await apiClient.delete(`/materials/${materialId}`, getAuthHeaders());
     return response.data;
 };
 
 export const getMaterialWithStock = async (
-    materialId: number,
-    warehouseId: number
-  ): Promise<MaterialWithStock> => {
-    try {
-      const response = await apiClient.get(
-        `/materials/with-stock/${materialId}?warehouse_id=${warehouseId}`,
-        getAuthHeaders()
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  };
+  materialId: number,
+  warehouseId: number
+): Promise<MaterialWithStock> => {
+  try {
+    const response = await apiClient.get(
+      `/materials/${materialId}/with-stock?warehouse_id=${warehouseId}`,
+      getAuthHeaders()
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

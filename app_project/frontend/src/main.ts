@@ -16,7 +16,21 @@ import { vPermission } from "./directives/permission";
 
 // Đăng ký các module cần thiết cho ag-grid
 import { ModuleRegistry } from 'ag-grid-community';
-import { ClientSideRowModelModule, ValidationModule, PaginationModule, TextFilterModule, QuickFilterModule, ColumnAutoSizeModule, CsvExportModule, TextEditorModule, RenderApiModule, CustomEditorModule, NumberEditorModule, ColumnApiModule } from 'ag-grid-community';
+import { 
+  ClientSideRowModelModule, 
+  ValidationModule, 
+  PaginationModule, 
+  TextFilterModule, 
+  QuickFilterModule, 
+  ColumnAutoSizeModule, 
+  CsvExportModule, 
+  TextEditorModule, 
+  RenderApiModule, 
+  CustomEditorModule, 
+  NumberEditorModule, 
+  ColumnApiModule,
+  
+ } from 'ag-grid-community';
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
   ValidationModule,
@@ -29,7 +43,7 @@ ModuleRegistry.registerModules([
   RenderApiModule,
   CustomEditorModule,
   NumberEditorModule,
-  ColumnApiModule
+  ColumnApiModule,
 ]);
 
 async function bootstrap() {

@@ -1,54 +1,55 @@
 import { getAuthHeaders } from "@/utils/authHeaders";
 import apiClient from "@/utils/apiClient";
-import type { Warehouse } from "@/models/warehouse"; // Đảm bảo type này đã được định nghĩa trong project của bạn
+import type { Warehouse } from "@/models/warehouse";
 
-// Lấy danh sách tất cả các kho
+// Get all warehouses
 export const getAllWarehouses = async (): Promise<Warehouse[]> => {
-  const response = await apiClient.get("/get_warehouse", getAuthHeaders());
+  const response = await apiClient.get("/warehouses", getAuthHeaders());
   return response.data;
 };
 
-// Tạo mới một kho
+// Create a new warehouse
 export const createWarehouse = async (
   warehouseData: Warehouse
 ): Promise<{ success: boolean; data?: Warehouse; message: string }> => {
   try {
-    const response = await apiClient.post("/add_warehouse", warehouseData, getAuthHeaders());
-    if (response.status === 201 || response.status === 200) {
-      return { success: true, data: response.data, message: "Thêm kho thành công!" };
-    } else {
-      return { success: false, message: "Thêm kho thất bại!" };
-    }
-  } catch (error) {
-    return { success: false, message: "Có lỗi xảy ra khi thêm kho!" };
+    const response = await apiClient.post("/warehouses", warehouseData, getAuthHeaders());
+    return { success: true, data: response.data, message: "Warehouse created successfully." };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.response?.data?.detail || "An error occurred while creating the warehouse."
+    };
   }
 };
 
-// Cập nhật thông tin một kho dựa vào warehouseId
+// Update an existing warehouse
 export const updateWarehouse = async (
   warehouseId: number,
   warehouseData: Warehouse
 ): Promise<{ success: boolean; data?: Warehouse; message: string }> => {
   try {
-    const response = await apiClient.put(`/update_warehouse/${warehouseId}`, warehouseData, getAuthHeaders());
-    if (response.status === 201 || response.status === 200) {
-      return { success: true, data: response.data, message: "Cập nhật kho thành công!" };
-    } else {
-      return { success: false, message: "Cập nhật kho thất bại!" };
-    }
-  } catch (error) {
-    return { success: false, message: "Có lỗi xảy ra khi cập nhật kho!" };
+    const response = await apiClient.put(`/warehouses/${warehouseId}`, warehouseData, getAuthHeaders());
+    return { success: true, data: response.data, message: "Warehouse updated successfully." };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.response?.data?.detail || "An error occurred while updating the warehouse."
+    };
   }
 };
 
-// Xoá một kho dựa vào warehouseId
+// Delete a warehouse
 export const deleteWarehouse = async (
   warehouseId: number
-): Promise<{ message: string }> => {
+): Promise<{ success: boolean; message: string }> => {
   try {
-    const response = await apiClient.delete(`/delete_warehouse/${warehouseId}`, getAuthHeaders());
-    return response.data;
-  } catch (error) {
-    return { message: "Có lỗi xảy ra khi xoá kho!" };
+    const response = await apiClient.delete(`/warehouses/${warehouseId}`, getAuthHeaders());
+    return { success: true, message: response.data.message || "Warehouse deleted successfully." };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.response?.data?.detail || "An error occurred while deleting the warehouse."
+    };
   }
 };

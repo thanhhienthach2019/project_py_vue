@@ -49,7 +49,6 @@ export enum UserRole {
 }
 
 export enum Action {
-  VIEW       = 'view',
   CREATE        = 'create',
   UPDATE       = 'update',
   DELETE     = 'delete',

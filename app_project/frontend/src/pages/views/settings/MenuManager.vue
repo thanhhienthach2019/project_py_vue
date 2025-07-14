@@ -121,7 +121,7 @@
             v-permission.disable="'menu:settings:menu:create'"
             v-if="!editMode"
             @click="onAdd"
-            class="flex items-center gap-2 bg-green-600 hover:bg-green-500 px-6 py-3 rounded-xl text-white font-semibold transition-all"
+            class="btn-gradient-green"
           >
             <Icon icon="mdi:plus-box" class="text-xl" />
             Create Menu
@@ -132,7 +132,7 @@
             v-permission.disable="'menu:settings:menu:update'"
             v-if="editMode"
             @click="onUpdate"
-            class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-white font-semibold transition-all"
+            class="btn-gradient-blue"
           >
             <Icon icon="mdi:content-save-edit" class="text-xl" />
             Update Menu
@@ -143,7 +143,7 @@
             v-permission.disable="'menu:settings:menu:delete'"
             v-if="editMode"
             @click="onDelete"
-            class="flex items-center gap-2 bg-red-600 hover:bg-red-500 px-6 py-3 rounded-xl text-white font-semibold transition-all"
+            class="btn-gradient-red"
           >
             <Icon icon="mdi:delete-forever" class="text-xl" />
             Delete Menu
@@ -156,140 +156,205 @@
     <div
       class="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
     >
-      <div
-        class="px-8 py-6 border-b border-white/10 flex items-center justify-between"
-      >
-        <div>
-          <h2 class="text-2xl font-semibold text-white">Menus List</h2>
-          <p class="mt-1 text-sm">
-            Manage your menu structure and access hierarchy
-          </p>
-        </div>
-        <div class="relative w-72">
-          <input
-            v-model="searchText"
-            placeholder="Search Menus..."
-            class="w-full pl-4 pr-10 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white"
-          />
-          <Icon
-            icon="mdi:magnify"
-            class="absolute right-3 top-2.5 text-gray-400"
-          />
-        </div>
-      </div>
-      <table
-        class="w-full text-left table-auto border-separate border-spacing-y-2"
-      >
-        <thead>
-          <tr class="bg-[#1E2A38]">
-            <th class="px-4 py-2 text-gray-400">Title</th>
-            <th class="px-4 py-2 text-gray-400">Path</th>
-            <th class="px-4 py-2 text-gray-400">Icon</th>
-            <th class="px-4 py-2 text-gray-400">Permission Key</th>
-            <th class="px-4 py-2 text-gray-400">Order</th>
-            <th class="px-4 py-2 text-gray-400">Parent</th>
-            <th class="px-4 py-2 text-right text-gray-400">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="item in paginatedMenus"
-            :key="item.id"
-            class="bg-[#1E2A38] hover:bg-[#27313f]"
-          >
-            <td class="px-4 py-2 text-white">{{ item.title }}</td>
-            <td class="px-4 py-2 text-white">{{ item.path }}</td>
-            <td class="px-4 py-2 text-white"><Icon :icon="item.icon" /></td>
-            <td class="px-4 py-2 text-white">{{ item.permission_key }}</td>
-            <td class="px-4 py-2 text-white">{{ item.order }}</td>
-            <td class="px-4 py-2 text-white">
-              {{ getParentTitle(item.parent_id) }}
-            </td>
-            <td class="px-4 py-2 text-right">
-              <button
-                @click="onEdit(item)"
-                class="px-3 py-1 bg-blue-500 rounded-lg text-white"
+      <div class="px-8 py-6 border-b border-white/10">
+        <div class="flex items-start justify-between">
+          <!-- Left: icon + title + info -->
+          <div class="flex items-center space-x-4">
+            <div class="relative group">
+              <div
+                class="w-14 h-10 bg-white/10 backdrop-blur-lg rounded-xl border border-white/10 group-hover:border-green-400/40 transition-all duration-300 flex items-center justify-center"
               >
-                Edit
-              </button>
-            </td>
-          </tr>
-          <tr
-            v-for="index in emptyRowCount"
-            :key="'empty-' + index"
-            class="bg-[#1E2A38]"
-          >
-            <td class="px-4 py-2" colspan="7">&nbsp;</td>
-          </tr>
-        </tbody>
-      </table>
-      <div v-if="!filteredMenus.length" class="text-center text-gray-400 py-6">
-        No menus found.
+                <Icon icon="mdi:database" class="w-8 h-8 text-white" />
+              </div>
+              <div
+                class="absolute -bottom-1 left-4 right-4 h-1 bg-white/5 blur-sm rounded-full group-hover:bg-green-400/30 transition-colors"
+              ></div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3
+                class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 tracking-tight"
+              >
+                Users List Data
+              </h3>
+              <p class="text-sm text-gray-400 mt-1">
+                View and manage application users
+              </p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-sm font-medium text-gray-400"
+                  >Total Users:</span
+                >
+                <span
+                  class="text-sm font-semibold text-green-300 bg-green-400/10 px-2 py-0.5 rounded-full flex items-center"
+                >
+                  {{ allMenus.length }} active
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: search box -->
+          <div class="relative w-72">
+            <input
+              v-model="quickFilterText"
+              :disabled="loading"
+              placeholder="Search Roles..."
+              class="w-full pl-4 pr-10 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-400/30 transition-all"
+            />
+            <Icon
+              icon="mdi:magnify"
+              class="absolute right-3 top-2.5 text-gray-400"
+            />
+          </div>
+        </div>
       </div>
-      <!-- Pagination -->
+
       <div
-        v-if="totalPages > 1"
-        class="flex justify-center items-center space-x-2 px-6 py-4 border-t border-white/10 bg-gradient-to-r from-gray-800/30 via-gray-900/30 to-gray-800/30 backdrop-blur-lg rounded-b-2xl"
+        ref="gridContainer"
+        class="grid-wrapper overflow-x-auto overflow-y-visible relative p-4 bg-gray-800 rounded-2xl shadow-xl border border-white/10 transition-all"
+        style="overflow-x: auto"
       >
-        <!-- Previous -->
-        <button
-          @click="currentPage--"
-          :disabled="currentPage === 1"
-          class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
-        >
-          <Icon icon="mdi:chevron-left" class="text-lg" />
-          <span class="ml-1 text-sm">Prev</span>
-        </button>
+        <div v-if="loading" class="flex items-center justify-center h-[600px]">
+          <Icon icon="mdi:loading" class="animate-spin w-8 h-8 text-blue-400" />
+        </div>
 
-        <!-- Dynamic Page Numbers with Dots -->
-        <template v-for="(page, idx) in pagesToShow" :key="idx">
-          <span
-            v-if="page === '...'"
-            class="w-9 h-9 flex items-center justify-center text-gray-400"
-          >
-            ...
-          </span>
-          <button
-            v-else
-            @click="currentPage = page as number"
-            :class="[
-              'w-9 h-9 rounded-full text-sm font-semibold transition',
-              currentPage === page
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white',
-            ]"
-          >
-            {{ page }}
-          </button>
-        </template>
-
-        <!-- Next -->
-        <button
-          @click="currentPage++"
-          :disabled="currentPage === totalPages"
-          class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
-        >
-          <span class="mr-1 text-sm">Next</span>
-          <Icon icon="mdi:chevron-right" class="text-lg" />
-        </button>
+        <ag-grid-vue
+          v-if="!loading"
+          class="ag-theme-material-futura h-[600px] w-full"
+          :defaultColDef="defaultColDef"
+          :columnDefs="columnDefs"
+          :rowData="allMenus"
+          :frameworkComponents="frameworkComponents"
+          :gridOptions="gridOptions"
+          :quickFilterText="quickFilterText"
+          @grid-ready="onGridReady"
+          @first-data-rendered="onFirstDataRendered"
+          :rowModelType="'clientSide'"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject, type Ref, watch } from "vue";
+import { AgGridVue } from "ag-grid-vue3";
+import type { ColDef, GridApi, GridOptions } from "ag-grid-community";
+import {
+  ref,
+  computed,
+  onMounted,
+  inject,
+  type Ref,
+  watch,
+  nextTick,
+} from "vue";
 import { Icon } from "@iconify/vue";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { useMenu } from "@/hooks/useMenu";
+import EditActionCell from "@/components/ui/EditActionCell.vue";
+import { useAutoResizeGrid } from "@/composables/useAutoReSizeGrid";
+import { showConfirmToast } from "@/utils/confirmToast";
+import { setQuickFilterSafe } from "@/utils/agGrid";
 import type {
   MenuItemResponse,
   MenuItemCreate,
   MenuItemUpdate,
 } from "@/models/menu";
 
-const { fetchAllMenus, addMenu, updateMenu, removeMenu, allMenus } = useMenu();
+const { fetchAllMenus, addMenu, updateMenu, removeMenu, loading } = useMenu();
+const allMenus = computed(() => useMenu().allMenus.value);
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
+const inputRef = ref<HTMLInputElement | null>(null);
+const quickFilterText = ref("");
+
+const columnDefs = ref<ColDef[]>([
+  { headerName: "Title", field: "title", minWidth: 150 },
+  { headerName: "Path", field: "path", minWidth: 150 },
+  { headerName: "Icon", field: "icon", minWidth: 150 },
+  {
+    headerName: "Permission Key",
+    field: "permission_key",
+    minWidth: 70,
+  },
+  { headerName: "Order", field: "order", minWidth: 70, flex: 1 },
+  {
+    headerName: "Parent",
+    field: "parent",
+    minWidth: 70,
+    flex: 1,
+    valueGetter: (params) => {
+      const parentId = params.data.parent_id;
+      const parent = allMenus.value.find((m) => m.id === parentId);
+      return parent ? parent.title : "-";
+    },
+  },
+  {
+    headerName: "Actions",
+    field: "actions",
+    sortable: false,
+    filter: false,
+    width: 100,
+    cellRenderer: EditActionCell,
+  },
+]);
+
+const frameworkComponents = { EditActionCell };
+const gridApi = ref<GridApi | null>(null);
+const gridContainer = ref<HTMLElement | null>(null);
+
+const defaultColDef: ColDef = {
+  sortable: true,
+  filter: "agTextColumnFilter",
+  valueFormatter: (params) => params.value || "-",
+};
+
+const columnsToAutoSize = ["title", "path", "permission_key", "parent"];
+const { onGridReady, onFirstDataRendered, resizeNow } = useAutoResizeGrid(
+  gridApi,
+  gridContainer,
+  columnsToAutoSize
+);
+
+const itemsPerPage = ref(5);
+const currentPage = ref(1);
+const gridOptions = ref<GridOptions>({
+  pagination: true,
+  paginationPageSize: itemsPerPage.value,
+  paginationPageSizeSelector: [5, 10, 20, 50],
+  onPaginationChanged: () => {
+    if (gridApi.value) {
+      currentPage.value = gridApi.value.paginationGetCurrentPage() + 1;
+      nextTick(resizeNow);
+    }
+  },
+  domLayout: "autoHeight",
+  onGridReady: (params) => {
+    gridApi.value = params.api;
+    params.api.sizeColumnsToFit();
+  },
+  context: {
+    onEdit: onEdit,
+  },
+  rowModelType: "clientSide",
+  animateRows: true,
+  suppressColumnVirtualisation: false,
+  suppressRowTransform: false,
+  enableCellTextSelection: true,
+  suppressCellFocus: true,
+  suppressHorizontalScroll: true,
+  tooltipShowDelay: 300,
+  tooltipHideDelay: 200,
+});
+
+watch(allMenus, () => {
+  nextTick(() => {
+    setQuickFilterSafe(gridApi.value, quickFilterText.value);
+    resizeNow();
+  });
+});
+
+watch(quickFilterText, (val) => {
+  setQuickFilterSafe(gridApi.value, val);
+});
 
 const form = ref<MenuItemCreate>({
   title: "",
@@ -301,17 +366,6 @@ const form = ref<MenuItemCreate>({
 });
 const editMode = ref(false);
 const currentEditId = ref<number | null>(null);
-const searchText = ref("");
-
-const filteredMenus = computed(() => {
-  const s = searchText.value.toLowerCase();
-  return allMenus.value.filter(
-    (m) =>
-      m.title.toLowerCase().includes(s) ||
-      m.path.toLowerCase().includes(s) ||
-      m.permission_key.toLowerCase().includes(s)
-  );
-});
 
 onMounted(() => fetchAllMenus());
 
@@ -326,14 +380,14 @@ function resetForm() {
   };
   editMode.value = false;
   currentEditId.value = null;
+  nextTick(() => inputRef.value?.focus());
 }
 
 async function onAdd() {
   const resp = await addMenu(form.value);
   if (resp.success) {
-    toast.value.showToast("Menu created.", "success");
+    toast.value.showToast(resp.message, "success");
     resetForm();
-    await fetchAllMenus();
   } else {
     toast.value.showToast(resp.message, "error");
   }
@@ -352,9 +406,8 @@ async function onUpdate() {
     form.value as MenuItemUpdate
   );
   if (resp.success) {
-    toast.value.showToast("Menu updated.", "success");
+    toast.value.showToast(resp.message, "success");
     resetForm();
-    await fetchAllMenus();
   } else {
     toast.value.showToast(resp.message, "error");
   }
@@ -362,92 +415,16 @@ async function onUpdate() {
 
 async function onDelete() {
   if (currentEditId.value === null) return;
+  const confirmed = await showConfirmToast(
+    `Are you sure you want to delete this menu?`
+  );
+  if (!confirmed) return;
   const resp = await removeMenu(currentEditId.value);
   if (resp.success) {
-    toast.value.showToast("Menu deleted.", "success");
+    toast.value.showToast(resp.message, "success");
     resetForm();
-    await fetchAllMenus();
   } else {
     toast.value.showToast(resp.message, "error");
   }
 }
-
-function getParentTitle(id?: number | null) {
-  const parent = allMenus.value.find((m) => m.id === id);
-  return parent ? parent.title : "-";
-}
-
-const currentPage = ref(1);
-const pageSize = ref(5);
-
-const filteredMenusRaw = computed(() => {
-  const s = searchText.value.toLowerCase();
-  return allMenus.value.filter((m) =>
-    [m.title, m.path, m.permission_key].some((field) =>
-      field.toLowerCase().includes(s)
-    )
-  );
-});
-
-const totalPages = computed(() =>
-  Math.ceil(filteredMenusRaw.value.length / pageSize.value)
-);
-
-const emptyRowCount = computed(() => {
-  return pageSize.value - paginatedMenus.value.length;
-});
-
-const paginatedMenus = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  return filteredMenusRaw.value.slice(start, start + pageSize.value);
-});
-
-const pagesToShow = computed(() => {
-  const total = totalPages.value;
-  const current = currentPage.value;
-  const delta = 1;
-  const range: (number | string)[] = [];
-  const rangeWithDots: (number | string)[] = [];
-  let last: number | undefined;
-
-  for (let i = 1; i <= total; i++) {
-    if (
-      i === 1 ||
-      i === total ||
-      (i >= current - delta && i <= current + delta)
-    ) {
-      range.push(i);
-    }
-  }
-
-  for (const page of range) {
-    if (last !== undefined) {
-      if (typeof page === "number" && typeof last === "number") {
-        if (page - last === 2) {
-          rangeWithDots.push(last + 1);
-        } else if (page - last > 2) {
-          rangeWithDots.push("...");
-        }
-      }
-    }
-    rangeWithDots.push(page);
-    last = page as number;
-  }
-
-  return rangeWithDots;
-});
-
-watch(searchText, () => {
-  currentPage.value = 1;
-});
 </script>
-
-<style scoped>
-table::-webkit-scrollbar {
-  height: 6px;
-}
-table::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-</style>

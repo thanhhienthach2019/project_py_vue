@@ -1,5 +1,3 @@
-// src/services/maintenance.ts
-
 import apiClient from "@/utils/apiClient";
 import { getAuthHeaders } from "@/utils/authHeaders";
 import type {
@@ -8,163 +6,125 @@ import type {
   MaintenanceRequestUpdate
 } from "@/models/maintenance";
 
+// Create a maintenance request
 export const createMaintenanceRequest = async (
   requestData: MaintenanceRequestCreate
 ): Promise<{ success: boolean; data?: MaintenanceRequestResponse; message: string }> => {
   try {
     const response = await apiClient.post("/maintenance-requests", requestData, getAuthHeaders());
-    if (response.status === 200 || response.status === 201) {
-      return {
-        success: true,
-        data: response.data,
-        message: "Maintenance request created successfully."
-      };
-    } else {
-      return {
-        success: false,
-        message: "Failed to create maintenance request."
-      };
-    }
+    return {
+      success: true,
+      data: response.data,
+      message: "Maintenance request created successfully."
+    };
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "An error occurred while creating the maintenance request."
+      message: error.response?.data?.detail || "Failed to create maintenance request."
     };
   }
 };
 
+// Approve a maintenance request
 export const approveMaintenanceRequest = async (
   requestId: number
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    const response = await apiClient.post(
-      "/approve-maintenance-request",
+    const response = await apiClient.patch(
+      `/maintenance-requests/${requestId}/approve`,
       null,
-      {
-        ...getAuthHeaders(),
-        params: { request_id: requestId }
-      }
+      getAuthHeaders()
     );
-    if (response.status === 200) {
-      return {
-        success: true,
-        message: response.data.message || "Maintenance request approved successfully."
-      };
-    } else {
-      return {
-        success: false,
-        message: "Failed to approve maintenance request."
-      };
-    }
+    return {
+      success: true,
+      message: response.data.message || "Maintenance request approved successfully."
+    };
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "An error occurred while approving the maintenance request."
+      message: error.response?.data?.detail || "Failed to approve maintenance request."
     };
   }
 };
 
+// Update a maintenance request
 export const updateMaintenanceRequest = async (
   requestId: number,
   updateData: MaintenanceRequestUpdate
 ): Promise<{ success: boolean; data?: MaintenanceRequestResponse; message: string }> => {
   try {
     const response = await apiClient.put(
-      `/update-maintenance-request/${requestId}`,
+      `/maintenance-requests/${requestId}`,
       updateData,
       getAuthHeaders()
     );
-    if (response.status === 200) {
-      return {
-        success: true,
-        data: response.data,
-        message: "Maintenance request updated successfully."
-      };
-    } else {
-      return {
-        success: false,
-        message: "Failed to update maintenance request."
-      };
-    }
+    return {
+      success: true,
+      data: response.data,
+      message: "Maintenance request updated successfully."
+    };
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "An error occurred while updating the maintenance request."
+      message: error.response?.data?.detail || "Failed to update maintenance request."
     };
   }
 };
 
+// Delete a maintenance request
 export const deleteMaintenanceRequest = async (
   requestId: number
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    const response = await apiClient.delete(
-      `/delete-maintenance-request/${requestId}`,
-      getAuthHeaders()
-    );
-    if (response.status === 200) {
-      return {
-        success: true,
-        message: "Maintenance request deleted successfully."
-      };
-    } else {
-      return {
-        success: false,
-        message: "Failed to delete maintenance request."
-      };
-    }
+    const response = await apiClient.delete(`/maintenance-requests/${requestId}`, getAuthHeaders());
+    return {
+      success: true,
+      message: response.data.message || "Maintenance request deleted successfully."
+    };
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "An error occurred while deleting the maintenance request."
+      message: error.response?.data?.detail || "Failed to delete maintenance request."
     };
   }
 };
 
-export const getAllMaintenanceRequests = async (): Promise<{ success: boolean; data?: MaintenanceRequestResponse[]; message: string }> => {
+// Get all maintenance requests
+export const getAllMaintenanceRequests = async (): Promise<{
+  success: boolean;
+  data?: MaintenanceRequestResponse[];
+  message: string;
+}> => {
   try {
     const response = await apiClient.get("/maintenance-requests", getAuthHeaders());
-    if (response.status === 200) {
-      return {
-        success: true,
-        data: response.data,
-        message: "Successfully retrieved maintenance requests."
-      };
-    } else {
-      return {
-        success: false,
-        message: "Failed to retrieve maintenance requests."
-      };
-    }
+    return {
+      success: true,
+      data: response.data,
+      message: "Successfully retrieved all maintenance requests."
+    };
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "An error occurred while retrieving maintenance requests."
+      message: error.response?.data?.detail || "Failed to retrieve maintenance requests."
     };
   }
 };
 
+// Get maintenance request by ID
 export const getMaintenanceRequestById = async (
   requestId: number
 ): Promise<{ success: boolean; data?: MaintenanceRequestResponse; message: string }> => {
   try {
     const response = await apiClient.get(`/maintenance-requests/${requestId}`, getAuthHeaders());
-    if (response.status === 200) {
-      return {
-        success: true,
-        data: response.data,
-        message: "Successfully retrieved maintenance request details."
-      };
-    } else {
-      return {
-        success: false,
-        message: "Failed to retrieve maintenance request details."
-      };
-    }
+    return {
+      success: true,
+      data: response.data,
+      message: "Successfully retrieved maintenance request details."
+    };
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "An error occurred while retrieving maintenance request details."
+      message: error.response?.data?.detail || "Failed to retrieve maintenance request details."
     };
   }
 };

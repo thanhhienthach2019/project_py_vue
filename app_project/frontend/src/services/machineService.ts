@@ -5,19 +5,12 @@ import type { Machine } from "@/models/machine";
 // Get all machines
 export const getAllMachines = async (): Promise<{ success: boolean; data?: Machine[]; message: string }> => {
   try {
-    const response = await apiClient.get("/get_machines", getAuthHeaders());
-    if (response.status === 200) {
-      return {
-        success: true,
-        data: response.data,
-        message: "Successfully retrieved machine list."
-      };
-    } else {
-      return {
-        success: false,
-        message: "Failed to retrieve machine list."
-      };
-    }
+    const response = await apiClient.get("/machines", getAuthHeaders());
+    return {
+      success: true,
+      data: response.data,
+      message: "Successfully retrieved machine list."
+    };
   } catch (error: any) {
     return {
       success: false,
@@ -31,19 +24,12 @@ export const getMachineById = async (
   machineId: number
 ): Promise<{ success: boolean; data?: Machine; message: string }> => {
   try {
-    const response = await apiClient.get(`/get_machine/${machineId}`, getAuthHeaders());
-    if (response.status === 200) {
-      return {
-        success: true,
-        data: response.data,
-        message: "Successfully retrieved machine details."
-      };
-    } else {
-      return {
-        success: false,
-        message: "Failed to retrieve machine details."
-      };
-    }
+    const response = await apiClient.get(`/machines/${machineId}`, getAuthHeaders());
+    return {
+      success: true,
+      data: response.data,
+      message: "Successfully retrieved machine details."
+    };
   } catch (error: any) {
     return {
       success: false,
@@ -57,19 +43,12 @@ export const createMachine = async (
   machineData: Machine
 ): Promise<{ success: boolean; data?: Machine; message: string }> => {
   try {
-    const response = await apiClient.post("/add_machine", machineData, getAuthHeaders());
-    if (response.status === 200 || response.status === 201) {
-      return {
-        success: true,
-        data: response.data,
-        message: "Machine created successfully."
-      };
-    } else {
-      return {
-        success: false,
-        message: "Failed to create machine."
-      };
-    }
+    const response = await apiClient.post("/machines", machineData, getAuthHeaders());
+    return {
+      success: true,
+      data: response.data,
+      message: "Machine created successfully."
+    };
   } catch (error: any) {
     return {
       success: false,
@@ -84,19 +63,12 @@ export const updateMachine = async (
   machineData: Machine
 ): Promise<{ success: boolean; data?: Machine; message: string }> => {
   try {
-    const response = await apiClient.put(`/update_machine/${machineId}`, machineData, getAuthHeaders());
-    if (response.status === 200 || response.status === 201) {
-      return {
-        success: true,
-        data: response.data,
-        message: "Machine updated successfully."
-      };
-    } else {
-      return {
-        success: false,
-        message: "Failed to update machine."
-      };
-    }
+    const response = await apiClient.put(`/machines/${machineId}`, machineData, getAuthHeaders());
+    return {
+      success: true,
+      data: response.data,
+      message: "Machine updated successfully."
+    };
   } catch (error: any) {
     return {
       success: false,
@@ -110,18 +82,11 @@ export const deleteMachine = async (
   machineId: number
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    const response = await apiClient.delete(`/delete_machine/${machineId}`, getAuthHeaders());
-    if (response.status === 200) {
-      return {
-        success: true,
-        message: "Machine deleted successfully."
-      };
-    } else {
-      return {
-        success: false,
-        message: "Failed to delete machine."
-      };
-    }
+    await apiClient.delete(`/machines/${machineId}`, getAuthHeaders());
+    return {
+      success: true,
+      message: "Machine deleted successfully."
+    };
   } catch (error: any) {
     return {
       success: false,
