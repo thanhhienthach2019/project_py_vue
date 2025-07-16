@@ -93,14 +93,17 @@
         >
           <ul class="py-2">
             <li>
-              <button @click="navigateTo('/settings/forms')" class="menu-item">
+              <button
+                @click="navigateTo('/admin/settings/forms')"
+                class="menu-item"
+              >
                 <Icon icon="mdi:form-select" class="icon" />
                 Manager Form Access
               </button>
             </li>
             <li>
               <button
-                @click="navigateTo('/settings/policies')"
+                @click="navigateTo('/admin/settings/policies')"
                 class="menu-item"
               >
                 <Icon icon="mdi:shield-key-outline" class="icon" />
@@ -108,26 +111,35 @@
               </button>
             </li>
             <li>
-              <button @click="navigateTo('/settings/roles')" class="menu-item">
+              <button
+                @click="navigateTo('/admin/settings/roles')"
+                class="menu-item"
+              >
                 <Icon icon="mdi:account-group-outline" class="icon" />
                 Manage Roles
               </button>
             </li>
             <li>
-              <button @click="navigateTo('/settings/users')" class="menu-item">
+              <button
+                @click="navigateTo('/admin/settings/users')"
+                class="menu-item"
+              >
                 <Icon icon="mdi:account-outline" class="icon" />
                 Manage Users
               </button>
             </li>
             <li>
-              <button @click="navigateTo('/settings/menus')" class="menu-item">
+              <button
+                @click="navigateTo('/admin/settings/menus')"
+                class="menu-item"
+              >
                 <Icon icon="mdi:menu" class="icon" />
                 Menu Management
               </button>
             </li>
             <li>
               <button
-                @click="navigateTo('/settings/routers')"
+                @click="navigateTo('/admin/settings/routers')"
                 class="menu-item"
               >
                 <Icon icon="mdi-router" class="icon" />
@@ -143,10 +155,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore } from "@/store/auth/authStore";
 import { useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/auth/useAuth";
 
 const authStore = useAuthStore();
 const router = useRouter();

@@ -260,15 +260,15 @@ import {
   nextTick,
 } from "vue";
 import { debounce } from "lodash";
-import { usePolicy } from "@/hooks/usePolicy";
-import type { PolicyItem, PolicyCreate } from "@/models/policy";
+import { usePolicy } from "@/hooks/settings/usePolicy";
+import type { PolicyItem, PolicyCreate } from "@/models/settings/policy";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { Icon } from "@iconify/vue";
 import SearchableSelect from "@/components/ui/SearchableSelect.vue";
-import { UserRole } from "@/models/user";
-import { usePermissionRouter } from "@/hooks/usePermissionRouter";
+import { UserRole } from "@/models/auth/user";
+import { usePermissionRouter } from "@/hooks/settings/usePermissionRouter";
 import RoleActionCell from "@/components/ui/RoleActionCell.vue";
-import type { RouterPermissionWithDetails } from "@/models/permissionRouter";
+import type { RouterPermissionWithDetails } from "@/models/settings/permissionRouter";
 import { useAutoResizeGrid } from "@/composables/useAutoReSizeGrid";
 import { showConfirmToast } from "@/utils/confirmToast";
 import { setQuickFilterSafe } from "@/utils/agGrid";

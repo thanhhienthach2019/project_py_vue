@@ -1,0 +1,4 @@
+[tool.taskipy.tasks]
+install = "python -m venv .venv && .venv\\Scripts\\activate && pip install -r requirements.txt"
+run = "python start.py"
+dev = "python -m task install && python -m task run"

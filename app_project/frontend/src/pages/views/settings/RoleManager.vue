@@ -220,12 +220,12 @@ import {
 } from "vue";
 import { AgGridVue } from "ag-grid-vue3";
 import type { ColDef, GridApi, GridOptions } from "ag-grid-community";
-import { usePolicy } from "@/hooks/usePolicy";
-import type { PolicyItem, PolicyCreate } from "@/models/policy";
+import { usePolicy } from "@/hooks/settings/usePolicy";
+import type { PolicyItem, PolicyCreate } from "@/models/settings/policy";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { Icon } from "@iconify/vue";
-import { useUser } from "@/hooks/useUser";
-import { UserRole } from "@/models/user";
+import { useUser } from "@/hooks/auth/useUser";
+import { UserRole } from "@/models/auth/user";
 import SearchableSelect from "@/components/ui/SearchableSelect.vue";
 import RoleActionCell from "@/components/ui/RoleActionCell.vue";
 import { useAutoResizeGrid } from "@/composables/useAutoReSizeGrid";

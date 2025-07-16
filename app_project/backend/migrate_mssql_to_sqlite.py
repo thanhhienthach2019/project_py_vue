@@ -4,10 +4,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.exc import SQLAlchemyError
 from app.core.database import Base
-from app.models.user import User
-from app.models.menu.MenuItem import MenuItem
-from app.models.router.router_permission import Router, Permission, RouterPermission
-from app.models.log import LoginLog
+from app.models.auth.user import User
+from app.models.settings.MenuItem import MenuItem
+from app.models.settings.router_permission import Router, Permission, RouterPermission
+from app.models.auth.log import LoginLog
 
 # Casbin (nếu bạn dùng Casbin SQLAlchemy adapter)
 from casbin_sqlalchemy_adapter import CasbinRule

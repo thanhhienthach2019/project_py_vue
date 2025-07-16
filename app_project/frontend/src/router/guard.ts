@@ -1,5 +1,5 @@
 import router from "./index";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore } from "@/store/auth/authStore";
 
 export function setupRouterGuard() {
   router.beforeEach(async (to, _from, next) => {

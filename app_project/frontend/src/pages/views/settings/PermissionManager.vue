@@ -794,10 +794,10 @@
 <script setup lang="ts">
 import { ref, onMounted, inject, type Ref, computed, watch } from "vue";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
-import { usePermissionRouter } from "@/hooks/usePermissionRouter";
-import { useRouter } from "@/hooks/useRouter";
-import { useMenu } from "@/hooks/useMenu";
-import { Action } from "@/models/user";
+import { usePermissionRouter } from "@/hooks/settings/usePermissionRouter";
+import { useRouter } from "@/hooks/settings/useRouter";
+import { useMenu } from "@/hooks/settings/useMenu";
+import { Action } from "@/models/auth/user";
 import { Icon } from "@iconify/vue";
 import type {
   RouterCreate,
@@ -806,7 +806,7 @@ import type {
   PermissionUpdate,
   RouterPermissionCreate,
   RouterPermissionUpdate,
-} from "@/models/permissionRouter";
+} from "@/models/settings/permissionRouter";
 import SearchableSelect from "@/components/ui/SearchableSelect.vue";
 
 // Composable

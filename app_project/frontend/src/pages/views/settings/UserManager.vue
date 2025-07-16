@@ -241,8 +241,8 @@ import {
 } from "vue";
 import { Icon } from "@iconify/vue";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
-import { useUser } from "@/hooks/useUser";
-import type { UserResponse, UserCreate, UserUpdate } from "@/models/user";
+import { useUser } from "@/hooks/auth/useUser";
+import type { UserResponse, UserCreate, UserUpdate } from "@/models/auth/user";
 import ImageUploader from "@/components/ui/ImageUploader.vue";
 import EditActionCell from "@/components/ui/EditActionCell.vue";
 import { useAutoResizeGrid } from "@/composables/useAutoReSizeGrid";

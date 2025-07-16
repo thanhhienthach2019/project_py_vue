@@ -228,17 +228,17 @@ import {
   watch,
   nextTick,
 } from "vue";
-import { usePolicy } from "@/hooks/usePolicy";
-import type { PolicyItem, PolicyCreate } from "@/models/policy";
+import { usePolicy } from "@/hooks/settings/usePolicy";
+import type { PolicyItem, PolicyCreate } from "@/models/settings/policy";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { Icon } from "@iconify/vue";
-import { useMenu } from "@/hooks/useMenu";
+import { useMenu } from "@/hooks/settings/useMenu";
 import RoleActionCell from "@/components/ui/RoleActionCell.vue";
 import { useAutoResizeGrid } from "@/composables/useAutoReSizeGrid";
 import { showConfirmToast } from "@/utils/confirmToast";
 import { setQuickFilterSafe } from "@/utils/agGrid";
 import SearchableSelect from "@/components/ui/SearchableSelect.vue";
-import { UserRole } from "@/models/user";
+import { UserRole } from "@/models/auth/user";
 
 const { fetchViewPolicies, addNewViewPolicy, removeViewPolicy, loading } =
   usePolicy();

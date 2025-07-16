@@ -2,7 +2,7 @@ import { createApp, type Component } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import { createPinia } from "pinia";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore } from "@/store/auth/authStore";
 import "@/assets/style/tailwind.css";
 import "@/assets/style/agstyle.css";
 import "@/assets/style/custom.css";

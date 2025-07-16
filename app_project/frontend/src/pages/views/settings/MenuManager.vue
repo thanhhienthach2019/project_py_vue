@@ -249,7 +249,7 @@ import {
 } from "vue";
 import { Icon } from "@iconify/vue";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
-import { useMenu } from "@/hooks/useMenu";
+import { useMenu } from "@/hooks/settings/useMenu";
 import EditActionCell from "@/components/ui/EditActionCell.vue";
 import { useAutoResizeGrid } from "@/composables/useAutoReSizeGrid";
 import { showConfirmToast } from "@/utils/confirmToast";
@@ -258,7 +258,7 @@ import type {
   MenuItemResponse,
   MenuItemCreate,
   MenuItemUpdate,
-} from "@/models/menu";
+} from "@/models/settings/menu";
 
 const { fetchAllMenus, addMenu, updateMenu, removeMenu, loading } = useMenu();
 const allMenus = computed(() => useMenu().allMenus.value);
