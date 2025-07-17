@@ -1,25 +1,40 @@
-import { computed } from "vue";
+import { computed, type Ref } from "vue";
 import { useFestivalStore } from "@/store/news/festivalStore";
-import type { FestivalCreate, FestivalUpdate } from "@/models/news/festival";
+import type {
+  FestivalCreate,
+  FestivalUpdate,
+  FestivalResponse,
+} from "@/models/news/festival";
 
-export function useFestival() {
+export function useFestival(): {
+  festivalStore: ReturnType<typeof useFestivalStore>;
+
+  fetchFestivals: () => Promise<void>;
+  fetchFestivalDetail: (id: number) => Promise<void>;
+  addFestival: (payload: FestivalCreate) => Promise<void>;
+  editFestival: (id: number, payload: FestivalUpdate) => Promise<void>;
+  removeFestival: (id: number) => Promise<void>;
+
+  festivals: Ref<FestivalResponse[]>;
+  selectedFestival: Ref<FestivalResponse | null>;
+  loading: Ref<boolean>;
+  creating: Ref<boolean>;
+  updating: Ref<boolean>;
+  deleting: Ref<boolean>;
+  error: Ref<string | null>;
+  success: Ref<string | null>;
+} {
   const store = useFestivalStore();
 
-  // === FETCH ===
+  // === Actions ===
   const fetchFestivals = () => store.loadFestivals();
   const fetchFestivalDetail = (id: number) => store.loadFestivalDetail(id);
-
-  // === CREATE ===
   const addFestival = (payload: FestivalCreate) => store.addFestival(payload);
-
-  // === UPDATE ===
   const editFestival = (id: number, payload: FestivalUpdate) =>
     store.editFestival(id, payload);
-
-  // === DELETE ===
   const removeFestival = (id: number) => store.removeFestival(id);
 
-  // === COMPUTED STATE ===
+  // === Reactive States ===
   const festivals = computed(() => store.festivals);
   const selectedFestival = computed(() => store.selectedFestival);
   const loading = computed(() => store.loading);
@@ -30,17 +45,12 @@ export function useFestival() {
   const success = computed(() => store.success);
 
   return {
-    // Store
     festivalStore: store,
-
-    // Actions
     fetchFestivals,
     fetchFestivalDetail,
     addFestival,
     editFestival,
     removeFestival,
-
-    // State
     festivals,
     selectedFestival,
     loading,

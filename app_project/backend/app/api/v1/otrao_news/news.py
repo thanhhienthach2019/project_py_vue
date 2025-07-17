@@ -16,8 +16,6 @@ from app.services.news.news_service import (
 )
 
 router = APIRouter(
-    prefix="/news",
-    tags=["News"],
     dependencies=[Depends(permission_required_safe())]
 )
 

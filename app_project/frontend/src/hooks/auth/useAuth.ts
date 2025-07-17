@@ -10,7 +10,7 @@ export function useAuth() {
       try {
         const success = await authStore.login(username, password);
         if (success) {
-          router.push("/");
+          router.push("/admin");
         }
       } catch (error: any) {
         throw new Error("Đăng nhập thất bại");
@@ -19,7 +19,7 @@ export function useAuth() {
     const fetchUser = async () => {
       await authStore.fetchUser();    
       if (!authStore.isAuthenticated) {
-        router.push("/login");
+        router.push("/");
       }
     };
 

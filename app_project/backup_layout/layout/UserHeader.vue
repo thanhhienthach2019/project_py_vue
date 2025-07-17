@@ -56,12 +56,11 @@
 
           <div class="hidden md:block w-px h-6 bg-amber-600"></div>
 
-          <router-link
-            to="/login"
+          <button
             class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md transition-colors"
           >
             ចូល
-          </router-link>
+          </button>
         </div>
       </div>
     </div>

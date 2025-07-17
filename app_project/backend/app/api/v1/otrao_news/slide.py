@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -14,15 +14,15 @@ from app.services.news.slide_service import (
 )
 
 router = APIRouter(
-    prefix="/slides",
-    tags=["Slides"],
     dependencies=[Depends(permission_required_safe())]
 )
 
 # ===== CREATE =====
 @router.post("", response_model=SlideResponse)
 def create_slide_endpoint(
+    headline: Optional[str] = Form(None),
     title: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
     link: Optional[str] = Form(None),
     order: int = Form(0),
     is_active: bool = Form(True),
@@ -32,36 +32,46 @@ def create_slide_endpoint(
     image_bytes = image.file.read()
 
     slide_data = SlideCreate(
+        headline=headline,
         title=title,
+        description=description,
         link=link,
         order=order,
         is_active=is_active,
         image=image_bytes,
     )
-    return create_slide(db, slide_data)
+    slide = create_slide(db, slide_data)
+    return SlideResponse.from_orm_with_base64(slide)
 
 
 # ===== UPDATE =====
 @router.put("/{slide_id}", response_model=SlideResponse)
 def update_slide_endpoint(
     slide_id: int,
+    headline: Optional[str] = Form(None),
     title: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
     link: Optional[str] = Form(None),
     order: int = Form(0),
     is_active: bool = Form(True),
-    image: UploadFile = File(None),
+    image: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
 ):
     image_bytes = image.file.read() if image else None
 
     update_data = SlideUpdate(
+        headline=headline,
         title=title,
+        description=description,
         link=link,
         order=order,
         is_active=is_active,
         image=image_bytes,
     )
-    return update_slide(db, slide_id, update_data)
+    slide = update_slide(db, slide_id, update_data)
+    if not slide:
+        raise HTTPException(status_code=404, detail="Slide not found")
+    return SlideResponse.from_orm_with_base64(slide)
 
 
 # ===== DELETE =====
@@ -75,12 +85,9 @@ def delete_slide_endpoint(slide_id: int, db: Session = Depends(get_db)):
 
 # ===== LIST =====
 @router.get("", response_model=List[SlideResponse])
-def list_slides(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(100, le=1000),
-    db: Session = Depends(get_db)
-):
-    return get_all_slides(db)[skip: skip + limit]
+def list_slides(db: Session = Depends(get_db)):
+    slides = get_all_slides(db)
+    return [SlideResponse.from_orm_with_base64(slide) for slide in slides]
 
 
 # ===== DETAIL =====
@@ -89,4 +96,4 @@ def get_slide_detail(slide_id: int, db: Session = Depends(get_db)):
     slide = db.query(Slide).filter(Slide.id == slide_id).first()
     if not slide:
         raise HTTPException(status_code=404, detail="Slide not found")
-    return slide
+    return SlideResponse.from_orm_with_base64(slide)

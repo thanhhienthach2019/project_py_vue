@@ -1,16 +1,46 @@
-import { computed } from "vue";
+import { computed, type Ref } from "vue";
 import { useNewsStore } from "@/store/news/newsStore";
 import type {
   NewsCategoryCreate,
   NewsCategoryUpdate,
+  NewsCategoryResponse,
   NewsArticleCreate,
   NewsArticleUpdate,
+  NewsArticleResponse,
 } from "@/models/news/news";
 
-export function useNews() {
+export function useNews(): {
+  newsStore: ReturnType<typeof useNewsStore>;
+
+  // Category methods
+  fetchCategories: () => Promise<void>;
+  getCategory: (id: number) => Promise<void>;
+  addCategory: (payload: NewsCategoryCreate) => Promise<void>;
+  editCategory: (id: number, payload: NewsCategoryUpdate) => Promise<void>;
+  removeCategory: (id: number) => Promise<void>;
+
+  // Article methods
+  fetchArticles: () => Promise<void>;
+  getArticle: (id: number) => Promise<void>;
+  addArticle: (payload: NewsArticleCreate) => Promise<void>;
+  editArticle: (id: number, payload: NewsArticleUpdate) => Promise<void>;
+  removeArticle: (id: number) => Promise<void>;
+
+  // Reactive state
+  categories: Ref<NewsCategoryResponse[]>;
+  selectedCategory: Ref<NewsCategoryResponse | null>;
+  articles: Ref<NewsArticleResponse[]>;
+  selectedArticle: Ref<NewsArticleResponse | null>;
+  loading: Ref<boolean>;
+  creating: Ref<boolean>;
+  updating: Ref<boolean>;
+  deleting: Ref<boolean>;
+  error: Ref<string | null>;
+  success: Ref<string | null>;
+} {
   const store = useNewsStore();
 
-  // === CATEGORY METHODS ===
+  // === Category Methods ===
   const fetchCategories = () => store.loadCategories();
   const getCategory = (id: number) => store.getCategory(id);
   const addCategory = (payload: NewsCategoryCreate) => store.addCategory(payload);
@@ -18,7 +48,7 @@ export function useNews() {
     store.editCategory(id, payload);
   const removeCategory = (id: number) => store.removeCategory(id);
 
-  // === ARTICLE METHODS ===
+  // === Article Methods ===
   const fetchArticles = () => store.loadArticles();
   const getArticle = (id: number) => store.getArticle(id);
   const addArticle = (payload: NewsArticleCreate) => store.addArticle(payload);
@@ -26,7 +56,7 @@ export function useNews() {
     store.editArticle(id, payload);
   const removeArticle = (id: number) => store.removeArticle(id);
 
-  // === STATE ===
+  // === Computed state ===
   const categories = computed(() => store.categories);
   const selectedCategory = computed(() => store.selectedCategory);
   const articles = computed(() => store.articles);
@@ -39,24 +69,20 @@ export function useNews() {
   const success = computed(() => store.success);
 
   return {
-    // Store instance
     newsStore: store,
 
-    // Category handlers
     fetchCategories,
     getCategory,
     addCategory,
     editCategory,
     removeCategory,
 
-    // Article handlers
     fetchArticles,
     getArticle,
     addArticle,
     editArticle,
     removeArticle,
 
-    // State
     categories,
     selectedCategory,
     articles,

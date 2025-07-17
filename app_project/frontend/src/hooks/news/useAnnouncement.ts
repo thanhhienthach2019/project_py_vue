@@ -1,3 +1,4 @@
+import type { Ref } from "vue";
 import { computed } from "vue";
 import { useAnnouncementStore } from "@/store/news/announcementStore";
 import type {
@@ -5,32 +6,44 @@ import type {
   AnnouncementUpdate,
 } from "@/models/news/announcement";
 
-export function useAnnouncement() {
+export function useAnnouncement(): {
+  announcementStore: ReturnType<typeof useAnnouncementStore>;
+
+  fetchAnnouncements: (skip?: number, limit?: number) => Promise<void>;
+  fetchAnnouncementById: (id: number) => Promise<void>;
+  addAnnouncement: (payload: AnnouncementCreate) => Promise<void>;
+  editAnnouncement: (id: number, payload: AnnouncementUpdate) => Promise<void>;
+  removeAnnouncement: (id: number) => Promise<void>;
+  clearState: () => void;
+
+  announcements: Ref<any[]>;
+  selected: Ref<any | null>;
+  loading: Ref<boolean>;
+  creating: Ref<boolean>;
+  updating: Ref<boolean>;
+  deleting: Ref<boolean>;
+  error: Ref<string | null>;
+  success: Ref<string | null>;
+} {
   const store = useAnnouncementStore();
 
-  // === FETCH ===
   const fetchAnnouncements = (skip = 0, limit = 100) =>
     store.loadAnnouncements(skip, limit);
 
   const fetchAnnouncementById = (id: number) =>
     store.loadAnnouncementById(id);
 
-  // === CREATE ===
   const addAnnouncement = (payload: AnnouncementCreate) =>
     store.addAnnouncement(payload);
 
-  // === UPDATE ===
   const editAnnouncement = (id: number, payload: AnnouncementUpdate) =>
     store.editAnnouncement(id, payload);
 
-  // === DELETE ===
   const removeAnnouncement = (id: number) =>
     store.removeAnnouncement(id);
 
-  // === CLEAR ===
   const clearState = () => store.clearState();
 
-  // === COMPUTED ===
   const announcements = computed(() => store.items);
   const selected = computed(() => store.selected);
   const loading = computed(() => store.loading);
@@ -41,18 +54,13 @@ export function useAnnouncement() {
   const success = computed(() => store.success);
 
   return {
-    // Raw store (if needed)
     announcementStore: store,
-
-    // Actions
     fetchAnnouncements,
     fetchAnnouncementById,
     addAnnouncement,
     editAnnouncement,
     removeAnnouncement,
     clearState,
-
-    // State
     announcements,
     selected,
     loading,

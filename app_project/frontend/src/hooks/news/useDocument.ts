@@ -1,31 +1,40 @@
-import { computed } from "vue";
+import { computed, type Ref } from "vue";
 import { useDocumentStore } from "@/store/news/documentStore";
 import type {
   DocumentCreate,
   DocumentUpdate,
+  DocumentResponse,
 } from "@/models/news/document";
 
-export function useDocument() {
+export function useDocument(): {
+  documentStore: ReturnType<typeof useDocumentStore>;
+
+  fetchDocuments: () => Promise<void>;
+  fetchDocumentById: (id: number) => Promise<void>;
+  addDocument: (payload: DocumentCreate) => Promise<void>;
+  editDocument: (id: number, payload: DocumentUpdate) => Promise<void>;
+  removeDocument: (id: number) => Promise<void>;
+  clearState: () => void;
+
+  documents: Ref<DocumentResponse[]>;
+  selected: Ref<DocumentResponse | null>;
+  loading: Ref<boolean>;
+  creating: Ref<boolean>;
+  updating: Ref<boolean>;
+  deleting: Ref<boolean>;
+  error: Ref<string | null>;
+  success: Ref<string | null>;
+} {
   const store = useDocumentStore();
 
-  // === FETCH ===
   const fetchDocuments = () => store.loadDocuments();
   const fetchDocumentById = (id: number) => store.loadDocumentById(id);
-
-  // === CREATE ===
   const addDocument = (payload: DocumentCreate) => store.addDocument(payload);
-
-  // === UPDATE ===
   const editDocument = (id: number, payload: DocumentUpdate) =>
     store.editDocument(id, payload);
-
-  // === DELETE ===
   const removeDocument = (id: number) => store.removeDocument(id);
-
-  // === RESET ===
   const clearState = () => store.clearState();
 
-  // === COMPUTED STATE ===
   const documents = computed(() => store.items);
   const selected = computed(() => store.selected);
   const loading = computed(() => store.loading);
@@ -36,18 +45,13 @@ export function useDocument() {
   const success = computed(() => store.success);
 
   return {
-    // Raw store (if needed for advanced access)
     documentStore: store,
-
-    // Actions
     fetchDocuments,
     fetchDocumentById,
     addDocument,
     editDocument,
     removeDocument,
     clearState,
-
-    // Reactive state
     documents,
     selected,
     loading,

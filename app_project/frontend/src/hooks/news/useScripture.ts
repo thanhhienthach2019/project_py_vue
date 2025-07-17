@@ -1,16 +1,46 @@
-import { computed } from "vue";
+import { computed, type Ref } from "vue";
 import { useScriptureStore } from "@/store/news/scriptureStore";
 import type {
   ScriptureCreate,
   ScriptureUpdate,
+  ScriptureResponse,
   ScriptureCategoryCreate,
   ScriptureCategoryUpdate,
+  ScriptureCategoryResponse,
 } from "@/models/news/scripture";
 
-export function useScripture() {
+export function useScripture(): {
+  scriptureStore: ReturnType<typeof useScriptureStore>;
+
+  // Scripture methods
+  fetchScriptures: () => Promise<void>;
+  getScripture: (id: number) => Promise<void>;
+  addScripture: (payload: ScriptureCreate) => Promise<void>;
+  editScripture: (id: number, payload: ScriptureUpdate) => Promise<void>;
+  removeScripture: (id: number) => Promise<void>;
+
+  // Category methods
+  fetchCategories: () => Promise<void>;
+  getCategory: (id: number) => Promise<void>;
+  addCategory: (payload: ScriptureCategoryCreate) => Promise<void>;
+  editCategory: (id: number, payload: ScriptureCategoryUpdate) => Promise<void>;
+
+  // Reactive state
+  scriptures: Ref<ScriptureResponse[]>;
+  selectedScripture: Ref<ScriptureResponse | null>;
+  categories: Ref<ScriptureCategoryResponse[]>;
+  selectedCategory: Ref<ScriptureCategoryResponse | null>;
+
+  loading: Ref<boolean>;
+  creating: Ref<boolean>;
+  updating: Ref<boolean>;
+  deleting: Ref<boolean>;
+  error: Ref<string | null>;
+  success: Ref<string | null>;
+} {
   const store = useScriptureStore();
 
-  // === SCRIPTURE ===
+  // === Scripture Methods ===
   const fetchScriptures = () => store.loadScriptures();
   const getScripture = (id: number) => store.getScriptureById(id);
   const addScripture = (payload: ScriptureCreate) => store.addScripture(payload);
@@ -18,7 +48,7 @@ export function useScripture() {
     store.editScripture(id, payload);
   const removeScripture = (id: number) => store.removeScripture(id);
 
-  // === CATEGORIES ===
+  // === Category Methods ===
   const fetchCategories = () => store.loadCategories();
   const getCategory = (id: number) => store.getCategoryById(id);
   const addCategory = (payload: ScriptureCategoryCreate) =>
@@ -26,7 +56,7 @@ export function useScripture() {
   const editCategory = (id: number, payload: ScriptureCategoryUpdate) =>
     store.editCategory(id, payload);
 
-  // === STATE ===
+  // === State ===
   const scriptures = computed(() => store.items);
   const selectedScripture = computed(() => store.selectedItem);
   const categories = computed(() => store.categories);
@@ -40,23 +70,19 @@ export function useScripture() {
   const success = computed(() => store.success);
 
   return {
-    // Store instance
     scriptureStore: store,
 
-    // Scripture methods
     fetchScriptures,
     getScripture,
     addScripture,
     editScripture,
     removeScripture,
 
-    // Category methods
     fetchCategories,
     getCategory,
     addCategory,
     editCategory,
 
-    // State
     scriptures,
     selectedScripture,
     categories,

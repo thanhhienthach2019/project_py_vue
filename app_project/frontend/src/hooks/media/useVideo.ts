@@ -1,8 +1,31 @@
-import { computed } from "vue";
+import { computed, type Ref } from "vue";
 import { useVideoStore } from "@/store/media/videoStore";
-import type { VideoCreate, VideoUpdate } from "@/models/media/video";
+import type {
+  VideoCreate,
+  VideoUpdate,
+  VideoResponse,
+} from "@/models/media/video";
 
-export function useVideo() {
+export function useVideo(): {
+  videoStore: ReturnType<typeof useVideoStore>;
+
+  // Actions
+  fetchVideos: () => Promise<void>;
+  getVideo: (id: number) => Promise<void>;
+  addVideo: (payload: VideoCreate) => Promise<void>;
+  editVideo: (id: number, payload: VideoUpdate) => Promise<void>;
+  removeVideo: (id: number) => Promise<void>;
+
+  // State
+  videos: Ref<VideoResponse[]>;
+  selectedVideo: Ref<VideoResponse | null>;
+  loading: Ref<boolean>;
+  creating: Ref<boolean>;
+  updating: Ref<boolean>;
+  deleting: Ref<boolean>;
+  success: Ref<string | null>;
+  error: Ref<string | null>;
+} {
   const store = useVideoStore();
 
   // === Actions ===
@@ -24,17 +47,14 @@ export function useVideo() {
   const error = computed(() => store.error);
 
   return {
-    // Store instance
     videoStore: store,
 
-    // Actions
     fetchVideos,
     getVideo,
     addVideo,
     editVideo,
     removeVideo,
 
-    // State
     videos,
     selectedVideo,
     loading,

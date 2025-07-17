@@ -14,12 +14,12 @@ export function setupRouterGuard() {
     }
 
     if (to.path === '/login' && authStore.isAuthenticated) {
-      return next({ path: '/' })
+      return next({ path: '/admin' })
     }
 
     if (to.meta.requiresAuth) {
       if (!authStore.isAuthenticated) {
-        return next('/login');
+        return next('/');
       }
 
       const requiredPerm = to.meta.permission as string | undefined;

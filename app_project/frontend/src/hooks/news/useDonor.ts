@@ -1,25 +1,38 @@
-import { computed } from "vue";
+import { computed, type Ref } from "vue";
 import { useDonorStore } from "@/store/news/donorStore";
-import type { DonorCreate, DonorUpdate } from "@/models/news/donor";
+import type {
+  DonorCreate,
+  DonorUpdate,
+  DonorResponse,
+} from "@/models/news/donor";
 
-export function useDonor() {
+export function useDonor(): {
+  donorStore: ReturnType<typeof useDonorStore>;
+
+  fetchDonors: () => Promise<void>;
+  fetchDonorDetail: (id: number) => Promise<void>;
+  addDonor: (payload: DonorCreate) => Promise<void>;
+  editDonor: (id: number, payload: DonorUpdate) => Promise<void>;
+  removeDonor: (id: number) => Promise<void>;
+
+  donors: Ref<DonorResponse[]>;
+  selectedDonor: Ref<DonorResponse | null>;
+  loading: Ref<boolean>;
+  creating: Ref<boolean>;
+  updating: Ref<boolean>;
+  deleting: Ref<boolean>;
+  error: Ref<string | null>;
+  success: Ref<string | null>;
+} {
   const store = useDonorStore();
 
-  // === FETCH ===
   const fetchDonors = () => store.loadDonors();
   const fetchDonorDetail = (id: number) => store.loadDonorDetail(id);
-
-  // === CREATE ===
   const addDonor = (payload: DonorCreate) => store.addDonor(payload);
-
-  // === UPDATE ===
   const editDonor = (id: number, payload: DonorUpdate) =>
     store.editDonor(id, payload);
-
-  // === DELETE ===
   const removeDonor = (id: number) => store.removeDonor(id);
 
-  // === COMPUTED STATE ===
   const donors = computed(() => store.donors);
   const selectedDonor = computed(() => store.selectedDonor);
   const loading = computed(() => store.loading);
@@ -30,17 +43,12 @@ export function useDonor() {
   const success = computed(() => store.success);
 
   return {
-    // Store
     donorStore: store,
-
-    // Actions
     fetchDonors,
     fetchDonorDetail,
     addDonor,
     editDonor,
     removeDonor,
-
-    // State
     donors,
     selectedDonor,
     loading,

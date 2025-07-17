@@ -14,8 +14,6 @@ from app.services.media.video_service import (
 )
 
 router = APIRouter(
-    prefix="/videos",
-    tags=["Videos"],
     dependencies=[Depends(permission_required_safe())]
 )
 

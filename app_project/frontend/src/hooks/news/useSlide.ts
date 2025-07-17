@@ -1,11 +1,34 @@
-import { computed } from "vue";
+import { computed, type Ref } from "vue";
 import { useSlideStore } from "@/store/news/slideStore";
-import type { SlideCreate, SlideUpdate } from "@/models/news/slide";
+import type {
+  SlideCreate,
+  SlideUpdate,
+  SlideResponse,
+} from "@/models/news/slide";
 
-export function useSlide() {
+export function useSlide(): {
+  slideStore: ReturnType<typeof useSlideStore>;
+
+  // Actions
+  fetchSlides: () => Promise<void>;
+  getSlide: (id: number) => Promise<void>;
+  addSlide: (payload: SlideCreate) => Promise<void>;
+  editSlide: (id: number, payload: SlideUpdate) => Promise<void>;
+  removeSlide: (id: number) => Promise<void>;
+
+  // State
+  slides: Ref<SlideResponse[]>;
+  selectedSlide: Ref<SlideResponse | null>;
+  loading: Ref<boolean>;
+  creating: Ref<boolean>;
+  updating: Ref<boolean>;
+  deleting: Ref<boolean>;
+  error: Ref<string | null>;
+  success: Ref<string | null>;
+} {
   const store = useSlideStore();
 
-  // === Slide Actions ===
+  // === Actions ===
   const fetchSlides = () => store.loadSlides();
   const getSlide = (id: number) => store.getSlideById(id);
   const addSlide = (payload: SlideCreate) => store.addSlide(payload);
@@ -24,17 +47,14 @@ export function useSlide() {
   const success = computed(() => store.success);
 
   return {
-    // Store instance
     slideStore: store,
 
-    // Actions
     fetchSlides,
     getSlide,
     addSlide,
     editSlide,
     removeSlide,
 
-    // State
     slides,
     selectedSlide,
     loading,

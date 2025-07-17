@@ -6,12 +6,15 @@ import type {
   SlideResponse,
 } from "@/models/news/slide";
 
-// Helper: convert JS object to FormData
 const buildFormData = (data: Record<string, any>) => {
   const formData = new FormData();
   Object.entries(data).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
-      formData.append(key, value);
+      if (typeof value === "boolean" || typeof value === "number") {
+        formData.append(key, value.toString());
+      } else {
+        formData.append(key, value);
+      }
     }
   });
   return formData;
@@ -29,7 +32,9 @@ export const getSlide = async (id: number): Promise<SlideResponse> => {
   return res.data;
 };
 
-export const createSlide = async (data: SlideCreate): Promise<SlideResponse> => {
+export const createSlide = async (
+  data: SlideCreate
+): Promise<SlideResponse> => {
   const formData = buildFormData(data);
   const res = await apiClient.post("/slides", formData, {
     headers: {

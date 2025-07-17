@@ -10,9 +10,9 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/components/layout/UserLayout.vue'),
     children: [
       {
-        path: '',
-        name: 'HomeUser',
-        component: () => import('@/pages/views/news/Home.vue'),
+        path: '/',
+        name: 'MainPage',
+        component: () => import('@/components/layout/UserMainContent.vue'),
       },
       {
         path: '/news',
@@ -32,12 +32,12 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/admin',
-    component: () => import('@/components/layout/Layout.vue'),
+    component: () => import('@/components/layout/AdminLayout.vue'),
     meta: { requiresAuth: true },
     children: [
       {
-        path: '/admin',
-        name: 'Home',
+        path: '', 
+        name: 'AdminHome',
         component: () => import('@/pages/views/Home.vue'),
         meta: {
           requiresAuth: true,
@@ -45,7 +45,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'admin/material',
+        path: 'inventory/material',
         name: 'Material',
         component: () => import('@/pages/views/inventory/Material.vue'),
         meta: {
@@ -54,7 +54,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'admin/maintenance-requests',
+        path: 'inventory/maintenance-requests',
         name: 'MaintenanceRequest',
         component: () => import('@/pages/views/inventory/MaintenanceRequest.vue'),
         meta: {
@@ -63,7 +63,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'admin/stock-management',
+        path: 'inventory/stock-management',
         name: 'StockManagement',
         component: () => import('@/pages/views/inventory/StockManagement.vue'),
         meta: {
@@ -72,7 +72,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'admin/inventory-history',
+        path: 'inventory/history',
         name: 'InventoryHistory',
         component: () => import('@/pages/views/inventory/InventoryHistory.vue'),
         meta: {
@@ -81,7 +81,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'admin/machine',
+        path: 'inventory/machine',
         name: 'Machine',
         component: () => import('@/pages/views/inventory/Machine.vue'),
         meta: {
@@ -90,7 +90,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'admin/settings/policies',
+        path: 'settings/policies',
         name: 'PolicyManager',
         component: () => import('@/pages/views/settings/PolicyManager.vue'),
         meta: {
@@ -99,7 +99,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'admin/settings/roles',
+        path: 'settings/roles',
         name: 'RoleManager',
         component: () => import('@/pages/views/settings/RoleManager.vue'),
         meta: {
@@ -108,7 +108,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'admin/settings/users',
+        path: 'settings/users',
         name: 'UserManager',
         component: () => import('@/pages/views/settings/UserManager.vue'),
         meta: {
@@ -117,7 +117,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: '/admin/settings/menus',
+        path: 'settings/menus',
         name: 'MenuManager',
         component: () => import('@/pages/views/settings/MenuManager.vue'),
         meta: {
@@ -126,7 +126,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'admin//settings/routers',
+        path: 'settings/routers',
         name: 'RouterManager',
         component: () => import('@/pages/views/settings/PermissionManager.vue'),
         meta: {
@@ -135,7 +135,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'admin//settings/forms',
+        path: 'settings/forms',
         name: 'FormManager',
         component: () => import('@/pages/views/settings/FormManager.vue'),
         meta: {
@@ -143,10 +143,10 @@ const routes: RouteRecordRaw[] = [
           permission: 'menu:settings:form:view',
         },
       },
-      { 
-        path: '/403', 
-        name: 'Forbidden', 
-        component: () => import('@/pages/error/Forbidden.vue') 
+      {
+        path: '403',
+        name: 'Forbidden',
+        component: () => import('@/pages/error/Forbidden.vue'),
       },
     ]
   },

@@ -14,8 +14,6 @@ from app.services.news.announcement_service import (
 from app.models.news.announcement import Announcement
 
 router = APIRouter(
-    prefix="/announcements",
-    tags=["Announcements"],
     dependencies=[Depends(permission_required_safe())]
 )
 

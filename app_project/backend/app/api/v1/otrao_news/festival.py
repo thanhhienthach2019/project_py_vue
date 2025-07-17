@@ -15,8 +15,6 @@ from app.services.news.festival_service import (
 )
 
 router = APIRouter(
-    prefix="/festivals",
-    tags=["Festivals"],
     dependencies=[Depends(permission_required_safe())]
 )
 

@@ -14,8 +14,6 @@ from app.services.news.donor_service import (
 )
 
 router = APIRouter(
-    prefix="/donors",
-    tags=["Donors"],
     dependencies=[Depends(permission_required_safe())]
 )
 

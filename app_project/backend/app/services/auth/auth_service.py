@@ -69,7 +69,7 @@ def handle_refresh_token(request: Request, response: Response):
     try:
         payload = decode_access_token(refresh_token)
         
-        username = payload.get("username")
+        username = payload.get("sub")
         
         if not username:
             raise HTTPException(status_code=401, detail="Invalid refresh token")

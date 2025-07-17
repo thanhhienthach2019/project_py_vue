@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import { mergePayloadToState } from "@/utils/mergePayloadToState";
 import {
   fetchSlides,
   getSlide,
@@ -38,82 +37,85 @@ export const useSlideStore = defineStore("slide", {
   }),
 
   actions: {
-    // Fetch all
+    // 📦 Fetch all slides
     async loadSlides() {
       this.loading = true;
       this.error = null;
       try {
         const data = await fetchSlides();
         this.slides = data;
-      } catch {
+      } catch (err) {
         this.error = "Failed to fetch slides.";
       } finally {
         this.loading = false;
       }
     },
 
-    // Get one
+    // 🔍 Get a slide by ID
     async getSlideById(id: number) {
       this.loading = true;
       this.selected = null;
       try {
         const data = await getSlide(id);
         this.selected = data;
-      } catch {
+      } catch (err) {
         this.error = "Failed to get slide.";
       } finally {
         this.loading = false;
       }
     },
 
-    // Create
+    // ➕ Create new slide
     async addSlide(payload: SlideCreate) {
       this.creating = true;
       this.error = null;
+      this.success = null;
       try {
         const created = await createSlide(payload);
         this.slides.push(created);
         this.success = "Slide created successfully.";
-      } catch {
+      } catch (err) {
         this.error = "Failed to create slide.";
       } finally {
         this.creating = false;
       }
     },
 
-    // Update
+    // ✏️ Update slide
     async editSlide(id: number, payload: SlideUpdate) {
-        this.updating = true;
-        this.error = null;
-        this.success = null;
+      this.updating = true;
+      this.error = null;
+      this.success = null;
 
-        const index = this.slides.findIndex((s) => s.id === id);
-        if (index === -1) return;
+      const index = this.slides.findIndex((s) => s.id === id);
+      if (index === -1) {
+        this.error = "Slide not found.";
+        this.updating = false;
+        return;
+      }
 
-        const backup = { ...this.slides[index] };
+      const backup = { ...this.slides[index] };
 
-        this.slides[index] = mergePayloadToState<SlideResponse, SlideUpdate>(
-            backup,
-            payload,
-            ['image']
-        );
+      try {
+        // Optional: show instant optimistic title change before upload finishes
+        this.slides[index] = { ...backup, ...payload };
 
-        try {
-            const updated = await updateSlide(id, payload);
-            this.slides[index] = updated;
-            this.success = "Slide updated successfully";
-        } catch {
-            this.slides[index] = backup;
-            this.error = "Failed to update slide.";
-        } finally {
-            this.updating = false;
-        }
+        const updated = await updateSlide(id, payload);
+        this.slides[index] = updated;
+        this.success = "Slide updated successfully.";
+      } catch (err) {
+        this.slides[index] = backup;
+        this.error = "Failed to update slide.";
+      } finally {
+        this.updating = false;
+      }
     },
 
-    // Delete
+    // ❌ Delete slide
     async removeSlide(id: number) {
       this.deleting = true;
       this.error = null;
+      this.success = null;
 
       const backup = [...this.slides];
       this.slides = this.slides.filter((s) => s.id !== id);
@@ -121,7 +123,7 @@ export const useSlideStore = defineStore("slide", {
       try {
         await deleteSlide(id);
         this.success = "Slide deleted successfully.";
-      } catch {
+      } catch (err) {
         this.slides = backup;
         this.error = "Failed to delete slide.";
       } finally {

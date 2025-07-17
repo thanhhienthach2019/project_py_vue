@@ -61,7 +61,7 @@ export const useAuthStore = defineStore("auth", {
        
       } finally {
         this.resetAuth();
-        router.push("/login"); 
+        router.push("/"); 
       }
     },
     resetAuth() {

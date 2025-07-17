@@ -14,7 +14,9 @@ from app.core.database import Base
 class Slide(Base):
     __tablename__ = "slides"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    headline = Column(String(255), nullable=True)
     title = Column(String(255), nullable=True)
+    description = Column(String(1000), nullable=True)
     image = Column(LargeBinary, nullable=False)  
     link = Column(String(500), nullable=True)
     order = Column(Integer, nullable=False, default=0)

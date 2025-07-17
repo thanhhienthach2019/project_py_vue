@@ -50,7 +50,6 @@ async function bootstrap() {
   const app = createApp(App);
   const pinia = createPinia();
 
-  // Đăng ký Pinia
   app.use(pinia);
 
   // Pre-fetch user và permissions trước khi mount app
@@ -63,21 +62,17 @@ async function bootstrap() {
     }
   }
 
-  // Đăng ký global icons
   for (const [key, component] of Object.entries(lucideIcons)) {  
     if (typeof component === 'function' || (component && typeof component === 'object' && 'render' in component)) {
       app.component(key, component as Component);
     }
   }
 
-  // Đăng ký directive phân quyền
   app.directive("permission", vPermission);
 
-  // Đăng ký router và guard
   app.use(router);
   setupRouterGuard();
 
-  // Các plugin khác
   app.use(ElementPlus);
   // app.use(vuetify);
 

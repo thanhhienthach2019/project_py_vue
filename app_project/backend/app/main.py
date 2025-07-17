@@ -16,6 +16,7 @@ Base.metadata.create_all(bind=engine_sqlite)
 
 app = FastAPI()
 
+# print("Using SQLite DB:", os.path.abspath("./data/sqlite.db"))
 
 @app.on_event("startup")
 async def startup_event():
@@ -51,13 +52,13 @@ app.include_router(permissions.router, prefix="/api/v1", tags=["Permission"])
 app.include_router(permission_router.router, prefix="/api/v1", tags=["Router"])
 
 # otrao_news
-app.include_router(announcement.router, prefix="/api/v1", tags=["Announcement"])
-app.include_router(document.router, prefix="/api/v1", tags=["Document"])
-app.include_router(donor.router, prefix="/api/v1", tags=["Donor"])
-app.include_router(festival.router, prefix="/api/v1", tags=["Festival"])
-app.include_router(news.router, prefix="/api/v1", tags=["News"])
-app.include_router(scripture.router, prefix="/api/v1", tags=["Scripture"])
-app.include_router(slide.router, prefix="/api/v1", tags=["Slide"])
+app.include_router(announcement.router, prefix="/api/v1/announcements", tags=["Announcements"])
+app.include_router(document.router, prefix="/api/v1/documents", tags=["Documents"])
+app.include_router(donor.router, prefix="/api/v1/donors", tags=["Donors"])
+app.include_router(festival.router, prefix="/api/v1/festivals", tags=["Festivals"])
+app.include_router(news.router, prefix="/api/v1/news", tags=["News"])
+app.include_router(scripture.router, prefix="/api/v1/scriptures", tags=["Scriptures"])
+app.include_router(slide.router, prefix="/api/v1/slides", tags=["Slides"])
 
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR")

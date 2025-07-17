@@ -15,8 +15,6 @@ from app.services.news.scripture_service import (
 )
 
 router = APIRouter(
-    prefix="/scriptures",
-    tags=["Scriptures"],
     dependencies=[Depends(permission_required_safe())]
 )
 

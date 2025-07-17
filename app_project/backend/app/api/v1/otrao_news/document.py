@@ -26,8 +26,6 @@ from app.services.news.document_service import (
 )
 
 router = APIRouter(
-    prefix="/documents",
-    tags=["Documents"],
     dependencies=[Depends(permission_required_safe())]
 )
 

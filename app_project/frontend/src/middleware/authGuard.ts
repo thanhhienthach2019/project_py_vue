@@ -19,7 +19,7 @@ export const authGuard = async (
   if (authStore.isAuthenticated) {
     next(); // 
   } else {
-    console.warn("⛔ Không có quyền truy cập. Đang chuyển hướng về trang đăng nhập.");
-    next("/login"); // 
+    console.warn("⛔ Không có quyền truy cập. Đang chuyển hướng về trang chủ.");
+    next("/"); // 
   }
 };
