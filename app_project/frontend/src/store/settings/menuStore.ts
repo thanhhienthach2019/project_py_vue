@@ -1,153 +1,185 @@
-import { defineStore } from "pinia";
+// src/store/settings/menuStore.ts
+import { defineStore } from 'pinia'
+import { withLoadingToast } from '@/utils/piniaHelpers'
 import {
-  fetchUserMenus,
   fetchAllMenus,
   createMenu,
   updateMenu,
   deleteMenu,
-} from "@/services/settings/menuService";
+} from '@/services/settings/menuService'
+
 import type {
   MenuItemResponse,
   MenuItemCreate,
   MenuItemUpdate,
-} from "@/models/settings/menu";
+} from '@/models/settings/menu'
 
-interface MenuState {
-  userMenus: MenuItemResponse[];
-  allMenus: MenuItemResponse[];
-  loading: boolean;
-  creating: boolean;
-  updating: boolean;
-  deleting: boolean;
+function toMenuItemResponse(
+  item: MenuItemCreate,
+  id: number
+): MenuItemResponse {
+  return {
+    ...item,
+    id,
+    children: item.children?.map((child, index) =>
+      toMenuItemResponse(child, id - index - 1) 
+    ),
+  }
 }
 
-export const useMenuStore = defineStore("menu", {
+interface MenuState {
+  // Data
+  menus: MenuItemResponse[]
+
+  // Loading states
+  isLoadingMenus: boolean
+
+  // Action states
+  isCreating: boolean
+  isUpdating: boolean
+  isDeleting: boolean
+
+  // IDs for current operations
+  updatingId: number | null
+  deletingId: number | null
+}
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export const useMenuStore = defineStore('menu', {
   state: (): MenuState => ({
-    userMenus: [],
-    allMenus: [],
-    loading: false,
-    creating: false,
-    updating: false,
-    deleting: false,
+    menus: [],
+
+    isLoadingMenus: false,
+
+    isCreating: false,
+    isUpdating: false,
+    isDeleting: false,
+
+    updatingId: null,
+    deletingId: null,
   }),
 
+  getters: {
+    /**
+     * Checks if any operation is loading
+     */
+    isLoading(state): boolean {
+      return state.isLoadingMenus || state.isCreating || state.isUpdating || state.isDeleting
+    },
+
+    /**
+     * Gets menu item by ID
+     */
+    getMenuById: (state) => (id: number) => {
+      return state.menus.find(menu => menu.id === id)
+    },
+  },
+
   actions: {
-    async loadUserMenus() {
-      this.loading = true;
-      try {
-        const response = await fetchUserMenus();
-        if (response.success && response.data) {
-          this.userMenus = response.data;
-        } else {
-          console.error(response.message);
-        }
-      } catch (error) {
-        console.error("Error loading user menus:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
+    // ========================
+    // 🚀 DATA LOADING
+    // ========================
 
-    async loadAllMenus() {
-      this.loading = true;
-      try {
-        const response = await fetchAllMenus();
-        if (response.success && response.data) {
-          this.allMenus = response.data;
-        } else {
-          console.error(response.message);
-        }
-      } catch (error) {
-        console.error("Error loading all menus:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async addNewMenu(menu: MenuItemCreate) {
-      const tempId = -Date.now();
-      const optimisticMenu: MenuItemResponse = {
-        ...menu,
-        id: tempId,
-        children: [],
-      };
-      this.allMenus.push(optimisticMenu);
-      this.creating = true;
-
-      try {
-        const response = await createMenu(menu);
-        if (response.success && response.data) {
-          const index = this.allMenus.findIndex((m) => m.id === tempId);
-          if (index !== -1) {
-            this.allMenus.splice(index, 1, response.data);
+    async loadMenus() {
+      await withLoadingToast(
+        this,
+        'isLoadingMenus',
+        async () => {
+          await delay(1000);
+          const response = await fetchAllMenus()
+          if (response.success && response.data) {
+            this.menus = response.data
           }
-          return {
-            success: true,
-            message: "Menu created successfully",
-            data: response.data,
-          };
-        } else {
-          throw new Error(response.message);
+          return response
+        },
+        {
+          loadingMsg: 'Loading menus...',
+          successMsg: 'Menus loaded successfully',
+          errorMsg: 'Failed to load menus',
         }
-      } catch (error) {
-        this.allMenus = this.allMenus.filter((m) => m.id !== tempId);
-        console.error("Create menu failed:", error);
-        return { success: false, message: "Failed to create menu." };
-      } finally {
-        this.creating = false;
-      }
+      )
     },
 
-    async updateExistingMenu(menuId: number, updatedData: MenuItemUpdate) {
-      const index = this.allMenus.findIndex((m) => m.id === menuId);
-      if (index === -1) {
-        return { success: false, message: "Menu not found." };
-      }
+    // ========================
+    // ➕ CREATE
+    // ========================
 
-      const backup = { ...this.allMenus[index] };
-      this.allMenus[index] = { ...backup, ...updatedData };
-      this.updating = true;
+    async createMenu(data: MenuItemCreate) {
+      const tempId = -Date.now()
+      const optimistic = toMenuItemResponse(data, tempId)
+      this.menus.push(optimistic)
+      this.isCreating = true
 
       try {
-        const response = await updateMenu(menuId, updatedData);
+        const response = await createMenu(data)
         if (response.success && response.data) {
-          this.allMenus[index] = response.data;
-          return {
-            success: true,
-            message: "Menu updated successfully",
-            data: response.data,
-          };
-        } else {
-          throw new Error(response.message);
+          const idx = this.menus.findIndex(m => m.id === tempId)
+          if (idx !== -1) this.menus.splice(idx, 1, response.data)
+          return { success: true, message: 'Menu created', data: response.data }
         }
-      } catch (error) {
-        this.allMenus[index] = backup;
-        console.error("Update menu failed:", error);
-        return { success: false, message: "Failed to update menu." };
+        throw new Error(response.message || 'Failed to create menu')
+      } catch (err: any) {
+        this.menus = this.menus.filter(m => m.id !== tempId)
+        return { success: false, message: err.message }
       } finally {
-        this.updating = false;
+        this.isCreating = false
       }
     },
 
-    async removeMenu(menuId: number) {
-      const backup = [...this.allMenus];
-      this.allMenus = this.allMenus.filter((m) => m.id !== menuId);
-      this.deleting = true;
+    // ========================
+    // ✏️ UPDATE
+    // ========================
+
+    async updateMenu(id: number, data: MenuItemUpdate) {
+      const idx = this.menus.findIndex(m => m.id === id)
+      if (idx === -1) return { success: false, message: 'Menu not found' }
+
+      const backup = { ...this.menus[idx] }
+      this.menus[idx] = { ...backup, ...data }
+      this.isUpdating = true
+      this.updatingId = id
 
       try {
-        const response = await deleteMenu(menuId);
-        if (response.success) {
-          return { success: true, message: "Menu deleted successfully" };
-        } else {
-          throw new Error(response.message);
+        const response = await updateMenu(id, data)
+        if (response.success && response.data) {
+          this.menus[idx] = response.data
+          return { success: true, message: 'Menu updated', data: response.data }
         }
-      } catch (error) {
-        this.allMenus = backup;
-        console.error("Delete menu failed:", error);
-        return { success: false, message: "Failed to delete menu." };
+        throw new Error(response.message || 'Failed to update menu')
+      } catch (err: any) {
+        this.menus[idx] = backup
+        return { success: false, message: err.message }
       } finally {
-        this.deleting = false;
+        this.isUpdating = false
+        this.updatingId = null
+      }
+    },
+
+    // ========================
+    // 🗑️ DELETE
+    // ========================
+
+    async deleteMenu(id: number) {
+      const backup = [...this.menus]
+      this.menus = this.menus.filter(m => m.id !== id)
+      this.isDeleting = true
+      this.deletingId = id
+
+      try {
+        const response = await deleteMenu(id)
+        if (response.success) {
+          return { success: true, message: 'Menu deleted' }
+        }
+        throw new Error(response.message || 'Failed to delete menu')
+      } catch (err: any) {
+        this.menus = backup
+        return { success: false, message: err.message }
+      } finally {
+        this.isDeleting = false
+        this.deletingId = null
       }
     },
   },
-});
+})

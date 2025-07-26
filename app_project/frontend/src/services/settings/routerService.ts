@@ -1,7 +1,6 @@
 // 📁 src/services/routerService.ts
 
-import apiClient from "@/utils/apiClient";
-import { getAuthHeaders } from "@/utils/authHeaders";
+import { apiClient } from "@/utils/apiClient";
 import type { AvailableRoute } from "@/models/settings/router";
 
 export const fetchAvailableRoutes = async (): Promise<{
@@ -10,7 +9,7 @@ export const fetchAvailableRoutes = async (): Promise<{
   message: string;
 }> => {
   try {
-    const response = await apiClient.get("/router-permissions/routers/available", getAuthHeaders());
+    const response = await apiClient.get("/router-permissions/routers/available");
     return {
       success: true,
       data: response.data.available_routes,

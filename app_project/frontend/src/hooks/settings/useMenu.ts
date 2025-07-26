@@ -1,69 +1,74 @@
-import { computed } from "vue";
-import { useMenuStore } from "@/store/settings/menuStore"
-import type { MenuItemCreate, MenuItemUpdate } from "@/models/settings/menu";
+// src/hooks/useMenu.ts
+import { computed } from 'vue'
+import { useMenuStore } from '@/store/settings/menuStore'
+import { registerStateStatusStore } from '@/composables/stateStatusRegistry'
+import type { MenuItemCreate, MenuItemUpdate } from '@/models/settings/menu'
 
 export function useMenu() {
-  const menuStore = useMenuStore();
+  const store = useMenuStore()
+  registerStateStatusStore(store)
 
-  // Fetch user-permission-based menu tree
-  const fetchUserMenus = async () => {
-    try {
-      await menuStore.loadUserMenus();
-    } catch (error) {
-      console.error("Failed to fetch user menus:", error);
-    }
-  };
+  // ============ State Getters ============
+  const state = {
+    allMenus: computed(() => store.menus),
+    isLoading: computed(() => store.isLoading),
+    isCreating: computed(() => store.isCreating),
+    isUpdating: computed(() => store.isUpdating),
+    isDeleting: computed(() => store.isDeleting),
+    updatingId: computed(() => store.updatingId),
+    deletingId: computed(() => store.deletingId),
+  }
 
-  // Fetch all menus (admin view)
-  const fetchAllMenus = async () => {
-    try {
-      await menuStore.loadAllMenus();
-    } catch (error) {
-      console.error("Failed to fetch all menus:", error);
-    }
-  };
+  // ============ Data Loading ============
+  const loaders = {
+    fetchMenus: async () => {
+      try {
+        await store.loadMenus()
+        return { success: true }
+      } catch (error: any) {
+        return { success: false, message: error.message || 'Failed to load menus' }
+      }
+    },
+  }
 
-  // Create a new menu
-  const addMenu = async (menu: MenuItemCreate) => {
-    try {
-      const response = await menuStore.addNewMenu(menu);
-      return response;
-    } catch (error) {
-      console.error("Failed to add menu:", error);
-      return { success: false, message: "An error occurred while adding the menu." };
-    }
-  };
+  // ============ Menu Operations ============
+  const actions = {
+    createMenu: async (data: MenuItemCreate) => {
+      try {
+        return await store.createMenu(data)
+      } catch (error: any) {
+        return { success: false, message: error.message || 'Failed to create menu' }
+      }
+    },
+    updateMenu: async (id: number, data: MenuItemUpdate) => {
+      try {
+        return await store.updateMenu(id, data)
+      } catch (error: any) {
+        return { success: false, message: error.message || 'Failed to update menu' }
+      }
+    },
+    deleteMenu: async (id: number) => {
+      try {
+        return await store.deleteMenu(id)
+      } catch (error: any) {
+        return { success: false, message: error.message || 'Failed to delete menu' }
+      }
+    },
+  }
 
-  // Update an existing menu
-  const updateMenu = async (menuId: number, updatedData: MenuItemUpdate) => {
-    try {
-      const response = await menuStore.updateExistingMenu(menuId, updatedData);
-      return response;
-    } catch (error) {
-      console.error("Failed to update menu:", error);
-      return { success: false, message: "An error occurred while updating the menu." };
-    }
-  };
-
-  // Delete a menu by ID
-  const removeMenu = async (menuId: number) => {
-    try {
-      const response = await menuStore.removeMenu(menuId);
-      return response;
-    } catch (error) {
-      console.error("Failed to delete menu:", error);
-      return { success: false, message: "An error occurred while deleting the menu." };
-    }
-  };
+  // ============ Helper Getters ============
+  const getters = {
+    getMenuById: (id: number) => store.getMenuById(id),
+  }
 
   return {
-    fetchUserMenus,
-    fetchAllMenus,
-    addMenu,
-    updateMenu,
-    removeMenu,
-    userMenus: computed(() => menuStore.userMenus),
-    allMenus: computed(() => menuStore.allMenus),
-    loading: computed(() => menuStore.loading),
-  };
+    // State
+    ...state,
+    // Loaders
+    ...loaders,
+    // Actions
+    ...actions,
+    // Getters
+    ...getters,
+  }
 }

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import NotFound from '@/pages/error/NotFound.vue';
 import { useAuthStore } from "@/store/auth/authStore";
+// import { showToast } from "@/utils/toastUtils";
 
 
 const routes: RouteRecordRaw[] = [
@@ -10,19 +11,21 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/components/layout/UserLayout.vue'),
     children: [
       {
-        path: '/',
-        name: 'MainPage',
-        component: () => import('@/components/layout/UserMainContent.vue'),
+        path: '',
+        name: 'HomePage',
+        component: () => import('@/pages/views/news/user/Home.vue'),
       },
       {
         path: '/news',
-        name: 'News',
-        component: () => import('@/pages/views/inventory/Material.vue'),
-        meta: {
-          requiresAuth: true,
-          permission: 'menu:material:view',
-        },
-      },      
+        name: 'NewsIndex',
+        component: () => import('@/pages/views/news/user/NewsIndex.vue')
+      },
+      {
+        path: "/news/details/:id/:slug",
+        name: 'NewsDetail',
+        component: () => import('@/pages/views/news/user/NewsDetail.vue'),       
+      },
+        
       { 
         path: '/403', 
         name: 'Forbidden', 
@@ -144,6 +147,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'news/slide',
+        name: 'SlideManager',
+        component: () => import('@/pages/views/news/admin/SlideManager.vue'),
+        meta: {
+          requiresAuth: true, 
+          permission: 'menu:admin:news:slide:view', 
+        },
+      },
+      {
         path: '403',
         name: 'Forbidden',
         component: () => import('@/pages/error/Forbidden.vue'),
@@ -158,25 +170,25 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, _from, next) => {
-  const auth = useAuthStore()
-  const requiredPerm = to.meta.permission as string | undefined
+router.beforeEach(async (to) => {
+  const authStore = useAuthStore();
 
-  if (!requiredPerm) {
-    return next()
+  if (!to.meta.requiresAuth) return true;
+
+  if (!authStore.isFetched) {
+    const ok = await authStore.checkOrRefreshSession(); 
+    if (!ok) return "/";
   }
 
-  if (!auth.permissions.includes(requiredPerm)) {
-    // window.dispatchEvent(new CustomEvent('show-toast', {
-    //   detail: {
-    //     message: 'You do not have permission to access this feature.',
-    //     type: 'error'
-    //   }
-    // }))
-    return next('/403');
+  if (!authStore.isAuthenticated) return "/login";
+
+  const requiredPermission = to.meta.permission as string | undefined;
+  if (requiredPermission && !authStore.permissions.includes(requiredPermission)) {
+    // showToast("Bạn không có quyền truy cập tính năng này.", "error");
+    return "/admin/403"; 
   }
 
-  next()
-})
+  return true;
+});
 
 export default router;

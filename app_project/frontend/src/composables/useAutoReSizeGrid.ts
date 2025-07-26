@@ -33,7 +33,7 @@ export function useAutoResizeGrid(
     handleResize();
   };
 
-  const onFirstDataRendered = async (e: FirstDataRenderedEvent) => {
+  const onFirstDataRendered = async (_e: FirstDataRenderedEvent) => {
     await nextTick();
     handleResize();
 

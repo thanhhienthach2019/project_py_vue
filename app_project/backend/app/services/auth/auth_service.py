@@ -3,7 +3,7 @@ from datetime import timedelta
 from fastapi import HTTPException, Response, Request
 from sqlalchemy.orm import Session
 from app.models.auth.user import User
-from app.core.security import verify_password, create_access_token, decode_access_token
+from app.core.security import verify_password, create_access_token, decode_access_token, decode_access_token_payload
 from app.core.config import settings
 
 def login_user(db: Session, username: str, password: str, response: Response):
@@ -21,8 +21,8 @@ def login_user(db: Session, username: str, password: str, response: Response):
     response.set_cookie(
         key="_aid-atk_",
         value=access_token,
-        httponly=True,
-        secure=is_prod,
+        httponly=False,
+        secure=True,
         samesite="Lax",
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
@@ -32,7 +32,7 @@ def login_user(db: Session, username: str, password: str, response: Response):
         key="_rid-rtk_",
         value=refresh_token,
         httponly=True,
-        secure=is_prod,
+        secure=True,
         samesite="Lax",
         max_age=7 * 24 * 60 * 60,  
         path="/",
@@ -62,32 +62,30 @@ def logout_user(response: Response):
 
 def handle_refresh_token(request: Request, response: Response):
     refresh_token = request.cookies.get("_rid-rtk_")
-    
     if not refresh_token:
         raise HTTPException(status_code=401, detail="No refresh token provided")
 
     try:
-        payload = decode_access_token(refresh_token)
+        payload = decode_access_token_payload(refresh_token)
+        sub = payload.get("sub")
         
-        username = payload.get("sub")
-        
-        if not username:
+        if not sub:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
         
-        new_token = create_access_token(data={"sub": username})
+        new_token = create_access_token(data={"sub": sub})
 
         is_prod = os.getenv("ENV", "DEV").upper() == "PROD"
         response.set_cookie(
             key="_aid-atk_",
             value=new_token,
-            httponly=True,
-            secure=is_prod,
+            httponly=False,
+            secure=True,
             samesite="Lax",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
 
         return {"message": "Token refreshed"}
 
-    except Exception:
+    except Exception as e:
         raise HTTPException(status_code=401, detail="Refresh token invalid or expired")
     

@@ -118,35 +118,80 @@
         <!-- Actions -->
         <div class="md:col-span-3 lg:col-span-4 flex space-x-4 mt-2">
           <button
-            v-permission.disable="'menu:settings:menu:create'"
+            v-permission.disable="'menu:settings:router:create'"
             v-if="!editMode"
+            :disabled="isCreateDisabled"
             @click="onAdd"
-            class="btn-gradient-green"
+            :class="[
+              'flex items-center gap-2 bg-green-600 hover:bg-green-500 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+              createClass,
+            ]"
           >
-            <Icon icon="mdi:plus-box" class="text-xl" />
-            Create Menu
+            <Icon
+              :icon="isCreating ? 'mdi:loading' : 'mdi:plus-box'"
+              :class="['text-xl', { 'animate-spin': isCreating }]"
+            />
+            <span>{{ isCreating ? "Creating..." : "Create Menu" }}</span>
           </button>
 
-          <!-- Update Button -->
           <button
             v-permission.disable="'menu:settings:menu:update'"
             v-if="editMode"
+            :disabled="isUpdateDisabled || updatingId !== currentEditId"
             @click="onUpdate"
-            class="btn-gradient-blue"
+            :class="[
+              'flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+              updateClass,
+            ]"
           >
-            <Icon icon="mdi:content-save-edit" class="text-xl" />
-            Update Menu
+            <Icon
+              :icon="
+                isUpdating && updatingId === currentEditId
+                  ? 'mdi:loading'
+                  : 'mdi:content-save-edit'
+              "
+              :class="[
+                'text-xl',
+                { 'animate-spin': isUpdating && updatingId === currentEditId },
+              ]"
+            />
+            <span>
+              {{
+                isUpdating && updatingId === currentEditId
+                  ? "Updating..."
+                  : "Update Menu"
+              }}
+            </span>
           </button>
 
-          <!-- Delete Button -->
           <button
             v-permission.disable="'menu:settings:menu:delete'"
             v-if="editMode"
+            :disabled="isDeleteDisabled || deletingId !== currentEditId"
             @click="onDelete"
-            class="btn-gradient-red"
+            :class="[
+              'btn-gradient-red flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+              deleteClass,
+            ]"
           >
-            <Icon icon="mdi:delete-forever" class="text-xl" />
-            Delete Menu
+            <Icon
+              :icon="
+                isDeleting && deletingId === currentEditId
+                  ? 'mdi:loading'
+                  : 'mdi:account-remove'
+              "
+              :class="[
+                'text-lg',
+                { 'animate-spin': isDeleting && deletingId === currentEditId },
+              ]"
+            />
+            <span>
+              {{
+                isDeleting && deletingId === currentEditId
+                  ? "Deleting..."
+                  : "Delete Menu"
+              }}
+            </span>
           </button>
         </div>
       </div>
@@ -196,7 +241,7 @@
           <div class="relative w-72">
             <input
               v-model="quickFilterText"
-              :disabled="loading"
+              :disabled="isLoading"
               placeholder="Search Roles..."
               class="w-full pl-4 pr-10 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-400/30 transition-all"
             />
@@ -213,12 +258,11 @@
         class="grid-wrapper overflow-x-auto overflow-y-visible relative p-4 bg-gray-800 rounded-2xl shadow-xl border border-white/10 transition-all"
         style="overflow-x: auto"
       >
-        <div v-if="loading" class="flex items-center justify-center h-[600px]">
+        <!-- <div v-if="loading" class="flex items-center justify-center h-[600px]">
           <Icon icon="mdi:loading" class="animate-spin w-8 h-8 text-blue-400" />
-        </div>
+        </div> -->
 
         <ag-grid-vue
-          v-if="!loading"
           class="ag-theme-material-futura h-[600px] w-full"
           :defaultColDef="defaultColDef"
           :columnDefs="columnDefs"
@@ -238,15 +282,7 @@
 <script setup lang="ts">
 import { AgGridVue } from "ag-grid-vue3";
 import type { ColDef, GridApi, GridOptions } from "ag-grid-community";
-import {
-  ref,
-  computed,
-  onMounted,
-  inject,
-  type Ref,
-  watch,
-  nextTick,
-} from "vue";
+import { ref, onMounted, inject, type Ref, watch, nextTick } from "vue";
 import { Icon } from "@iconify/vue";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { useMenu } from "@/hooks/settings/useMenu";
@@ -254,14 +290,34 @@ import EditActionCell from "@/components/ui/EditActionCell.vue";
 import { useAutoResizeGrid } from "@/composables/useAutoReSizeGrid";
 import { showConfirmToast } from "@/utils/confirmToast";
 import { setQuickFilterSafe } from "@/utils/agGrid";
+import { useActionDisabled } from "@/composables/useActionDisabled";
 import type {
   MenuItemResponse,
   MenuItemCreate,
   MenuItemUpdate,
 } from "@/models/settings/menu";
 
-const { fetchAllMenus, addMenu, updateMenu, removeMenu, loading } = useMenu();
-const allMenus = computed(() => useMenu().allMenus.value);
+const {
+  allMenus,
+  isLoading,
+  isCreating,
+  isUpdating,
+  isDeleting,
+  updatingId,
+  deletingId,
+  fetchMenus,
+  createMenu,
+  updateMenu,
+  deleteMenu,
+} = useMenu();
+
+const { isDisabled: isCreateDisabled, disabledClass: createClass } =
+  useActionDisabled(isCreating, isLoading);
+const { isDisabled: isUpdateDisabled, disabledClass: updateClass } =
+  useActionDisabled(isUpdating, isLoading);
+const { isDisabled: isDeleteDisabled, disabledClass: deleteClass } =
+  useActionDisabled(isDeleting, isLoading);
+
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
 const inputRef = ref<HTMLInputElement | null>(null);
 const quickFilterText = ref("");
@@ -367,7 +423,7 @@ const form = ref<MenuItemCreate>({
 const editMode = ref(false);
 const currentEditId = ref<number | null>(null);
 
-onMounted(() => fetchAllMenus());
+onMounted(() => fetchMenus());
 
 function resetForm() {
   form.value = {
@@ -384,7 +440,7 @@ function resetForm() {
 }
 
 async function onAdd() {
-  const resp = await addMenu(form.value);
+  const resp = await createMenu(form.value);
   if (resp.success) {
     toast.value.showToast(resp.message, "success");
     resetForm();
@@ -419,7 +475,7 @@ async function onDelete() {
     `Are you sure you want to delete this menu?`
   );
   if (!confirmed) return;
-  const resp = await removeMenu(currentEditId.value);
+  const resp = await deleteMenu(currentEditId.value);
   if (resp.success) {
     toast.value.showToast(resp.message, "success");
     resetForm();

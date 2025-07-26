@@ -40,13 +40,13 @@ def decode_access_token(token: str):
     except JWTError as e:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
     
-def decode_access_token_payload(token: str) -> dict:
+def decode_access_token_payload(token: str):
     try:
         payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
-        username = payload.get("sub")
-        if username is None:
-            raise JWTError("Missing subject")
-        return payload
+        sub: str = payload.get("sub")
+        if sub is None:
+            raise JWTError("Invalid token payload")
+        return {"sub": sub}
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")    
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
     

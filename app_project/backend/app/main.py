@@ -34,7 +34,7 @@ base_urls = os.getenv("BASE_URL_FE", "").split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"], 
+    allow_origins=["https://localhost:5173"], 
     allow_credentials=True,
     allow_methods=["*"],  
     allow_headers=["*"],  
@@ -61,8 +61,10 @@ app.include_router(scripture.router, prefix="/api/v1/scriptures", tags=["Scriptu
 app.include_router(slide.router, prefix="/api/v1/slides", tags=["Slides"])
 
 
-UPLOAD_DIR = os.getenv("UPLOAD_DIR")
-app.mount("/public", StaticFiles(directory=UPLOAD_DIR), name="public")
+upload_path = settings.upload_path
+upload_path.mkdir(parents=True, exist_ok=True)
+app.mount("/public", StaticFiles(directory=upload_path), name="public")
+# print("DEBUG: UPLOAD_DIR =", settings.UPLOAD_DIR)
 @app.get("/")
 def home():
     return {"message": "Welcome to FastAPI with RabbitMQ"}
@@ -72,5 +74,7 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=settings.PORT,
-        reload=True
+        reload=True,
+        ssl_certfile="./cert/localhost.crt",  
+        ssl_keyfile="./cert/localhost.key",   
     )

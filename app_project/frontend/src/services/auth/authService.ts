@@ -1,6 +1,6 @@
 // src/services/auth.ts
 import axios from "axios";
-import apiClient from "@/utils/apiClient";
+import { apiClient, refreshClient } from "@/utils/apiClient";
 axios.defaults.withCredentials = true; 
 
 export const loginApi = async (username: string, password: string) => {
@@ -21,9 +21,18 @@ export const checkAuth = async () => {
 };
 
 export const logoutApi = async () => {
-  return await apiClient.post("/auth/logout");
+  try {
+    const response = await apiClient.post('/auth/logout');
+    return response.data;
+  } finally {
+    // Clear cookies phía client
+    document.cookie = '_aid-atk_=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = '_rid-rtk_=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  }
 };
 
 export const refreshTokenApi = async () => {
-  return await apiClient.post("/auth/refresh-token");
+  // Sử dụng refreshClient để tránh interceptor loop
+  const response = await refreshClient.post('/auth/refresh-token');
+  return response.data;
 };

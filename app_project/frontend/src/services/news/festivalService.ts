@@ -1,6 +1,6 @@
 // services/news/festivalService.ts
 
-import apiClient from "@/utils/apiClient";
+import { apiClient } from "@/utils/apiClient";
 import { getMultipartHeaders } from "@/utils/getMultipartHeaders";
 import type {
   FestivalCreate,

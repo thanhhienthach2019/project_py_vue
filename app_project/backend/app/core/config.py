@@ -1,11 +1,13 @@
+# backend/app/core/config.py
 import os
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from dotenv import load_dotenv
 
-# Load environment variables từ file .env
-dotenv_path = os.path.join(os.path.dirname(__file__), "../../.env") 
-load_dotenv(dotenv_path)
-# print("DATABASE_URL từ dotenv:", os.getenv("DATABASE_URL"))
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
+
+env_file_path = BASE_DIR / ".env.dev"    
+# env_file_path = BASE_DIR / ".env.prod"
+
 
 class Settings(BaseSettings):
     DATABASE_URL: str
@@ -17,9 +19,18 @@ class Settings(BaseSettings):
     BASE_URL_FE: str
     UPLOAD_DIR: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    RABBITMQ_URL: str
+    RABBITMQ_URL: str | None = None
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
-    
-# Tạo instance settings
+    model_config = SettingsConfigDict(
+        env_file=str(env_file_path),
+        env_file_encoding="utf-8"
+    )
+
+    @property
+    def upload_path(self) -> Path:
+        path = Path(self.UPLOAD_DIR)
+        if path.is_absolute():
+            return path
+        return BASE_DIR / path
+
 settings = Settings()

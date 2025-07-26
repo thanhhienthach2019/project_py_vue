@@ -1,5 +1,4 @@
-import apiClient from "@/utils/apiClient";
-import { getAuthHeaders } from "@/utils/authHeaders";
+import { apiClient } from "@/utils/apiClient";
 import type { MenuItemCreate, MenuItemUpdate, MenuItemResponse } from "@/models/settings/menu";
 
 // 🔹 Get all menu items (no filtering by user permission)
@@ -9,7 +8,7 @@ export const fetchAllMenus = async (): Promise<{
   message: string;
 }> => {
   try {
-    const response = await apiClient.get("/menus/all", getAuthHeaders());
+    const response = await apiClient.get("/menus/all");
     return {
       success: true,
       data: response.data,
@@ -18,7 +17,8 @@ export const fetchAllMenus = async (): Promise<{
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "Failed to fetch all menu items",
+      message: "Failed to fetch all menu items",
+      // message: error.response?.data?.detail || "Failed to fetch all menu items",
     };
   }
 };
@@ -30,7 +30,7 @@ export const fetchUserMenus = async (): Promise<{
   message: string;
 }> => {
   try {
-    const response = await apiClient.get("/menus", getAuthHeaders());
+    const response = await apiClient.get("/menus"); 
     return {
       success: true,
       data: response.data,
@@ -39,7 +39,7 @@ export const fetchUserMenus = async (): Promise<{
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "Failed to fetch user menus",
+      message: "Failed to fetch user menus",
     };
   }
 };
@@ -53,7 +53,7 @@ export const createMenu = async (
   data?: MenuItemResponse;
 }> => {
   try {
-    const response = await apiClient.post("/menus", data, getAuthHeaders());
+    const response = await apiClient.post("/menus", data);
     return {
       success: true,
       message: "Menu item created successfully",
@@ -62,7 +62,7 @@ export const createMenu = async (
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "Failed to create menu item",
+      message: "Failed to create menu item",
     };
   }
 };
@@ -77,7 +77,7 @@ export const updateMenu = async (
   data?: MenuItemResponse;
 }> => {
   try {
-    const response = await apiClient.put(`/menus/${menuId}`, data, getAuthHeaders());
+    const response = await apiClient.put(`/menus/${menuId}`, data);
     return {
       success: true,
       message: "Menu item updated successfully",
@@ -86,7 +86,7 @@ export const updateMenu = async (
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "Failed to update menu item",
+      message: "Failed to update menu item",
     };
   }
 };
@@ -99,7 +99,7 @@ export const deleteMenu = async (
   message: string;
 }> => {
   try {
-    await apiClient.delete(`/menus/${menuId}`, getAuthHeaders());
+    await apiClient.delete(`/menus/${menuId}`);
     return {
       success: true,
       message: "Menu item deleted successfully",
@@ -107,7 +107,7 @@ export const deleteMenu = async (
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.detail || "Failed to delete menu item",
+      message: "Failed to delete menu item",
     };
   }
 };

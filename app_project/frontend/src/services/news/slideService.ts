@@ -1,4 +1,4 @@
-import apiClient from "@/utils/apiClient";
+import { apiClient } from "@/utils/apiClient";
 import { getAuthHeaders } from "@/utils/authHeaders";
 import type {
   SlideCreate,

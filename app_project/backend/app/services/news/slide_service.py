@@ -24,8 +24,13 @@ def create_slide(db: Session, data: SlideCreate) -> Slide:
 def update_slide(db: Session, slide_id: int, data: SlideUpdate) -> Slide:
     slide = get_or_404(db, slide_id)
     update_data = data.model_dump(exclude_unset=True)
+
+    if "image" in update_data and update_data["image"] is None:
+        del update_data["image"]
+
     for field, value in update_data.items():
         setattr(slide, field, value)
+
     db.commit()
     db.refresh(slide)
     return slide

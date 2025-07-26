@@ -1,6 +1,5 @@
 import { computed } from "vue";
-import { usePermissionRouterStore } from "@/store/settings/permissionRouterStore"
-
+import { usePermissionRouterStore } from "@/store/settings/permissionRouterStore";
 import type {
   RouterCreate,
   RouterUpdate,
@@ -9,154 +8,207 @@ import type {
   RouterPermissionCreate,
   RouterPermissionUpdate
 } from "@/models/settings/permissionRouter";
+import { registerStateStatusStore } from '@/composables/stateStatusRegistry'
 
 export function usePermissionRouter() {
   const store = usePermissionRouterStore();
+  registerStateStatusStore(store)
 
-  // ========= Load methods =========
-  const fetchRouters = async () => {
-    try {
-      await store.loadRouters();
-    } catch (error) {
-      console.error("Failed to fetch routers:", error);
-    }
-  };
-
-  const fetchPermissions = async () => {
-    try {
-      await store.loadPermissions();
-    } catch (error) {
-      console.error("Failed to fetch permissions:", error);
-    }
-  };
-
-  const fetchBindings = async () => {
-    try {
-      await store.loadBindings();
-    } catch (error) {
-      console.error("Failed to fetch bindings:", error);
-    }
-  };
-
-  const fetchDetailedBindings = async () => {
-    try {
-      await store.loadDetailedBindings();
-    } catch (error) {
-      console.error("Failed to fetch detailed bindings:", error);
-    }
-  };
-
-  // ========= Router methods =========
-  const addRouter = async (router: RouterCreate) => {
-    try {
-      return await store.addRouter(router);
-    } catch (error) {
-      console.error("Failed to add router:", error);
-      return { success: false, message: "An error occurred while adding router." };
-    }
-  };
-
-  const updateRouter = async (id: number, data: RouterUpdate) => {
-    try {
-      return await store.updateRouterById(id, data);
-    } catch (error) {
-      console.error("Failed to update router:", error);
-      return { success: false, message: "An error occurred while updating router." };
-    }
-  };
-
-  const removeRouter = async (id: number) => {
-    try {
-      return await store.deleteRouterById(id);
-    } catch (error) {
-      console.error("Failed to delete router:", error);
-      return { success: false, message: "An error occurred while deleting router." };
-    }
-  };
-
-  // ========= Permission methods =========
-  const addPermission = async (data: PermissionCreate) => {
-    try {
-      return await store.addPermission(data);
-    } catch (error) {
-      console.error("Failed to add permission:", error);
-      return { success: false, message: "An error occurred while adding permission." };
-    }
-  };
-
-  const updatePermission = async (id: number, data: PermissionUpdate) => {
-    try {
-      return await store.updatePermissionById(id, data);
-    } catch (error) {
-      console.error("Failed to update permission:", error);
-      return { success: false, message: "An error occurred while updating permission." };
-    }
-  };
-
-  const removePermission = async (id: number) => {
-    try {
-      return await store.deletePermissionById(id);
-    } catch (error) {
-      console.error("Failed to delete permission:", error);
-      return { success: false, message: "An error occurred while deleting permission." };
-    }
-  };
-
-  // ========= Binding methods =========
-  const addBinding = async (data: RouterPermissionCreate) => {
-    try {
-      return await store.addBinding(data);
-    } catch (error) {
-      console.error("Failed to add binding:", error);
-      return { success: false, message: "An error occurred while adding binding." };
-    }
-  };
-
-  const updateBinding = async (id: number, data: RouterPermissionUpdate) => {
-    try {
-      return await store.updateBinding(id, data);
-    } catch (error) {
-      console.error("Failed to update binding:", error);
-      return { success: false, message: "An error occurred while updating binding." };
-    }
-  };
-
-  const removeBinding = async (id: number) => {
-    try {
-      return await store.deleteBinding(id);
-    } catch (error) {
-      console.error("Failed to delete binding:", error);
-      return { success: false, message: "An error occurred while deleting binding." };
-    }
-  };
-
-  return {
-    // Loaders
-    fetchRouters,
-    fetchPermissions,
-    fetchBindings,
-    fetchDetailedBindings,
-
-    // CRUD: Router
-    addRouter,
-    updateRouter,
-    removeRouter,
-
-    // CRUD: Permission
-    addPermission,
-    updatePermission,
-    removePermission,
-
-    // CRUD: Binding
-    addBinding,
-    updateBinding,
-    removeBinding,
-
-    // State
+  // ============ State Getters ============
+  const state = {
     routers: computed(() => store.routers),
     permissions: computed(() => store.permissions),
     bindings: computed(() => store.bindings),
     detailedBindings: computed(() => store.detailedBindings),
-    loading: computed(() => store.loading),
+    isLoadingRouters: computed(() => store.isLoadingRouters),
+    isLoadingPermissions: computed(() => store.isLoadingPermissions),
+    isLoadingBindings: computed(() => store.isLoadingBindings),
+    isLoadingDetailedBindings: computed(() => store.isLoadingDetailedBindings),
+    isCreating: computed(() => store.isCreating),
+    isUpdating: computed(() => store.isUpdating),
+    isDeleting: computed(() => store.isDeleting),
+    updatingId: computed(() => store.updatingId),
+    deletingId: computed(() => store.deletingId)
+  };
+
+  // ============ Data Loading ============
+  const loaders = {
+    fetchRouters: async () => {
+      try {
+        await store.loadRouters();
+        return { success: true };
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.message || "Failed to load routers"
+        };
+      }
+    },
+
+    fetchPermissions: async () => {
+      try {
+        await store.loadPermissions();
+        return { success: true };
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.message || "Failed to load permissions"
+        };
+      }
+    },
+
+    fetchBindings: async () => {
+      try {
+        await store.loadBindings();
+        return { success: true };
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.message || "Failed to load bindings"
+        };
+      }
+    },
+
+    fetchDetailedBindings: async () => {
+      try {
+        await store.loadDetailedBindings();
+        return { success: true };
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.message || "Failed to load detailed bindings"
+        };
+      }
+    }
+  };
+
+  // ============ Router Operations ============
+  const routerActions = {
+    createRouter: async (data: RouterCreate) => {
+      try {
+        return await store.createRouter(data);
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.message || "Failed to create router"
+        };
+      }
+    },
+
+    updateRouter: async (id: number, data: RouterUpdate) => {
+      try {
+        return await store.updateRouter(id, data);
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.message || "Failed to update router"
+        };
+      }
+    },
+
+    deleteRouter: async (id: number) => {
+      try {
+        return await store.deleteRouter(id);
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.message || "Failed to delete router"
+        };
+      }
+    }
+  };
+
+  // ============ Permission Operations ============
+  const permissionActions = {
+    createPermission: async (data: PermissionCreate) => {
+      try {
+        return await store.createPermission(data);
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.message || "Failed to create permission"
+        };
+      }
+    },
+
+    updatePermission: async (id: number, data: PermissionUpdate) => {
+      try {
+        return await store.updatePermission(id, data);
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.message || "Failed to update permission"
+        };
+      }
+    },
+
+    deletePermission: async (id: number) => {
+      try {
+        return await store.deletePermission(id);
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.message || "Failed to delete permission"
+        };
+      }
+    }
+  };
+
+  // ============ Binding Operations ============
+  const bindingActions = {
+    createBinding: async (data: RouterPermissionCreate) => {
+      try {
+        return await store.createBinding(data);
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.message || "Failed to create binding"
+        };
+      }
+    },
+
+    updateBinding: async (id: number, data: RouterPermissionUpdate) => {
+      try {
+        return await store.updateBinding(id, data);
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.message || "Failed to update binding"
+        };
+      }
+    },
+
+    deleteBinding: async (id: number) => {
+      try {
+        return await store.deleteBinding(id);
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.message || "Failed to delete binding"
+        };
+      }
+    }
+  };
+
+  // ============ Helper Getters ============
+  const getters = {
+    getRouterById: (id: number) => store.getRouterById(id),
+    getPermissionById: (id: number) => store.getPermissionById(id)
+  };
+
+  return {
+    // State
+    ...state,
+    
+    // Loaders
+    ...loaders,
+    
+    // Actions
+    ...routerActions,
+    ...permissionActions,
+    ...bindingActions,
+    
+    // Getters
+    ...getters
   };
 }

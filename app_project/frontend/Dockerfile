@@ -1,10 +1,17 @@
 FROM nginx:alpine
 
-# Copy file cấu hình Nginx
+# Remove default config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy thư mục build Vue vào thư mục của Nginx
-COPY dist/ /usr/share/nginx/html
+# ✅ Copy certificate & key to container 
+COPY cert/localhost.crt /etc/nginx/conf.d/localhost.crt
+COPY cert/localhost.key /etc/nginx/conf.d/localhost.key
 
-EXPOSE 80
+# Copy Vue build output
+COPY dist/ /usr/share/nginx/html/
+
+EXPOSE 443
 CMD ["nginx", "-g", "daemon off;"]

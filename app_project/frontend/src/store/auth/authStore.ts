@@ -1,11 +1,11 @@
 // src/store/auth.ts
 import { defineStore } from "pinia";
-import { loginApi, checkAuth, logoutApi } from "@/services/auth/authService"
+import { loginApi, checkAuth, logoutApi, refreshTokenApi } from "@/services/auth/authService";
 import { fetchMyPermissions } from "@/services/settings/permissionService";
 import router from "@/router";
 
 interface AuthState {
-  user: any | null
+  user: any | null;
   isAuthenticated: boolean;
   loading: boolean;
   isFetched: boolean;
@@ -18,29 +18,29 @@ export const useAuthStore = defineStore("auth", {
     isAuthenticated: false,
     loading: false,
     isFetched: false,
-    permissions: []
-  }),  
+    permissions: [],
+  }),
+
   actions: {
     async login(username: string, password: string) {
       this.loading = true;
       try {
-        await loginApi(username, password);
+        await loginApi(username, password); 
         await this.fetchUser(); 
         return true;
       } catch (error) {
-        throw new Error("Sai tài khoản hoặc mật khẩu!");
+        throw new Error("Incorrect username or password.");
       } finally {
         this.loading = false;
       }
     },
-    
+
     async fetchUser() {
       this.loading = true;
       try {
-        // console.log("vận chạy");
-        const response = await checkAuth();
-        if (response.data.authenticated) {
-          this.user = response.data.user;
+        const res = await checkAuth(); 
+        if (res.data.authenticated) {
+          this.user = res.data.user;
           this.isAuthenticated = true;
           this.permissions = await fetchMyPermissions();
         } else {
@@ -53,23 +53,60 @@ export const useAuthStore = defineStore("auth", {
         this.isFetched = true;
       }
     },
-    
-    async logout() {
+
+    async checkOrRefreshSession(): Promise<boolean> {
       try {
-        await logoutApi();
-      } catch (e) {
-       
+        // Thử kiểm tra session hiện tại
+        const res = await checkAuth();
+        
+        if (res.data.authenticated) {
+          this.user = res.data.user;
+          this.isAuthenticated = true;
+          this.permissions = await fetchMyPermissions();
+          return true;
+        }
+        
+        // Nếu session hết hạn, thử refresh token
+        return await this.refreshToken();
+      } catch (error) {
+        console.warn('Session check failed', error);
+        return false;
       } finally {
-        this.resetAuth();
-        router.push("/"); 
+        this.isFetched = true;
       }
     },
+    
+    async refreshToken(): Promise<boolean> {
+    try {
+      // Gọi API refresh token
+      await refreshTokenApi();
+      
+      // Cập nhật thông tin user sau khi refresh
+      await this.fetchUser();
+      return true;
+    } catch (error) {
+      // console.error('Refresh token failed', error);
+      this.resetAuth();
+      return false;
+    }
+  },
+
+    async logout() {
+      try {
+        await logoutApi(); 
+      } catch (_) {
+        // ignore
+      } finally {
+        this.resetAuth();
+        router.push("/");
+      }
+    },
+
     resetAuth() {
       this.user = null;
       this.isAuthenticated = false;
       this.isFetched = true;
       this.permissions = [];
-    }
+    },
   },
 });
-

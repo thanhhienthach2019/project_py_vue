@@ -5,6 +5,7 @@ from app.schemas.news.news import (
     NewsCategoryCreate, NewsCategoryUpdate,
     NewsArticleCreate, NewsArticleUpdate
 )
+from slugify import slugify
 
 # Categories
 def create_category(db: Session, data: NewsCategoryCreate) -> NewsCategory:
@@ -38,6 +39,8 @@ def get_all_categories(db: Session):
 
 # Articles
 def create_article(db: Session, data: NewsArticleCreate) -> NewsArticle:
+    if not data.slug:
+        data.slug = make_slug(data.title)
     article = NewsArticle(**data.model_dump())
     db.add(article)
     db.commit()
@@ -48,8 +51,15 @@ def update_article(db: Session, article_id: int, data: NewsArticleUpdate) -> New
     article = db.query(NewsArticle).filter(NewsArticle.id == article_id).first()
     if not article:
         raise HTTPException(404, f"Article {article_id} not found")
-    for field, value in data.model_dump(exclude_unset=True).items():
+
+    data_dict = data.model_dump(exclude_unset=True)
+
+    if "title" in data_dict and not data_dict.get("slug"):
+        data_dict["slug"] = make_slug(data_dict["title"])
+
+    for field, value in data_dict.items():
         setattr(article, field, value)
+
     db.commit()
     db.refresh(article)
     return article
@@ -62,5 +72,33 @@ def delete_article(db: Session, article_id: int) -> bool:
     db.commit()
     return True
 
+def make_slug(title: str) -> str:
+    return slugify(title, separator='-', allow_unicode=True, lowercase=True, max_length=60)
+
 def get_all_articles(db: Session):
     return db.query(NewsArticle).order_by(NewsArticle.published_at.desc()).all()
+
+def get_article_by_id(db: Session, article_id: int) -> NewsArticle:
+    article = db.query(NewsArticle).filter(
+        NewsArticle.id == article_id,
+        NewsArticle.is_published == True
+    ).first()
+    if not article:
+        raise HTTPException(404, "Article not found")
+    return article
+
+def get_article_by_id_and_slug(
+    db: Session,
+    article_id: int,
+    slug: str
+) -> NewsArticle:
+    article = db.query(NewsArticle).filter(
+        NewsArticle.id == article_id,
+        NewsArticle.slug == slug,            
+        NewsArticle.is_published == True
+    ).first()
+
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    return article

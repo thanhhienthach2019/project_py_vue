@@ -30,6 +30,21 @@
           </RouterLink>
         </li>
 
+        <!-- Slide -->
+        <li>
+          <RouterLink
+            to="/admin/news/slide"
+            class="sidebar-item group hover:bg-[#3B4856] hover:text-blue-400"
+            active-class="bg-[#3B4856] text-blue-400"
+          >
+            <Icon
+              icon="mdi:slideshow"
+              class="sidebar-icon group-hover:text-blue-400"
+            />
+            <span>Slide Manager</span>
+          </RouterLink>
+        </li>
+
         <!-- Material -->
         <li>
           <RouterLink to="/admin/inventory/material" class="sidebar-item group">

@@ -1,17 +1,14 @@
 import os
 import pika
 import logging
-from dotenv import load_dotenv
-
-# Load environment variables from .env
-load_dotenv()
+from app.core.config import settings
 
 # Setup logger
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 # Get RabbitMQ URL from environment
-RABBITMQ_URL = os.getenv("RABBITMQ_URL")
+RABBITMQ_URL = settings.RABBITMQ_URL
 
 if not RABBITMQ_URL:
     raise ValueError("RABBITMQ_URL is not set in environment")

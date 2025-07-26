@@ -4,7 +4,7 @@
   >
     <Header />
     <main class="flex-grow container mx-auto px-4 py-6">
-      <router-view />
+      <UserMainContent />
     </main>
     <Footer />
   </div>
@@ -13,6 +13,7 @@
 <script setup lang="ts">
 import Header from "@/components/layout/UserHeader.vue";
 import Footer from "@/components/layout/UserFooter.vue";
+import UserMainContent from "@/components/layout/UserMainContent.vue";
 </script>
 
 <style scoped>

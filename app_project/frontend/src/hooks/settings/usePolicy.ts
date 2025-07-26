@@ -3,45 +3,43 @@ import { usePolicyStore } from "@/store/settings/policyStore";
 import type { PolicyCreate } from "@/models/settings/policy";
 
 export function usePolicy() {
-  const policyStore = usePolicyStore();
+  const store = usePolicyStore();
 
   // === FETCH ===
-  const fetchPolicies = () => policyStore.loadPolicies();
-  const fetchPoliciesGroup = () => policyStore.loadPoliciesGroup();
-  const fetchViewPolicies = () => policyStore.loadViewPolicies();
+  const fetchPolicies = () => store.loadPolicies();
+  const fetchPoliciesGroup = () => store.loadPoliciesGroup();
+  const fetchViewPolicies = () => store.loadViewPolicies();
 
   // === ADD ===
-  const addNewPolicy = (policy: PolicyCreate) => policyStore.addNewPolicy(policy);
-  const addNewPolicyGroup = (policy: PolicyCreate) => policyStore.addNewPolicyGroup(policy);
-  const addNewViewPolicy = (policy: PolicyCreate) => policyStore.addNewViewPolicy(policy);
+  const addNewPolicy = (policy: PolicyCreate) => store.addNewPolicy(policy);
+  const addNewPolicyGroup = (policy: PolicyCreate) => store.addNewPolicyGroup(policy);
+  const addNewViewPolicy = (policy: PolicyCreate) => store.addNewViewPolicy(policy);
 
   // === REMOVE ===
-  const removePolicy = (policy: PolicyCreate) => policyStore.removeExistingPolicy(policy);
-  const removePolicyGroup = (policy: PolicyCreate) => policyStore.removeExistingPolicyGroup(policy);
-  const removeViewPolicy = (policy: PolicyCreate) => policyStore.removeExistingViewPolicy(policy);
+  const removePolicy = (policy: PolicyCreate) => store.removeExistingPolicy(policy);
+  const removePolicyGroup = (policy: PolicyCreate) => store.removeExistingPolicyGroup(policy);
+  const removeViewPolicy = (policy: PolicyCreate) => store.removeExistingViewPolicy(policy);
 
   // === COMPUTED ===
-  const policies = computed(() => policyStore.policies);
-  const policiesGroup = computed(() => policyStore.policiesGroup);
-  const viewPolicies = computed(() => policyStore.viewPolicies);
-  const loading = computed(() => policyStore.loading);
+  const policies = computed(() => store.policies);
+  const policiesGroup = computed(() => store.policiesGroup);
+  const viewPolicies = computed(() => store.viewPolicies);
+  const loading = computed(() => store.loading);
 
   return {
-    policyStore,
-    // Fetchers
+    
     fetchPolicies,
     fetchPoliciesGroup,
     fetchViewPolicies,
 
-    // Actions
     addNewPolicy,
     addNewPolicyGroup,
     addNewViewPolicy,
+
     removePolicy,
     removePolicyGroup,
     removeViewPolicy,
 
-    // State
     policies,
     policiesGroup,
     viewPolicies,

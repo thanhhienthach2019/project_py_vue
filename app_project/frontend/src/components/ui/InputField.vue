@@ -20,7 +20,7 @@
 <script setup lang="ts">
 defineProps<{
   label: string;
-  modelValue: string | undefined;
+  modelValue: string | number | undefined;
   type?: string;
   disabled?: boolean;
   required?: boolean;

@@ -11,6 +11,7 @@ import {
   createNewsArticle,
   updateNewsArticle,
   deleteNewsArticle,
+  getNewsArticleBySlug
 } from "@/services/news/newsService";
 
 import type {
@@ -150,6 +151,18 @@ export const useNewsStore = defineStore("news", {
         this.selectedArticle = await getNewsArticle(id);
       } catch {
         this.error = "Failed to fetch article detail.";
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async getArticleBySlug(id: number, slug: string) {
+      this.loading = true;
+      this.error = null;
+      try {
+        this.selectedArticle = await getNewsArticleBySlug(id, slug);
+      } catch {
+        this.error = "Failed to fetch article by slug.";
       } finally {
         this.loading = false;
       }

@@ -1,5 +1,6 @@
 select {
-    color: white;
+    color: black;
+    background-color: white;
   }
   
   select option {

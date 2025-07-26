@@ -150,156 +150,171 @@
 
           <!-- Action Buttons -->
           <div class="flex flex-wrap gap-4 mt-6">
-            <!-- Create -->
+            <!-- Create Router -->
             <button
               v-permission.disable="'menu:settings:router:create'"
               v-if="!routerEditMode"
+              :disabled="isCreateRouterDisabled"
               @click="saveRouter"
-              class="flex items-center gap-2 bg-green-600 hover:bg-green-500 px-6 py-3 rounded-xl text-white font-semibold transition-all"
+              :class="[
+                'flex items-center gap-2 bg-green-600 hover:bg-green-500 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+                createRouterClass,
+              ]"
             >
-              <Icon icon="mdi:plus-box" class="text-xl" />
-              Create Router
+              <Icon
+                :icon="isCreating ? 'mdi:loading' : 'mdi:plus-box'"
+                :class="['text-xl', { 'animate-spin': isCreating }]"
+              />
+              <span>{{ isCreating ? "Creating..." : "Create Router" }}</span>
             </button>
 
             <!-- Update -->
             <button
               v-permission.disable="'menu:settings:router:update'"
               v-if="routerEditMode"
+              :disabled="isUpdateRouterDisabled || updatingId !== editRouterId"
               @click="saveRouter"
-              class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-white font-semibold transition-all"
+              :class="[
+                'flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+                updateRouterClass,
+              ]"
             >
-              <Icon icon="mdi:content-save-edit" class="text-xl" />
-              Update Router
+              <Icon
+                :icon="
+                  isUpdating && updatingId === editRouterId
+                    ? 'mdi:loading'
+                    : 'mdi:content-save-edit'
+                "
+                :class="[
+                  'text-xl',
+                  { 'animate-spin': isUpdating && updatingId === editRouterId },
+                ]"
+              />
+              <span>
+                {{
+                  isUpdating && updatingId === editRouterId
+                    ? "Updating..."
+                    : "Update Router"
+                }}
+              </span>
             </button>
 
-            <!-- Cancel -->
+            <!-- Delete -->
             <button
+              v-permission.disable="'menu:settings:router:delete'"
               v-if="routerEditMode"
-              @click="resetRouterForm"
-              class="flex items-center gap-2 bg-gray-600 hover:bg-gray-500 px-6 py-3 rounded-xl text-white font-semibold transition-all"
+              :disabled="isDeleteRouterDisabled || deletingId !== editRouterId"
+              @click="deleteRouter"
+              :class="[
+                'btn-gradient-red flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+                deleteRouterClass,
+              ]"
             >
-              <Icon icon="mdi:cancel" class="text-xl" />
-              Cancel
+              <Icon
+                :icon="
+                  isDeleting && deletingId === editRouterId
+                    ? 'mdi:loading'
+                    : 'mdi:account-remove'
+                "
+                :class="[
+                  'text-lg',
+                  { 'animate-spin': isDeleting && deletingId === editRouterId },
+                ]"
+              />
+              <span>
+                {{
+                  isDeleting && deletingId === editRouterId
+                    ? "Deleting..."
+                    : "Delete Router"
+                }}
+              </span>
             </button>
           </div>
         </div>
 
         <!-- Table -->
-        <div>
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-semibold text-white">All Routers</h3>
-            <div class="relative w-72">
-              <input
-                v-model="searchTextRouters"
-                placeholder="Search Routers..."
-                class="w-full pl-4 pr-10 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <Icon
-                icon="mdi:magnify"
-                class="absolute right-3 top-3 text-gray-400"
-              />
+        <div
+          class="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+        >
+          <div class="px-8 py-6 border-b border-white/10">
+            <div class="flex items-start justify-between">
+              <!-- Left: icon + title + info -->
+              <div class="flex items-center space-x-4">
+                <div class="relative group">
+                  <div
+                    class="w-14 h-10 bg-white/10 backdrop-blur-lg rounded-xl border border-white/10 group-hover:border-green-400/40 transition-all duration-300 flex items-center justify-center"
+                  >
+                    <Icon icon="mdi:database" class="w-8 h-8 text-white" />
+                  </div>
+                  <div
+                    class="absolute -bottom-1 left-4 right-4 h-1 bg-white/5 blur-sm rounded-full group-hover:bg-green-400/30 transition-colors"
+                  ></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3
+                    class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 tracking-tight"
+                  >
+                    Routers List Data
+                  </h3>
+                  <p class="text-sm text-gray-400 mt-1">
+                    View and manage application routers
+                  </p>
+                  <div class="flex items-center space-x-2 mt-1">
+                    <span class="text-sm font-medium text-gray-400"
+                      >Total Routers:</span
+                    >
+                    <span
+                      class="text-sm font-semibold text-green-300 bg-green-400/10 px-2 py-0.5 rounded-full flex items-center"
+                    >
+                      {{ routers.length }} active
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: search box -->
+              <div class="relative w-72">
+                <input
+                  v-model="quickFilterText"
+                  :disabled="isLoadingRouters"
+                  placeholder="Search Routers..."
+                  class="w-full pl-4 pr-10 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-400/30 transition-all"
+                />
+                <Icon
+                  icon="mdi:magnify"
+                  class="absolute right-3 top-2.5 text-gray-400"
+                />
+              </div>
             </div>
           </div>
+
           <div
-            class="overflow-x-auto bg-white/5 backdrop-blur-2xl rounded-2xl p-4 border border-white/15 shadow-xl"
+            ref="gridContainer"
+            class="grid-wrapper overflow-x-auto overflow-y-visible relative p-4 bg-gray-800 rounded-2xl shadow-xl border border-white/10 transition-all"
+            style="overflow-x: auto"
           >
-            <table
-              class="w-full text-left table-auto border-separate border-spacing-y-2"
+            <!-- <div
+              v-if="isLoading"
+              class="flex items-center justify-center h-[600px]"
             >
-              <thead class="bg-[#1E2A38]">
-                <tr>
-                  <th class="px-4 py-2 text-gray-400">ID</th>
-                  <th class="px-4 py-2 text-gray-400">Name</th>
-                  <th class="px-4 py-2 text-gray-400">Path</th>
-                  <th class="px-4 py-2 text-gray-400">Method</th>
-                  <th class="px-4 py-2 text-right text-gray-400">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="r in paginatedRouters"
-                  :key="r.id"
-                  class="bg-[#1E2A38] hover:bg-[#27313f] transition-colors duration-200 rounded-lg"
-                >
-                  <td class="px-4 py-2 text-white">{{ r.id }}</td>
-                  <td class="px-4 py-2 text-white">{{ r.name }}</td>
-                  <td class="px-4 py-2 text-white">{{ r.path }}</td>
-                  <td class="px-4 py-2 text-white">{{ r.method }}</td>
-                  <td class="px-4 py-2 text-right">
-                    <div class="flex justify-end items-center gap-2">
-                      <button
-                        v-permission.disable="'menu:settings:router:update'"
-                        @click="editRouter(r)"
-                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium shadow-sm transition"
-                      >
-                        <Icon icon="mdi:pencil" class="text-base" />
-                        Edit
-                      </button>
-                      <button
-                        v-permission.disable="'menu:settings:router:delete'"
-                        @click="deleteRouter(r.id)"
-                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-red-600 hover:bg-red-500 text-white text-sm font-medium shadow-sm transition"
-                      >
-                        <Icon icon="mdi:delete" class="text-base" />
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr
-                  v-for="index in routerEmptyRowCount"
-                  :key="'empty-router-' + index"
-                  class="bg-[#1E2A38]"
-                >
-                  <td class="px-4 py-2" colspan="5">&nbsp;</td>
-                </tr>
-              </tbody>
-            </table>
-            <div
-              v-if="routerTotalPages > 1"
-              class="flex justify-center items-center space-x-2 px-6 py-4 border-t border-white/10 bg-gradient-to-r from-gray-800/30 via-gray-900/30 to-gray-800/30 backdrop-blur-lg rounded-b-2xl"
-            >
-              <!-- Prev -->
-              <button
-                @click="currentRouterPage--"
-                :disabled="currentRouterPage === 1"
-                class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
-              >
-                <Icon icon="mdi:chevron-left" class="text-lg" />
-                <span class="ml-1 text-sm">Prev</span>
-              </button>
+              <Icon
+                icon="mdi:loading"
+                class="animate-spin w-8 h-8 text-blue-400"
+              />
+            </div> -->
 
-              <template v-for="(page, idx) in routerPagesToShow" :key="idx">
-                <span
-                  v-if="page === '…'"
-                  class="w-9 h-9 flex items-center justify-center text-gray-400"
-                >
-                  ...
-                </span>
-                <button
-                  v-else
-                  @click="currentRouterPage = page as number"
-                  :class="[
-                    'w-9 h-9 rounded-full text-sm font-semibold transition',
-                    currentRouterPage === page
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white',
-                  ]"
-                >
-                  {{ page }}
-                </button>
-              </template>
-
-              <!-- Next -->
-              <button
-                @click="currentRouterPage++"
-                :disabled="currentRouterPage === routerTotalPages"
-                class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
-              >
-                <span class="mr-1 text-sm">Next</span>
-                <Icon icon="mdi:chevron-right" class="text-lg" />
-              </button>
-            </div>
+            <ag-grid-vue
+              class="ag-theme-material-futura h-[600px] w-full"
+              :defaultColDef="defaultColDef"
+              :columnDefs="columnDefs"
+              :rowData="routers"
+              :frameworkComponents="frameworkComponents"
+              :gridOptions="gridOptions"
+              :quickFilterText="quickFilterText"
+              @grid-ready="onGridReady"
+              @first-data-rendered="onFirstDataRendered"
+              :rowModelType="'clientSide'"
+            />
           </div>
         </div>
       </section>
@@ -394,151 +409,169 @@
             <button
               v-permission.disable="'menu:settings:router:create'"
               v-if="!permEditMode"
+              :disabled="isCreatePermDisabled"
               @click="savePermission"
-              class="flex items-center gap-2 bg-green-600 hover:bg-green-500 px-6 py-3 rounded-xl text-white font-semibold transition-all"
+              :class="[
+                'flex items-center gap-2 bg-green-600 hover:bg-green-500 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+                createPermClass,
+              ]"
             >
-              <Icon icon="mdi:plus-box" class="text-xl" />
-              Create Permission
+              <Icon
+                :icon="isCreating ? 'mdi:loading' : 'mdi:plus-box'"
+                :class="['text-xl', { 'animate-spin': isCreating }]"
+              />
+              <span>{{
+                isCreating ? "Creating..." : "Create Permission"
+              }}</span>
             </button>
 
             <!-- Update -->
             <button
               v-permission.disable="'menu:settings:router:update'"
               v-if="permEditMode"
+              :disabled="isUpdatePermDisabled || updatingId !== editPermId"
               @click="savePermission"
-              class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-white font-semibold transition-all"
+              :class="[
+                'flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+                updatePermClass,
+              ]"
             >
-              <Icon icon="mdi:content-save-edit" class="text-xl" />
-              Update Permission
+              <Icon
+                :icon="
+                  isUpdating && updatingId === editPermId
+                    ? 'mdi:loading'
+                    : 'mdi:content-save-edit'
+                "
+                :class="[
+                  'text-xl',
+                  { 'animate-spin': isUpdating && updatingId === editPermId },
+                ]"
+              />
+              <span>
+                {{
+                  isUpdating && updatingId === editPermId
+                    ? "Updating..."
+                    : "Update Router"
+                }}
+              </span>
             </button>
 
-            <!-- Cancel -->
+            <!-- Delete -->
             <button
+              v-permission.disable="'menu:settings:router:delete'"
               v-if="permEditMode"
-              @click="resetPermForm"
-              class="flex items-center gap-2 bg-gray-600 hover:bg-gray-500 px-6 py-3 rounded-xl text-white font-semibold transition-all"
+              :disabled="isDeletePermDisabled || deletingId !== editPermId"
+              @click="deletePermission"
+              :class="[
+                'btn-gradient-red flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+                deletePermClass,
+              ]"
             >
-              <Icon icon="mdi:cancel" class="text-xl" />
-              Cancel
+              <Icon
+                :icon="
+                  isDeleting && deletingId === editPermId
+                    ? 'mdi:loading'
+                    : 'mdi:account-remove'
+                "
+                :class="[
+                  'text-lg',
+                  { 'animate-spin': isDeleting && deletingId === editPermId },
+                ]"
+              />
+              <span>
+                {{
+                  isDeleting && deletingId === editPermId
+                    ? "Deleting..."
+                    : "Delete Permission"
+                }}
+              </span>
             </button>
           </div>
         </div>
 
         <!-- Table Section -->
-        <div>
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-semibold text-white">All Permissions</h3>
-            <div class="relative w-72">
-              <input
-                v-model="searchTextPermission"
-                placeholder="Search Permissions..."
-                class="w-full pl-4 pr-10 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <Icon
-                icon="mdi:magnify"
-                class="absolute right-3 top-3 text-gray-400"
-              />
+        <div
+          class="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+        >
+          <div class="px-8 py-6 border-b border-white/10">
+            <div class="flex items-start justify-between">
+              <!-- Left: icon + title + info -->
+              <div class="flex items-center space-x-4">
+                <div class="relative group">
+                  <div
+                    class="w-14 h-10 bg-white/10 backdrop-blur-lg rounded-xl border border-white/10 group-hover:border-green-400/40 transition-all duration-300 flex items-center justify-center"
+                  >
+                    <Icon icon="mdi:database" class="w-8 h-8 text-white" />
+                  </div>
+                  <div
+                    class="absolute -bottom-1 left-4 right-4 h-1 bg-white/5 blur-sm rounded-full group-hover:bg-green-400/30 transition-colors"
+                  ></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3
+                    class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 tracking-tight"
+                  >
+                    Permissions List Data
+                  </h3>
+                  <p class="text-sm text-gray-400 mt-1">
+                    View and manage application permissions
+                  </p>
+                  <div class="flex items-center space-x-2 mt-1">
+                    <span class="text-sm font-medium text-gray-400"
+                      >Total Permissions:</span
+                    >
+                    <span
+                      class="text-sm font-semibold text-green-300 bg-green-400/10 px-2 py-0.5 rounded-full flex items-center"
+                    >
+                      {{ permissions.length }} active
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: search box -->
+              <div class="relative w-72">
+                <input
+                  v-model="quickFilterTextPer"
+                  :disabled="isLoadingPermissions"
+                  placeholder="Search Permissions..."
+                  class="w-full pl-4 pr-10 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-400/30 transition-all"
+                />
+                <Icon
+                  icon="mdi:magnify"
+                  class="absolute right-3 top-2.5 text-gray-400"
+                />
+              </div>
             </div>
           </div>
+
           <div
-            class="overflow-x-auto bg-white/5 backdrop-blur-2xl rounded-2xl p-4 border border-white/15 shadow-xl"
+            ref="gridContainerPer"
+            class="grid-wrapper overflow-x-auto overflow-y-visible relative p-4 bg-gray-800 rounded-2xl shadow-xl border border-white/10 transition-all"
+            style="overflow-x: auto"
           >
-            <table
-              class="w-full text-left table-auto border-separate border-spacing-y-2"
+            <!-- <div
+              v-if="isLoadingPermissions"
+              class="flex items-center justify-center h-[600px]"
             >
-              <thead class="bg-[#1E2A38]">
-                <tr>
-                  <th class="px-4 py-2 text-gray-400">ID</th>
-                  <th class="px-4 py-2 text-gray-400">Resource</th>
-                  <th class="px-4 py-2 text-gray-400">Action</th>
-                  <th class="px-4 py-2 text-right text-gray-400">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="p in paginatedPermissions"
-                  :key="p.id"
-                  class="bg-[#1E2A38] hover:bg-[#27313f] transition-colors duration-200"
-                >
-                  <td class="px-4 py-2 text-white">{{ p.id }}</td>
-                  <td class="px-4 py-2 text-white">{{ p.resource }}</td>
-                  <td class="px-4 py-2 text-white">{{ p.action }}</td>
-                  <td class="px-4 py-2 text-right">
-                    <div class="flex justify-end items-center gap-2">
-                      <button
-                        v-permission.disable="'menu:settings:router:update'"
-                        @click="editPermission(p)"
-                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium shadow-sm transition"
-                      >
-                        <Icon icon="mdi:pencil" class="text-base" />
-                        Edit
-                      </button>
-                      <button
-                        v-permission.disable="'menu:settings:router:delete'"
-                        @click="deletePermission(p.id)"
-                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-red-600 hover:bg-red-500 text-white text-sm font-medium shadow-sm transition"
-                      >
-                        <Icon icon="mdi:delete" class="text-base" />
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr
-                  v-for="index in permissionEmptyRowCount"
-                  :key="'empty-row-' + index"
-                  class="bg-[#1E2A38]"
-                >
-                  <td class="px-4 py-2" colspan="4">&nbsp;</td>
-                </tr>
-              </tbody>
-            </table>
-            <div
-              v-if="permissionTotalPages > 1"
-              class="flex justify-center items-center space-x-2 px-6 py-4 border-t border-white/10 bg-gradient-to-r from-gray-800/30 via-gray-900/30 to-gray-800/30 backdrop-blur-lg rounded-b-2xl"
-            >
-              <!-- Prev -->
-              <button
-                @click="currentPermissionPage--"
-                :disabled="currentPermissionPage === 1"
-                class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
-              >
-                <Icon icon="mdi:chevron-left" class="text-lg" />
-                <span class="ml-1 text-sm">Prev</span>
-              </button>
+              <Icon
+                icon="mdi:loading"
+                class="animate-spin w-8 h-8 text-blue-400"
+              />
+            </div> -->
 
-              <!-- Page numbers -->
-              <template v-for="(page, idx) in permissionPagesToShow" :key="idx">
-                <span
-                  v-if="page === '...'"
-                  class="w-9 h-9 flex items-center justify-center text-gray-400"
-                >
-                  ...
-                </span>
-                <button
-                  v-else
-                  @click="currentPermissionPage = page as number"
-                  :class="[
-                    'w-9 h-9 rounded-full text-sm font-semibold transition',
-                    currentPermissionPage === page
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white',
-                  ]"
-                >
-                  {{ page }}
-                </button>
-              </template>
-
-              <!-- Next -->
-              <button
-                @click="currentPermissionPage++"
-                :disabled="currentPermissionPage === permissionTotalPages"
-                class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
-              >
-                <span class="mr-1 text-sm">Next</span>
-                <Icon icon="mdi:chevron-right" class="text-lg" />
-              </button>
-            </div>
+            <ag-grid-vue
+              class="ag-theme-material-futura h-[600px] w-full"
+              :defaultColDef="defaultColDefPer"
+              :columnDefs="columnDefsPer"
+              :rowData="permissions"
+              :frameworkComponents="frameworkComponentsPer"
+              :gridOptions="gridOptionsPer"
+              :quickFilterText="quickFilterTextPer"
+              @grid-ready="onGridReadyPer"
+              @first-data-rendered="onFirstDataRenderedPer"
+              :rowModelType="'clientSide'"
+            />
           </div>
         </div>
       </section>
@@ -627,163 +660,164 @@
             <button
               v-permission.disable="'menu:settings:router:create'"
               v-if="!bindEditMode"
+              :disabled="isCreateBindDisabled"
               @click="saveBinding"
-              class="flex items-center gap-2 bg-green-600 hover:bg-green-500 px-6 py-3 rounded-xl text-white font-semibold transition-all"
+              :class="[
+                'flex items-center gap-2 bg-green-600 hover:bg-green-500 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+                createBindClass,
+              ]"
             >
-              <Icon icon="mdi:link-plus" class="text-xl" />
-              Create Binding
+              <Icon
+                :icon="isCreating ? 'mdi:loading' : 'mdi:plus-box'"
+                :class="['text-xl', { 'animate-spin': isCreating }]"
+              />
+              <span>{{ isCreating ? "Creating..." : "Create Binding" }}</span>
             </button>
 
             <button
               v-permission.disable="'menu:settings:router:update'"
               v-if="bindEditMode"
+              :disabled="isUpdateBindDisabled || updatingId !== editBindId"
               @click="saveBinding"
-              class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-white font-semibold transition-all"
+              :class="[
+                'flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+                updateBindClass,
+              ]"
             >
-              <Icon icon="mdi:link-edit" class="text-xl" />
-              Update Binding
+              <Icon
+                :icon="
+                  isUpdating && updatingId === editBindId
+                    ? 'mdi:loading'
+                    : 'mdi:content-save-edit'
+                "
+                :class="[
+                  'text-xl',
+                  { 'animate-spin': isUpdating && updatingId === editBindId },
+                ]"
+              />
+              <span>
+                {{
+                  isUpdating && updatingId === editBindId
+                    ? "Updating..."
+                    : "Update Binding"
+                }}
+              </span>
             </button>
 
             <button
+              v-permission.disable="'menu:settings:router:delete'"
               v-if="bindEditMode"
-              @click="resetBindingForm"
-              class="flex items-center gap-2 bg-gray-600 hover:bg-gray-500 px-6 py-3 rounded-xl text-white font-semibold transition-all"
+              :disabled="isDeleteBindDisabled || deletingId !== editBindId"
+              @click="deleteBinding"
+              :class="[
+                'btn-gradient-red flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+                deleteBindClass,
+              ]"
             >
-              <Icon icon="mdi:cancel" class="text-xl" />
-              Cancel
+              <Icon
+                :icon="
+                  isDeleting && deletingId === editBindId
+                    ? 'mdi:loading'
+                    : 'mdi:account-remove'
+                "
+                :class="[
+                  'text-lg',
+                  { 'animate-spin': isDeleting && deletingId === editBindId },
+                ]"
+              />
+              <span>
+                {{
+                  isDeleting && deletingId === editBindId
+                    ? "Deleting..."
+                    : "Delete Binding"
+                }}
+              </span>
             </button>
           </div>
         </div>
         <!-- Table Section -->
-        <div>
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-semibold text-white">All Bindings</h3>
-            <div class="w-72">
-              <input
-                v-model="searchTextBinding"
-                placeholder="Search Bindings..."
-                class="w-full pl-4 pr-10 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <Icon
-                icon="mdi:magnify"
-                class="absolute right-3 top-3 text-gray-400"
-              />
+        <div
+          class="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+        >
+          <div class="px-8 py-6 border-b border-white/10">
+            <div class="flex items-start justify-between">
+              <!-- Left: icon + title + info -->
+              <div class="flex items-center space-x-4">
+                <div class="relative group">
+                  <div
+                    class="w-14 h-10 bg-white/10 backdrop-blur-lg rounded-xl border border-white/10 group-hover:border-green-400/40 transition-all duration-300 flex items-center justify-center"
+                  >
+                    <Icon icon="mdi:database" class="w-8 h-8 text-white" />
+                  </div>
+                  <div
+                    class="absolute -bottom-1 left-4 right-4 h-1 bg-white/5 blur-sm rounded-full group-hover:bg-green-400/30 transition-colors"
+                  ></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3
+                    class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 tracking-tight"
+                  >
+                    Bindings List Data
+                  </h3>
+                  <p class="text-sm text-gray-400 mt-1">
+                    View and manage application bindings
+                  </p>
+                  <div class="flex items-center space-x-2 mt-1">
+                    <span class="text-sm font-medium text-gray-400"
+                      >Total Bindings:</span
+                    >
+                    <span
+                      class="text-sm font-semibold text-green-300 bg-green-400/10 px-2 py-0.5 rounded-full flex items-center"
+                    >
+                      {{ bindings.length }} active
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: search box -->
+              <div class="relative w-72">
+                <input
+                  v-model="quickFilterTextBind"
+                  :disabled="isLoadingBindings"
+                  placeholder="Search Bindings..."
+                  class="w-full pl-4 pr-10 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-400/30 transition-all"
+                />
+                <Icon
+                  icon="mdi:magnify"
+                  class="absolute right-3 top-2.5 text-gray-400"
+                />
+              </div>
             </div>
           </div>
 
           <div
-            class="overflow-x-visible bg-white/5 backdrop-blur-2xl rounded-2xl p-4 border border-white/15 shadow-xl relative z-0"
+            ref="gridContainerBind"
+            class="grid-wrapper overflow-x-auto overflow-y-visible relative p-4 bg-gray-800 rounded-2xl shadow-xl border border-white/10 transition-all"
+            style="overflow-x: auto"
           >
-            <table
-              class="w-full text-left table-auto border-separate border-spacing-y-2"
+            <!-- <div
+              v-if="isLoadingBindings"
+              class="flex items-center justify-center h-[600px]"
             >
-              <thead class="bg-[#1E2A38]">
-                <tr>
-                  <th class="px-4 py-2 text-gray-400">ID</th>
-                  <th class="px-4 py-2 text-gray-400">Router</th>
-                  <th class="px-4 py-2 text-gray-400">Path</th>
-                  <th class="px-4 py-2 text-gray-400">Method</th>
-                  <th class="px-4 py-2 text-gray-400">Permission</th>
-                  <th class="px-4 py-2 text-right text-gray-400">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="b in paginatedBindings"
-                  :key="b.id"
-                  class="bg-[#1E2A38] hover:bg-[#27313f] transition-colors duration-200"
-                >
-                  <td class="px-4 py-2 text-white">{{ b.id }}</td>
-                  <td class="px-4 py-2 text-white">
-                    {{ findRouterName(b.router_id) }}
-                  </td>
-                  <td class="px-4 py-2 text-white">
-                    {{ findRouterPath(b.router_id) }}
-                  </td>
-                  <td class="px-4 py-2 text-white">
-                    {{ findRouterMethod(b.router_id) }}
-                  </td>
-                  <td class="px-4 py-2 text-white">
-                    {{ findPermissionLabel(b.permission_id) }}
-                  </td>
-                  <td class="px-4 py-2 text-right">
-                    <div class="flex justify-end items-center gap-2">
-                      <button
-                        v-permission.disable="'menu:settings:router:update'"
-                        @click="editBinding(b)"
-                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium shadow-sm transition"
-                      >
-                        <Icon icon="mdi:pencil" class="text-base" />
-                        Edit
-                      </button>
-                      <button
-                        v-permission.disable="'menu:settings:router:delete'"
-                        @click="deleteBinding(b.id)"
-                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-red-600 hover:bg-red-500 text-white text-sm font-medium shadow-sm transition"
-                      >
-                        <Icon icon="mdi:delete" class="text-base" />
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr
-                  v-for="index in bindingEmptyRowCount"
-                  :key="'empty-binding-' + index"
-                  class="bg-[#1E2A38]"
-                >
-                  <td class="px-4 py-2" colspan="6">&nbsp;</td>
-                </tr>
-              </tbody>
-            </table>
+              <Icon
+                icon="mdi:loading"
+                class="animate-spin w-8 h-8 text-blue-400"
+              />
+            </div> -->
 
-            <!-- Pagination -->
-            <div
-              v-if="bindingTotalPages > 1"
-              class="flex justify-center items-center space-x-2 px-6 py-4 border-t border-white/10 bg-gradient-to-r from-gray-800/30 via-gray-900/30 to-gray-800/30 backdrop-blur-lg rounded-b-2xl"
-            >
-              <!-- Prev -->
-              <button
-                @click="currentBindingPage--"
-                :disabled="currentBindingPage === 1"
-                class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
-              >
-                <Icon icon="mdi:chevron-left" class="text-lg" />
-                <span class="ml-1 text-sm">Prev</span>
-              </button>
-
-              <!-- Pages -->
-              <template v-for="(page, idx) in bindingPagesToShow" :key="idx">
-                <span
-                  v-if="page === '…'"
-                  class="w-9 h-9 flex items-center justify-center text-gray-400"
-                >
-                  ...
-                </span>
-                <button
-                  v-else
-                  @click="currentBindingPage = page as number"
-                  :class="[
-                    'w-9 h-9 rounded-full text-sm font-semibold transition',
-                    currentBindingPage === page
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white',
-                  ]"
-                >
-                  {{ page }}
-                </button>
-              </template>
-
-              <!-- Next -->
-              <button
-                @click="currentBindingPage++"
-                :disabled="currentBindingPage === bindingTotalPages"
-                class="px-3 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center"
-              >
-                <span class="mr-1 text-sm">Next</span>
-                <Icon icon="mdi:chevron-right" class="text-lg" />
-              </button>
-            </div>
+            <ag-grid-vue
+              class="ag-theme-material-futura h-[600px] w-full"
+              :defaultColDef="defaultColDefBind"
+              :columnDefs="columnDefsBind"
+              :rowData="bindings"
+              :frameworkComponents="frameworkComponentsBind"
+              :gridOptions="gridOptionsBind"
+              :quickFilterText="quickFilterTextBind"
+              @grid-ready="onGridReadyBind"
+              @first-data-rendered="onFirstDataRenderedBind"
+              :rowModelType="'clientSide'"
+            />
           </div>
         </div>
       </section>
@@ -792,13 +826,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject, type Ref, computed, watch } from "vue";
+import { AgGridVue } from "ag-grid-vue3";
+import type { ColDef, GridApi, GridOptions } from "ag-grid-community";
+import {
+  ref,
+  onMounted,
+  inject,
+  type Ref,
+  computed,
+  watch,
+  nextTick,
+} from "vue";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { usePermissionRouter } from "@/hooks/settings/usePermissionRouter";
 import { useRouter } from "@/hooks/settings/useRouter";
 import { useMenu } from "@/hooks/settings/useMenu";
 import { Action } from "@/models/auth/user";
 import { Icon } from "@iconify/vue";
+import EditActionCell from "@/components/ui/EditActionCell.vue";
+import { useAutoResizeGrid } from "@/composables/useAutoReSizeGrid";
+import { showConfirmToast } from "@/utils/confirmToast";
+import { setQuickFilterSafe } from "@/utils/agGrid";
 import type {
   RouterCreate,
   RouterUpdate,
@@ -808,35 +856,148 @@ import type {
   RouterPermissionUpdate,
 } from "@/models/settings/permissionRouter";
 import SearchableSelect from "@/components/ui/SearchableSelect.vue";
+import { useActionDisabled } from "@/composables/useActionDisabled";
 
 // Composable
 const {
-  fetchRouters,
-  fetchPermissions,
-  fetchBindings,
-  addRouter,
-  updateRouter,
-  removeRouter,
-  addPermission,
-  updatePermission,
-  removePermission,
-  addBinding,
-  updateBinding,
-  removeBinding,
   routers,
   permissions,
   bindings,
+  isLoadingRouters,
+  isLoadingPermissions,
+  isLoadingBindings,
+  isCreating,
+  isUpdating,
+  isDeleting,
+  updatingId,
+  deletingId,
+  fetchRouters,
+  fetchPermissions,
+  fetchBindings,
+  createRouter: addRouter,
+  updateRouter,
+  deleteRouter: removeRouter,
+  createPermission: addPermission,
+  updatePermission,
+  deletePermission: removePermission,
+  createBinding: addBinding,
+  updateBinding,
+  deleteBinding: removeBinding,
 } = usePermissionRouter();
 
+//router
+const { isDisabled: isCreateRouterDisabled, disabledClass: createRouterClass } =
+  useActionDisabled(isCreating, isLoadingRouters);
+const { isDisabled: isUpdateRouterDisabled, disabledClass: updateRouterClass } =
+  useActionDisabled(isUpdating, isLoadingRouters);
+const { isDisabled: isDeleteRouterDisabled, disabledClass: deleteRouterClass } =
+  useActionDisabled(isDeleting, isLoadingRouters);
+
+//permissions:
+const { isDisabled: isCreatePermDisabled, disabledClass: createPermClass } =
+  useActionDisabled(isCreating, isLoadingPermissions);
+const { isDisabled: isUpdatePermDisabled, disabledClass: updatePermClass } =
+  useActionDisabled(isUpdating, isLoadingPermissions);
+const { isDisabled: isDeletePermDisabled, disabledClass: deletePermClass } =
+  useActionDisabled(isDeleting, isLoadingPermissions);
+
+//bindings:
+const { isDisabled: isCreateBindDisabled, disabledClass: createBindClass } =
+  useActionDisabled(isCreating, isLoadingBindings);
+const { isDisabled: isUpdateBindDisabled, disabledClass: updateBindClass } =
+  useActionDisabled(isUpdating, isLoadingBindings);
+const { isDisabled: isDeleteBindDisabled, disabledClass: deleteBindClass } =
+  useActionDisabled(isDeleting, isLoadingBindings);
+
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
-const { allMenus, fetchAllMenus } = useMenu();
+const { allMenus, fetchMenus } = useMenu();
 //Router
 const routeKey = ref("");
 const { fetchAvailableRoutes, availableRoutes } = useRouter();
+const inputRef = ref<HTMLInputElement | null>(null);
+const quickFilterText = ref("");
+
+const columnDefs = ref<ColDef[]>([
+  { headerName: "ID", field: "id", width: 80, minWidth: 80 },
+  { headerName: "Name", field: "name", minWidth: 150 },
+  { headerName: "Path", field: "path", minWidth: 150 },
+  { headerName: "Method", field: "method", minWidth: 100, flex: 1 },
+  { headerName: "Domain", field: "Domain", minWidth: 100, flex: 1 },
+  { headerName: "Time", field: "Time", minWidth: 100, flex: 1 },
+  { headerName: "Ip", field: "Ip", minWidth: 100, flex: 1 },
+  {
+    headerName: "Actions",
+    field: "actions",
+    sortable: false,
+    filter: false,
+    width: 100,
+    cellRenderer: EditActionCell,
+  },
+]);
+
+const frameworkComponents = { EditActionCell };
+const gridApi = ref<GridApi | null>(null);
+const gridContainer = ref<HTMLElement | null>(null);
+
+const defaultColDef: ColDef = {
+  sortable: true,
+  filter: "agTextColumnFilter",
+  valueFormatter: (params) => params.value || "-",
+};
+
+const columnsToAutoSize = ["name", "path"];
+const { onGridReady, onFirstDataRendered, resizeNow } = useAutoResizeGrid(
+  gridApi,
+  gridContainer,
+  columnsToAutoSize
+);
+
+const itemsPerPage = ref(5);
+const currentPage = ref(1);
+
+const gridOptions = ref<GridOptions>({
+  pagination: true,
+  paginationPageSize: itemsPerPage.value,
+  paginationPageSizeSelector: [5, 10, 20, 50],
+  onPaginationChanged: () => {
+    if (gridApi.value && !gridApi.value.isDestroyed?.()) {
+      currentPage.value = gridApi.value.paginationGetCurrentPage() + 1;
+      nextTick(resizeNow);
+    }
+  },
+  domLayout: "autoHeight",
+  onGridReady: (params) => {
+    gridApi.value = params.api;
+    params.api.sizeColumnsToFit();
+  },
+  context: {
+    onEdit: handleEdit,
+  },
+  rowModelType: "clientSide",
+  animateRows: true,
+  suppressColumnVirtualisation: false,
+  suppressRowTransform: false,
+  enableCellTextSelection: true,
+  suppressCellFocus: true,
+  suppressHorizontalScroll: true,
+  tooltipShowDelay: 300,
+  tooltipHideDelay: 200,
+});
+
+watch(routers, () => {
+  nextTick(() => {
+    setQuickFilterSafe(gridApi.value, quickFilterText.value);
+    resizeNow();
+  });
+});
+
+watch(quickFilterText, (val) => {
+  setQuickFilterSafe(gridApi.value, val);
+});
 
 onMounted(() => {
   fetchAvailableRoutes();
-  fetchAllMenus();
+  fetchMenus();
 });
 
 const casbinActions = Object.values(Action).filter(
@@ -925,13 +1086,12 @@ async function saveRouter() {
   if (response.success) {
     toast?.value?.showToast(response.message, "success");
     resetRouterForm();
-    fetchRouters();
   } else {
     toast?.value?.showToast(response.message, "error");
   }
 }
 
-function editRouter(r: {
+async function handleEdit(r: {
   id: number;
   name: string;
   path: string;
@@ -942,12 +1102,17 @@ function editRouter(r: {
   routerForm.value = { name: r.name, path: r.path, method: r.method };
 }
 
-async function deleteRouter(id: number) {
-  const response = await removeRouter(id);
+async function deleteRouter() {
+  if (editRouterId.value === null) return;
+  const confirmed = await showConfirmToast(
+    `Are you sure you want to delete this routers?`
+  );
+  if (!confirmed) return;
+  const response = await removeRouter(editRouterId.value);
 
   if (response.success) {
+    resetRouterForm();
     toast?.value?.showToast(response.message, "success");
-    fetchRouters();
   } else {
     toast?.value?.showToast(response.message, "error");
   }
@@ -958,77 +1123,92 @@ function resetRouterForm() {
   routerEditMode.value = false;
   editRouterId.value = null;
   routeKey.value = "";
+  nextTick(() => inputRef.value?.focus());
 }
-const searchTextRouters = ref("");
-const currentRouterPage = ref(1);
-const routerPageSize = ref(5);
-
-const filteredRouters = computed(() => {
-  const keyword = searchTextRouters.value.toLowerCase().trim();
-  return routers.value.filter((r) =>
-    [r.name, r.path].some((field) => field.toLowerCase().includes(keyword))
-  );
-});
-
-watch(searchTextRouters, () => {
-  currentRouterPage.value = 1;
-});
-
-watch(filteredRouters, () => {
-  const total = routerTotalPages.value;
-  if (currentRouterPage.value > total) {
-    currentRouterPage.value = total || 1;
-  }
-});
-
-const paginatedRouters = computed(() => {
-  const start = (currentRouterPage.value - 1) * routerPageSize.value;
-  return filteredRouters.value.slice(start, start + routerPageSize.value);
-});
-
-const routerTotalPages = computed(() => {
-  return Math.ceil(filteredRouters.value.length / routerPageSize.value);
-});
-
-const routerEmptyRowCount = computed(() => {
-  return routerPageSize.value - paginatedRouters.value.length;
-});
-
-const routerPagesToShow = computed(() => {
-  const total = routerTotalPages.value;
-  const current = currentRouterPage.value;
-  const delta = 1;
-  const range: (number | string)[] = [];
-  const rangeWithDots: (number | string)[] = [];
-  let last: number | undefined;
-
-  for (let i = 1; i <= total; i++) {
-    if (
-      i === 1 ||
-      i === total ||
-      (i >= current - delta && i <= current + delta)
-    ) {
-      range.push(i);
-    }
-  }
-
-  for (const page of range) {
-    if (
-      last !== undefined &&
-      typeof page === "number" &&
-      typeof last === "number"
-    ) {
-      if (page - last === 2) rangeWithDots.push(last + 1);
-      else if (page - last > 2) rangeWithDots.push("…");
-    }
-    rangeWithDots.push(page);
-    last = page as number;
-  }
-
-  return rangeWithDots;
-});
 
 // Permission handlers
+
+const inputRefPer = ref<HTMLInputElement | null>(null);
+const quickFilterTextPer = ref("");
+
+const columnDefsPer = ref<ColDef[]>([
+  { headerName: "ID", field: "id", width: 80, minWidth: 80 },
+  { headerName: "Resource", field: "resource", minWidth: 150 },
+  { headerName: "Action", field: "action", minWidth: 150 },
+  { headerName: "Method", field: "method", minWidth: 100, flex: 1 },
+  { headerName: "Domain", field: "Domain", minWidth: 100, flex: 1 },
+  { headerName: "Time", field: "Time", minWidth: 100, flex: 1 },
+  { headerName: "Ip", field: "Ip", minWidth: 100, flex: 1 },
+  {
+    headerName: "Actions",
+    field: "actions",
+    sortable: false,
+    filter: false,
+    width: 100,
+    cellRenderer: EditActionCell,
+  },
+]);
+
+const frameworkComponentsPer = { EditActionCell };
+const gridApiPer = ref<GridApi | null>(null);
+const gridContainerPer = ref<HTMLElement | null>(null);
+
+const defaultColDefPer: ColDef = {
+  sortable: true,
+  filter: "agTextColumnFilter",
+  valueFormatter: (params) => params.value || "-",
+};
+
+const columnsToAutoSizePer = ["resource", "action"];
+const {
+  onGridReady: onGridReadyPer,
+  onFirstDataRendered: onFirstDataRenderedPer,
+  resizeNow: resizeNowPer,
+} = useAutoResizeGrid(gridApiPer, gridContainerPer, columnsToAutoSizePer);
+
+const itemsPerPagePer = ref(5);
+const currentPagePer = ref(1);
+
+const gridOptionsPer = ref<GridOptions>({
+  pagination: true,
+  paginationPageSize: itemsPerPagePer.value,
+  paginationPageSizeSelector: [5, 10, 20, 50],
+  onPaginationChanged: () => {
+    if (gridApiPer.value && !gridApiPer.value.isDestroyed?.()) {
+      currentPagePer.value = gridApiPer.value.paginationGetCurrentPage() + 1;
+      nextTick(resizeNowPer);
+    }
+  },
+  domLayout: "autoHeight",
+  onGridReady: (params) => {
+    gridApiPer.value = params.api;
+    params.api.sizeColumnsToFit();
+  },
+  context: {
+    onEdit: handleEditPer,
+  },
+  rowModelType: "clientSide",
+  animateRows: true,
+  suppressColumnVirtualisation: false,
+  suppressRowTransform: false,
+  enableCellTextSelection: true,
+  suppressCellFocus: true,
+  suppressHorizontalScroll: true,
+  tooltipShowDelay: 300,
+  tooltipHideDelay: 200,
+});
+
+watch(permissions, () => {
+  nextTick(() => {
+    setQuickFilterSafe(gridApiPer.value, quickFilterTextPer.value);
+    resizeNowPer();
+  });
+});
+
+watch(quickFilterTextPer, (val) => {
+  setQuickFilterSafe(gridApiPer.value, val);
+});
+
 async function savePermission() {
   const response =
     permEditMode.value && editPermId.value !== null
@@ -1041,40 +1221,36 @@ async function savePermission() {
   if (response.success) {
     toast?.value?.showToast(response.message, "success");
     resetPermForm();
-    fetchPermissions();
   } else {
     toast?.value?.showToast(response.message, "error");
   }
 }
 
-function editPermission(p: { id: number; resource: string; action: string }) {
+async function handleEditPer(p: {
+  id: number;
+  resource: string;
+  action: string;
+}) {
   permEditMode.value = true;
   editPermId.value = p.id;
   permForm.value = { resource: p.resource, action: p.action };
 }
 
-async function deletePermission(id: number) {
-  const response = await removePermission(id);
+async function deletePermission() {
+  if (editPermId.value === null) return;
+  const confirmed = await showConfirmToast(
+    `Are you sure you want to delete this permission?`
+  );
+  if (!confirmed) return;
+  const response = await removePermission(editPermId.value);
 
   if (response.success) {
+    resetPermForm();
     toast?.value?.showToast(response.message, "success");
-    fetchPermissions();
   } else {
     toast?.value?.showToast(response.message, "error");
   }
 }
-const searchTextPermission = ref("");
-const currentPermissionPage = ref(1);
-const permissionPageSize = ref(5);
-
-const filteredPermissions = computed(() => {
-  const keyword = searchTextPermission.value.toLowerCase().trim();
-  return permissions.value.filter((p) =>
-    [p.resource, p.action].some((field) =>
-      field.toLowerCase().includes(keyword)
-    )
-  );
-});
 
 const permissionOptions = computed(() =>
   Array.isArray(permissions.value)
@@ -1085,77 +1261,133 @@ const permissionOptions = computed(() =>
     : []
 );
 
-const paginatedPermissions = computed(() => {
-  const start = (currentPermissionPage.value - 1) * permissionPageSize.value;
-  return filteredPermissions.value.slice(
-    start,
-    start + permissionPageSize.value
-  );
-});
-
-watch(searchTextPermission, () => {
-  currentPermissionPage.value = 1;
-});
-
-watch(filteredPermissions, () => {
-  const total = permissionTotalPages.value;
-  if (currentPermissionPage.value > total) {
-    currentPermissionPage.value = total || 1;
-  }
-});
-
-const permissionTotalPages = computed(() => {
-  return Math.ceil(filteredPermissions.value.length / permissionPageSize.value);
-});
-
-const permissionEmptyRowCount = computed(() => {
-  return permissionPageSize.value - paginatedPermissions.value.length;
-});
-
-const permissionPagesToShow = computed(() => {
-  const total = permissionTotalPages.value;
-  const current = currentPermissionPage.value;
-  const delta = 1;
-  const range: (number | string)[] = [];
-  const rangeWithDots: (number | string)[] = [];
-  let last: number | undefined;
-
-  for (let i = 1; i <= total; i++) {
-    if (
-      i === 1 ||
-      i === total ||
-      (i >= current - delta && i <= current + delta)
-    ) {
-      range.push(i);
-    }
-  }
-
-  for (const page of range) {
-    if (
-      last !== undefined &&
-      typeof page === "number" &&
-      typeof last === "number"
-    ) {
-      if (page - last === 2) {
-        rangeWithDots.push(last + 1);
-      } else if (page - last > 2) {
-        rangeWithDots.push("...");
-      }
-    }
-    rangeWithDots.push(page);
-    last = page as number;
-  }
-
-  return rangeWithDots;
-});
-
 function resetPermForm() {
   permForm.value = { resource: "", action: "" };
   permEditMode.value = false;
   editPermId.value = null;
+  nextTick(() => inputRefPer.value?.focus());
 }
 
 // Binding handlers
+const inputRefBind = ref<HTMLInputElement | null>(null);
+const quickFilterTextBind = ref("");
+
+const columnDefsBind = ref<ColDef[]>([
+  { headerName: "ID", field: "id", width: 80, minWidth: 80 },
+  {
+    headerName: "Router",
+    field: "router",
+    minWidth: 150,
+    valueGetter: (params) => {
+      const routerId = params.data.router_id;
+      const router = routers.value.find((m) => m.id === routerId);
+      return router ? router.name : "-";
+    },
+  },
+  {
+    headerName: "Path",
+    field: "path",
+    minWidth: 150,
+    valueGetter: (params) => {
+      const routerId = params.data.router_id;
+      const router = routers.value.find((m) => m.id === routerId);
+      return router ? router.path : "-";
+    },
+  },
+  {
+    headerName: "Method",
+    field: "method",
+    minWidth: 100,
+    flex: 1,
+    valueGetter: (params) => {
+      const routerId = params.data.router_id;
+      const router = routers.value.find((m) => m.id === routerId);
+      return router ? router.method : "-";
+    },
+  },
+  {
+    headerName: "Permission",
+    field: "permission",
+    minWidth: 100,
+    flex: 1,
+    valueGetter: (params) => {
+      const routerId = params.data.permission_id;
+      const permission = permissions.value.find((m) => m.id === routerId);
+      return permission ? `${permission.resource}:${permission.action}` : "-";
+    },
+  },
+  { headerName: "Domain", field: "domain", minWidth: 100, flex: 1 },
+  { headerName: "Time", field: "time", minWidth: 100, flex: 1 },
+  { headerName: "Ip", field: "ip", minWidth: 100, flex: 1 },
+  {
+    headerName: "Actions",
+    field: "actions",
+    sortable: false,
+    filter: false,
+    width: 100,
+    cellRenderer: EditActionCell,
+  },
+]);
+
+const frameworkComponentsBind = { EditActionCell };
+const gridApiBind = ref<GridApi | null>(null);
+const gridContainerBind = ref<HTMLElement | null>(null);
+
+const defaultColDefBind: ColDef = {
+  sortable: true,
+  filter: "agTextColumnFilter",
+  valueFormatter: (params) => params.value || "-",
+};
+
+const columnsToAutoSizeBind = ["router", "path", "method", "permission"];
+const {
+  onGridReady: onGridReadyBind,
+  onFirstDataRendered: onFirstDataRenderedBind,
+  resizeNow: resizeNowBind,
+} = useAutoResizeGrid(gridApiBind, gridContainerBind, columnsToAutoSizeBind);
+
+const itemsPerPageBind = ref(5);
+const currentPageBind = ref(1);
+
+const gridOptionsBind = ref<GridOptions>({
+  pagination: true,
+  paginationPageSize: itemsPerPageBind.value,
+  paginationPageSizeSelector: [5, 10, 20, 50],
+  onPaginationChanged: () => {
+    if (gridApiBind.value && !gridApiBind.value.isDestroyed?.()) {
+      currentPageBind.value = gridApiBind.value.paginationGetCurrentPage() + 1;
+      nextTick(resizeNowBind);
+    }
+  },
+  domLayout: "autoHeight",
+  onGridReady: (params) => {
+    gridApiBind.value = params.api;
+    params.api.sizeColumnsToFit();
+  },
+  context: {
+    onEdit: handleEditBind,
+  },
+  rowModelType: "clientSide",
+  animateRows: true,
+  suppressColumnVirtualisation: false,
+  suppressRowTransform: false,
+  enableCellTextSelection: true,
+  suppressCellFocus: true,
+  suppressHorizontalScroll: true,
+  tooltipShowDelay: 300,
+  tooltipHideDelay: 200,
+});
+
+watch(permissions, () => {
+  nextTick(() => {
+    setQuickFilterSafe(gridApiBind.value, quickFilterTextBind.value);
+    resizeNowBind();
+  });
+});
+
+watch(quickFilterTextBind, (val) => {
+  setQuickFilterSafe(gridApiBind.value, val);
+});
 async function saveBinding() {
   const response =
     bindEditMode.value && editBindId.value !== null
@@ -1168,13 +1400,12 @@ async function saveBinding() {
   if (response.success) {
     toast?.value?.showToast(response.message, "success");
     resetBindingForm();
-    fetchBindings();
   } else {
     toast?.value?.showToast(response.message, "error");
   }
 }
 
-function editBinding(b: {
+async function handleEditBind(b: {
   id: number;
   router_id: number;
   permission_id: number;
@@ -1184,103 +1415,28 @@ function editBinding(b: {
   bindForm.value = { router_id: b.router_id, permission_id: b.permission_id };
 }
 
-async function deleteBinding(id: number) {
-  const response = await removeBinding(id);
+async function deleteBinding() {
+  if (editBindId.value === null) return;
+  const confirmed = await showConfirmToast(
+    `Are you sure you want to delete this binding?`
+  );
+  if (!confirmed) return;
+  const response = await removeBinding(editBindId.value);
 
   if (response.success) {
+    resetBindingForm();
     toast?.value?.showToast(response.message, "success");
-    fetchBindings();
   } else {
     toast?.value?.showToast(response.message, "error");
   }
 }
-// Helpers
-const findRouterName = (id: number) =>
-  routers.value.find((r) => r.id === id)?.name || "-";
-const findRouterPath = (id: number) =>
-  routers.value.find((r) => r.id === id)?.path || "-";
-const findRouterMethod = (id: number) =>
-  routers.value.find((r) => r.id === id)?.method || "-";
-const findPermissionLabel = (id: number) => {
-  const p = permissions.value.find((p) => p.id === id);
-  return p ? `${p.resource}:${p.action}` : "-";
-};
 
 function resetBindingForm() {
   bindForm.value = { router_id: 0, permission_id: 0 };
   bindEditMode.value = false;
   editBindId.value = null;
+  nextTick(() => inputRefBind.value?.focus());
 }
-const searchTextBinding = ref("");
-const currentBindingPage = ref(1);
-const bindingPageSize = ref(5);
-
-const filteredBindings = computed(() => {
-  const keyword = searchTextBinding.value.toLowerCase().trim();
-  return bindings.value.filter((b) => {
-    const routerName = findRouterName(b.router_id).toLowerCase();
-    const permissionLabel = findPermissionLabel(b.permission_id).toLowerCase();
-    return routerName.includes(keyword) || permissionLabel.includes(keyword);
-  });
-});
-
-watch(searchTextBinding, () => {
-  currentBindingPage.value = 1;
-});
-
-watch(filteredBindings, () => {
-  const total = bindingTotalPages.value;
-  if (currentBindingPage.value > total) {
-    currentBindingPage.value = total || 1;
-  }
-});
-
-const paginatedBindings = computed(() => {
-  const start = (currentBindingPage.value - 1) * bindingPageSize.value;
-  return filteredBindings.value.slice(start, start + bindingPageSize.value);
-});
-
-const bindingTotalPages = computed(() => {
-  return Math.ceil(filteredBindings.value.length / bindingPageSize.value);
-});
-
-const bindingEmptyRowCount = computed(() => {
-  return bindingPageSize.value - paginatedBindings.value.length;
-});
-
-const bindingPagesToShow = computed(() => {
-  const total = bindingTotalPages.value;
-  const current = currentBindingPage.value;
-  const delta = 1;
-  const range: (number | string)[] = [];
-  const rangeWithDots: (number | string)[] = [];
-  let last: number | undefined;
-
-  for (let i = 1; i <= total; i++) {
-    if (
-      i === 1 ||
-      i === total ||
-      (i >= current - delta && i <= current + delta)
-    ) {
-      range.push(i);
-    }
-  }
-
-  for (const page of range) {
-    if (
-      last !== undefined &&
-      typeof page === "number" &&
-      typeof last === "number"
-    ) {
-      if (page - last === 2) rangeWithDots.push(last + 1);
-      else if (page - last > 2) rangeWithDots.push("…");
-    }
-    rangeWithDots.push(page);
-    last = page as number;
-  }
-
-  return rangeWithDots;
-});
 </script>
 
 <style scoped>

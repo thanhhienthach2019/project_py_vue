@@ -22,6 +22,7 @@ export function useNews(): {
   // Article methods
   fetchArticles: () => Promise<void>;
   getArticle: (id: number) => Promise<void>;
+  getArticleBySlug: (id: number, slug: string) => Promise<void>;
   addArticle: (payload: NewsArticleCreate) => Promise<void>;
   editArticle: (id: number, payload: NewsArticleUpdate) => Promise<void>;
   removeArticle: (id: number) => Promise<void>;
@@ -54,6 +55,7 @@ export function useNews(): {
   const addArticle = (payload: NewsArticleCreate) => store.addArticle(payload);
   const editArticle = (id: number, payload: NewsArticleUpdate) =>
     store.editArticle(id, payload);
+  const getArticleBySlug = (id: number, slug: string) => store.getArticleBySlug(id, slug);
   const removeArticle = (id: number) => store.removeArticle(id);
 
   // === Computed state ===
@@ -79,6 +81,7 @@ export function useNews(): {
 
     fetchArticles,
     getArticle,
+    getArticleBySlug,
     addArticle,
     editArticle,
     removeArticle,

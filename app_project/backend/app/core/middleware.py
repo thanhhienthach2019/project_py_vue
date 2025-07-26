@@ -2,11 +2,17 @@ from fastapi import Request, HTTPException
 import jwt
 from jwt import ExpiredSignatureError, InvalidTokenError
 from app.core.config import settings
+from app.exceptions.auth_exceptions import (
+    MissingTokenException,
+    ExpiredTokenException,
+    InvalidTokenException,
+    GeneralAuthException,
+)
 
 def custom_verify_token(request: Request):
     token = request.cookies.get("_aid-atk_")         
     if not token:
-        raise HTTPException(status_code=403, detail="Missing authentication token")
+        raise MissingTokenException()
     
     try:
         payload = jwt.decode(
@@ -16,8 +22,8 @@ def custom_verify_token(request: Request):
         )
         return payload
     except ExpiredSignatureError:
-        raise HTTPException(status_code=403, detail="Token has expired")
+        raise ExpiredTokenException()
     except InvalidTokenError:
-        raise HTTPException(status_code=403, detail="Invalid authentication token")
+        raise InvalidTokenException()
     except Exception as e:
-        raise HTTPException(status_code=403, detail=f"Authentication error: {str(e)}")
+        raise GeneralAuthException(str(e))

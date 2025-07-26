@@ -1,5 +1,5 @@
 import { getAuthHeaders } from "@/utils/authHeaders";
-import apiClient from "@/utils/apiClient";
+import { apiClient } from "@/utils/apiClient";
 import type { Warehouse } from "@/models/inventory/warehouse";
 
 // Get all warehouses

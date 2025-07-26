@@ -1,4 +1,4 @@
-import apiClient from "@/utils/apiClient";
+import { apiClient } from "@/utils/apiClient";
 import { getAuthHeaders } from "@/utils/authHeaders";
 import { getMultipartHeaders } from "@/utils/getMultipartHeaders";
 import type {
@@ -53,6 +53,14 @@ function buildFormData(data: NewsArticleCreate | NewsArticleUpdate): FormData {
 
 export const fetchNewsArticles = async (): Promise<NewsArticleResponse[]> => {
   const res = await apiClient.get("/news", getAuthHeaders());
+  return res.data;
+};
+
+export const getNewsArticleBySlug = async (
+  id: number,
+  slug: string
+): Promise<NewsArticleResponse> => {
+  const res = await apiClient.get(`/news/details/${id}/${slug}`, getAuthHeaders());
   return res.data;
 };
 

@@ -51,8 +51,8 @@ def test_database_connection(engine, name: str = "") -> None:
         logger.error(f"❌ Failed to connect to {name}: {e}")
 
 # Perform connection tests
-test_database_connection(engine_mssql, "MSSQL")
-test_database_connection(engine_sqlite, "SQLite")
+# test_database_connection(engine_mssql, "MSSQL")
+# test_database_connection(engine_sqlite, "SQLite")
 
 # ---------- Dependency functions for FastAPI ----------
 

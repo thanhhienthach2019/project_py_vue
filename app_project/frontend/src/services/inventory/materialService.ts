@@ -1,5 +1,5 @@
 import { getAuthHeaders } from "@/utils/authHeaders";
-import apiClient from "@/utils/apiClient";
+import { apiClient } from "@/utils/apiClient";
 import type { Material } from "@/models/inventory/material";
 import type { MaterialWithStock } from "@/models/inventory/materialWithStock";
 

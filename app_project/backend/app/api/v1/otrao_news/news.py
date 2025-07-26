@@ -12,7 +12,7 @@ from app.schemas.news.news import (
 from app.models.news.news import NewsCategory, NewsArticle
 from app.services.news.news_service import (
     create_category, update_category, delete_category, get_all_categories,
-    create_article, update_article, delete_article, get_all_articles
+    create_article, update_article, delete_article, get_all_articles, get_article_by_id_and_slug, get_article_by_id
 )
 
 router = APIRouter(
@@ -121,6 +121,9 @@ def delete_news_article(article_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Article not found")
     return {"message": "Article deleted successfully"}
 
+@router.get("/details/{article_id}/{slug}", response_model=NewsArticleResponse)
+def read_article(article_id: int, slug: str, db: Session = Depends(get_db)):
+    return get_article_by_id_and_slug(db, article_id, slug)
 
 @router.get("", response_model=List[NewsArticleResponse])
 def list_news_articles(
@@ -130,10 +133,6 @@ def list_news_articles(
 ):
     return get_all_articles(db)[skip: skip + limit]
 
-
 @router.get("/{article_id}", response_model=NewsArticleResponse)
 def get_news_article_detail(article_id: int, db: Session = Depends(get_db)):
-    article = db.query(NewsArticle).filter(NewsArticle.id == article_id).first()
-    if not article:
-        raise HTTPException(status_code=404, detail="Article not found")
-    return article
+    return get_article_by_id(db, article_id)
