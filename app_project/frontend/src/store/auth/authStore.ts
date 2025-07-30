@@ -62,10 +62,14 @@ export const useAuthStore = defineStore("auth", {
         if (res.data.authenticated) {
           this.user = res.data.user;
           this.isAuthenticated = true;
-          this.permissions = await fetchMyPermissions();
+          try {
+            this.permissions = await fetchMyPermissions();
+          } catch (err) {
+            console.warn('Cannot load permissions, keeping empty:', err);
+            this.permissions = [];
+          }
           return true;
-        }
-        
+        }        
         // Nếu session hết hạn, thử refresh token
         return await this.refreshToken();
       } catch (error) {

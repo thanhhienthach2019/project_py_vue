@@ -1,17 +1,12 @@
-// composables/useActionDisabled.ts
-import { computed, type Ref } from "vue";
+import { computed, type ComputedRef } from 'vue'
 
-export function useActionDisabled(...flags: (boolean | Ref<boolean>)[]) {
-  const isDisabled = computed(() =>
-    flags.some((f) => (typeof f === "boolean" ? f : f.value))
-  );
-
+export function useActionDisabled(...flags: ComputedRef<boolean>[]) {
+  const isDisabled = computed(() => flags.some(flag => flag.value))
   const disabledClass = computed(() =>
-    isDisabled.value ? "opacity-50 cursor-not-allowed" : ""
-  );
-
+    isDisabled.value ? 'opacity-50 pointer-events-none cursor-not-allowed' : ''
+  )
   return {
     isDisabled,
-    disabledClass,
-  };
+    disabledClass
+  }
 }

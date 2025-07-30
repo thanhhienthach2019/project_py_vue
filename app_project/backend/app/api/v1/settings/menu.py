@@ -51,31 +51,31 @@ def get_user_menus(
     response_model=MenuItemResponse,
     status_code=status.HTTP_201_CREATED
 )
-def create_menu(
+async def create_menu(
     data: MenuItemCreate,
     db: Session = Depends(get_db)
 ):
-    return create_menu_item(db, data)
+    return await create_menu_item(db, data)
 
 # --- PUT: Update an existing menu item by ID ---
 @router.put(
     "/{menu_id}",
     response_model=MenuItemResponse
 )
-def update_menu(
+async def update_menu(
     menu_id: int,
     data: MenuItemUpdate,
     db: Session = Depends(get_db)
 ):
-    return update_menu_item(db, menu_id, data)
+    return await update_menu_item(db, menu_id, data)
 
 # --- DELETE: Delete a menu item by ID ---
 @router.delete(
     "/{menu_id}",
     status_code=status.HTTP_204_NO_CONTENT
 )
-def delete_menu(
+async def delete_menu(
     menu_id: int,
     db: Session = Depends(get_db)
 ):
-    delete_menu_item(db, menu_id)
+    await delete_menu_item(db, menu_id)

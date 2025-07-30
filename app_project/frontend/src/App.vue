@@ -68,7 +68,7 @@ onMounted(() => {
     if (authStore.isAuthenticated) {
       await authStore.checkOrRefreshSession();
     }
-  }, 5 * 60 * 1000); // 5 phút
+  }, 10 * 60 * 1000); // 10 phút
 });
 
 onMounted(() => {

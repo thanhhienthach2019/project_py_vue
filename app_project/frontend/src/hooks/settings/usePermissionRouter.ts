@@ -8,11 +8,9 @@ import type {
   RouterPermissionCreate,
   RouterPermissionUpdate
 } from "@/models/settings/permissionRouter";
-import { registerStateStatusStore } from '@/composables/stateStatusRegistry'
 
 export function usePermissionRouter() {
   const store = usePermissionRouterStore();
-  registerStateStatusStore(store)
 
   // ============ State Getters ============
   const state = {

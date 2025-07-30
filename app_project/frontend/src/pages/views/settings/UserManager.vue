@@ -108,38 +108,78 @@
         <button
           v-permission.disable="'menu:settings:user:create'"
           v-if="!editMode"
-          @click="onAdd()"
-          class="btn-gradient-green"
+          :disabled="isCreateDisabled"
+          @click="onAdd"
+          :class="[
+            'flex items-center gap-2 bg-green-600 hover:bg-green-500 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+            createClass,
+          ]"
         >
           <Icon
-            icon="mdi:account-plus"
-            class="text-lg group-hover:animate-pulse"
+            :icon="isCreating ? 'mdi:loading' : 'mdi:plus-box'"
+            :class="['text-xl', { 'animate-spin': isCreating }]"
           />
-          <span>Create User</span>
+          <span>{{ isCreating ? "Creating..." : "Create User" }}</span>
         </button>
+
         <button
           v-permission.disable="'menu:settings:user:update'"
           v-if="editMode"
-          @click="onUpdate()"
-          class="btn-gradient-blue"
+          :disabled="isUpdateDisabled || updatingId !== currentEditId"
+          @click="onUpdate"
+          :class="[
+            'flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+            updateClass,
+          ]"
         >
           <Icon
-            icon="mdi:account-edit"
-            class="text-lg group-hover:animate-pulse"
+            :icon="
+              isUpdating && updatingId === currentEditId
+                ? 'mdi:loading'
+                : 'mdi:content-save-edit'
+            "
+            :class="[
+              'text-xl',
+              { 'animate-spin': isUpdating && updatingId === currentEditId },
+            ]"
           />
-          <span>Update User</span>
+          <span>
+            {{
+              isUpdating && updatingId === currentEditId
+                ? "Updating..."
+                : "Update User"
+            }}
+          </span>
         </button>
+
         <button
           v-permission.disable="'menu:settings:user:delete'"
           v-if="editMode"
-          @click="onDelete()"
-          class="btn-gradient-red"
+          :disabled="isDeleteDisabled || deletingId !== currentEditId"
+          @click="onDelete"
+          :class="[
+            'btn-gradient-red flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+            deleteClass,
+          ]"
         >
           <Icon
-            icon="mdi:account-remove"
-            class="text-lg group-hover:animate-pulse"
+            :icon="
+              isDeleting && deletingId === currentEditId
+                ? 'mdi:loading'
+                : 'mdi:account-remove'
+            "
+            :class="[
+              'text-lg',
+              { 'animate-spin': isDeleting && deletingId === currentEditId },
+            ]"
           />
-          <span>Delete User</span>
+          <span>
+            {{
+              isDeleting && deletingId === currentEditId
+                ? "Deleting..."
+                : "Delete User"
+            }}
+          </span>
         </button>
       </div>
     </div>
@@ -188,7 +228,7 @@
           <div class="relative w-72">
             <input
               v-model="quickFilterText"
-              :disabled="loading"
+              :disabled="isLoading"
               placeholder="Search Roles..."
               class="w-full pl-4 pr-10 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-400/30 transition-all"
             />
@@ -203,14 +243,15 @@
       <div
         ref="gridContainer"
         class="grid-wrapper overflow-x-auto overflow-y-visible relative p-4 bg-gray-800 rounded-2xl shadow-xl border border-white/10 transition-all"
-        style="overflow-x: auto"
       >
-        <div v-if="loading" class="flex items-center justify-center h-[600px]">
-          <Icon icon="mdi:loading" class="animate-spin w-8 h-8 text-blue-400" />
+        <div
+          v-if="delayedLoading"
+          class="h-[600px] w-full flex items-start gap-2"
+        >
+          <SkeletonTable />
         </div>
-
         <ag-grid-vue
-          v-if="!loading"
+          v-else
           class="ag-theme-material-futura h-[600px] w-full"
           :defaultColDef="defaultColDef"
           :columnDefs="columnDefs"
@@ -230,15 +271,7 @@
 <script setup lang="ts">
 import { AgGridVue } from "ag-grid-vue3";
 import type { ColDef, GridApi, GridOptions } from "ag-grid-community";
-import {
-  ref,
-  computed,
-  onMounted,
-  inject,
-  type Ref,
-  watch,
-  nextTick,
-} from "vue";
+import { ref, onMounted, inject, type Ref, watch, nextTick } from "vue";
 import { Icon } from "@iconify/vue";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { useUser } from "@/hooks/auth/useUser";
@@ -249,6 +282,9 @@ import { useAutoResizeGrid } from "@/composables/useAutoReSizeGrid";
 import { showConfirmToast } from "@/utils/confirmToast";
 import { setQuickFilterSafe } from "@/utils/agGrid";
 import InputField from "@/components/ui/InputField.vue";
+import { useActionDisabled } from "@/composables/useActionDisabled";
+import SkeletonTable from "@/components/skeletons/SkeletonTable.vue";
+import { useDelayedLoading } from "@/composables/useDelayedLoading";
 
 // Define UserForm interface directly if not in models/user.ts
 interface UserForm {
@@ -261,10 +297,28 @@ interface UserForm {
   is_active: boolean;
   is_verified: boolean;
 }
-
-const { fetchUsers, createUser, updateUser, deleteUser, loading } = useUser();
-const users = computed(() => useUser().users.value);
+const {
+  users,
+  isLoading,
+  isCreating,
+  isUpdating,
+  isDeleting,
+  updatingId,
+  deletingId,
+  fetchUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+} = useUser();
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
+
+const { isDisabled: isCreateDisabled, disabledClass: createClass } =
+  useActionDisabled(isCreating, isLoading);
+const { isDisabled: isUpdateDisabled, disabledClass: updateClass } =
+  useActionDisabled(isUpdating, isLoading);
+const { isDisabled: isDeleteDisabled, disabledClass: deleteClass } =
+  useActionDisabled(isDeleting, isLoading);
+const delayedLoading = useDelayedLoading(() => isLoading.value, 500);
 
 // Form state
 const form = ref<UserForm>({

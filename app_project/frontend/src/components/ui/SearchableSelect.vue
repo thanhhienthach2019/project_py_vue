@@ -11,6 +11,11 @@
         class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <ChevronDown class="absolute right-3 top-2.5 text-gray-400 w-4 h-4" />
+      <X
+        v-if="search"
+        @click="clearSearch"
+        class="absolute right-8 top-2.5 text-gray-400 w-4 h-4 cursor-pointer hover:text-gray-200 transition"
+      />
     </div>
 
     <!-- Teleport dropdown ra body -->
@@ -47,7 +52,7 @@ import {
   onUnmounted,
   nextTick,
 } from "vue";
-import { ChevronDown } from "lucide-vue-next";
+import { ChevronDown, X } from "lucide-vue-next";
 import type { CSSProperties } from "vue";
 
 interface Props {
@@ -97,6 +102,12 @@ function openDropdown() {
     window.addEventListener("scroll", updateDropdownPosition, true);
     window.addEventListener("resize", updateDropdownPosition);
   });
+}
+
+function clearSearch() {
+  search.value = "";
+  emit("update:modelValue", null);
+  openDropdown();
 }
 
 function select(item: any) {

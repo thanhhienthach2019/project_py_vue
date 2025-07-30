@@ -5,30 +5,30 @@ from app.api.v1.settings import menu, permission_router, policy
 from app.core.database import Base, engine_sqlite
 from app.core.rabbit import rabbit_client
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.api.v1.inventory import inventory, machine, maintenance, material
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.inventory import warehouse
 from app.api.v1.otrao_news import announcement, document, donor, festival, news, scripture, slide
+from app.api.v1.ws.ws import start_redis_listener
+from app.api.v1.ws import ws
+from app.api.v1.ws.settings.permission_router_ws import router as ws_permission_router
 
 Base.metadata.create_all(bind=engine_sqlite)
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await rabbit_client.connect()
+    start_redis_listener()
+    yield
+    await rabbit_client.close()
+    # Optional: cleanup
+
+app = FastAPI(lifespan=lifespan)
 
 # print("Using SQLite DB:", os.path.abspath("./data/sqlite.db"))
-
-@app.on_event("startup")
-async def startup_event():
-    # Establish RabbitMQ connection on app startup
-    await rabbit_client.connect()
-    # Optionally declare queues used in the app
-    await rabbit_client.channel.declare_queue("user.login", durable=True)
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    # Close RabbitMQ connection gracefully
-    await rabbit_client.close()
 
 base_urls = os.getenv("BASE_URL_FE", "").split(",")
 
@@ -59,6 +59,9 @@ app.include_router(festival.router, prefix="/api/v1/festivals", tags=["Festivals
 app.include_router(news.router, prefix="/api/v1/news", tags=["News"])
 app.include_router(scripture.router, prefix="/api/v1/scriptures", tags=["Scriptures"])
 app.include_router(slide.router, prefix="/api/v1/slides", tags=["Slides"])
+
+# Web socket
+app.include_router(ws.router, prefix="/api/v1/ws")
 
 
 upload_path = settings.upload_path

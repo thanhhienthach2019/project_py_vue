@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebSocket Menu Test</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f5f5f5; }
+    #log { white-space: pre-wrap; background: #fff; padding: 10px; border: 1px solid #ccc; height: 300px; overflow-y: auto; }
+    input, button { padding: 6px 12px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h2>🔌 WebSocket Test: /api/v1/ws/menu</h2>
+
+  <div>
+    <label>WebSocket URL:</label>
+    <input type="text" id="wsUrl" size="50" value="wss://localhost:9600/api/v1/ws/menus">
+    <button onclick="connect()">Connect</button>
+    <button onclick="disconnect()">Disconnect</button>
+  </div>
+
+  <div>
+    <input type="text" id="sendMessage" placeholder="Type a message..." size="40">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <h3>📥 Log</h3>
+  <div id="log"></div>
+
+  <script>
+    let socket = null;
+
+    function log(message, type = "info") {
+	  const logBox = document.getElementById('log');
+	  const div = document.createElement("div");
+	  div.textContent = message;
+	  div.className = `log-${type}`;
+	  logBox.appendChild(div);
+	  logBox.scrollTop = logBox.scrollHeight;
+	}
+
+    function connect() {
+	  const url = document.getElementById("wsUrl").value;
+	  socket = new WebSocket(url);
+
+	  socket.onopen = () => {
+		log("✅ Connected");
+		console.log("WebSocket opened:", socket);
+	  };
+
+	  socket.onmessage = (event) => {
+		log("📨 Message: " + event.data);
+		console.log("Received:", event.data);
+	  };
+
+	  socket.onerror = (event) => {
+		log("❌ WebSocket error occurred");
+		console.error("WebSocket Error Event:", event);
+	  };
+
+	  socket.onclose = (event) => {
+		log(`🔌 Disconnected (code: ${event.code}, reason: ${event.reason})`);
+		console.warn("WebSocket closed:", event);
+	  };
+	}
+
+    function disconnect() {
+      if (socket) {
+        socket.close();
+        log("🔴 Closed by client");
+      }
+    }
+
+    function sendMessage() {
+      const msg = document.getElementById("sendMessage").value;
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(msg);
+        log("📤 Sent: " + msg);
+      } else {
+        log(`⚠️ WebSocket not connected (state: ${getReadyStateName(socket.readyState)})`);
+      }
+    }
+	function getReadyStateName(state) {
+	  switch(state) {
+		case WebSocket.CONNECTING: return "CONNECTING";
+		case WebSocket.OPEN: return "OPEN";
+		case WebSocket.CLOSING: return "CLOSING";
+		case WebSocket.CLOSED: return "CLOSED";
+		default: return "UNKNOWN";
+	  }
+	}
+  </script>
+</body>
+</html>

@@ -118,7 +118,6 @@
         <!-- Actions -->
         <div class="md:col-span-3 lg:col-span-4 flex space-x-4 mt-2">
           <button
-            v-permission.disable="'menu:settings:router:create'"
             v-if="!editMode"
             :disabled="isCreateDisabled"
             @click="onAdd"
@@ -256,13 +255,18 @@
       <div
         ref="gridContainer"
         class="grid-wrapper overflow-x-auto overflow-y-visible relative p-4 bg-gray-800 rounded-2xl shadow-xl border border-white/10 transition-all"
-        style="overflow-x: auto"
       >
-        <!-- <div v-if="loading" class="flex items-center justify-center h-[600px]">
-          <Icon icon="mdi:loading" class="animate-spin w-8 h-8 text-blue-400" />
-        </div> -->
+        <!-- Skeleton when loading -->
+        <div
+          v-if="delayedLoading"
+          class="h-[600px] w-full flex items-start gap-2"
+        >
+          <SkeletonTable :rows="5" :columns="5" variant="default" />
+        </div>
 
+        <!-- AG Grid shown when not loading -->
         <ag-grid-vue
+          v-else
           class="ag-theme-material-futura h-[600px] w-full"
           :defaultColDef="defaultColDef"
           :columnDefs="columnDefs"
@@ -291,6 +295,9 @@ import { useAutoResizeGrid } from "@/composables/useAutoReSizeGrid";
 import { showConfirmToast } from "@/utils/confirmToast";
 import { setQuickFilterSafe } from "@/utils/agGrid";
 import { useActionDisabled } from "@/composables/useActionDisabled";
+import SkeletonTable from "@/components/skeletons/SkeletonTable.vue";
+import { useDelayedLoading } from "@/composables/useDelayedLoading";
+import { useMenuRealtime } from "@/composables/settings/useMenuRealtime";
 import type {
   MenuItemResponse,
   MenuItemCreate,
@@ -300,16 +307,19 @@ import type {
 const {
   allMenus,
   isLoading,
+  isLoadingMenus,
   isCreating,
   isUpdating,
   isDeleting,
   updatingId,
   deletingId,
-  fetchMenus,
+  loadMenus,
   createMenu,
   updateMenu,
   deleteMenu,
 } = useMenu();
+
+useMenuRealtime();
 
 const { isDisabled: isCreateDisabled, disabledClass: createClass } =
   useActionDisabled(isCreating, isLoading);
@@ -317,6 +327,8 @@ const { isDisabled: isUpdateDisabled, disabledClass: updateClass } =
   useActionDisabled(isUpdating, isLoading);
 const { isDisabled: isDeleteDisabled, disabledClass: deleteClass } =
   useActionDisabled(isDeleting, isLoading);
+
+const delayedLoading = useDelayedLoading(isLoadingMenus, 300);
 
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
 const inputRef = ref<HTMLInputElement | null>(null);
@@ -370,7 +382,7 @@ const { onGridReady, onFirstDataRendered, resizeNow } = useAutoResizeGrid(
   columnsToAutoSize
 );
 
-const itemsPerPage = ref(5);
+const itemsPerPage = ref(10);
 const currentPage = ref(1);
 const gridOptions = ref<GridOptions>({
   pagination: true,
@@ -423,7 +435,7 @@ const form = ref<MenuItemCreate>({
 const editMode = ref(false);
 const currentEditId = ref<number | null>(null);
 
-onMounted(() => fetchMenus());
+onMounted(() => loadMenus());
 
 function resetForm() {
   form.value = {
@@ -440,6 +452,7 @@ function resetForm() {
 }
 
 async function onAdd() {
+  if (isCreateDisabled.value) return;
   const resp = await createMenu(form.value);
   if (resp.success) {
     toast.value.showToast(resp.message, "success");
@@ -456,6 +469,7 @@ function onEdit(item: MenuItemResponse) {
 }
 
 async function onUpdate() {
+  if (isCreateDisabled.value) return;
   if (currentEditId.value === null) return;
   const resp = await updateMenu(
     currentEditId.value,
@@ -470,6 +484,7 @@ async function onUpdate() {
 }
 
 async function onDelete() {
+  if (isCreateDisabled.value) return;
   if (currentEditId.value === null) return;
   const confirmed = await showConfirmToast(
     `Are you sure you want to delete this menu?`

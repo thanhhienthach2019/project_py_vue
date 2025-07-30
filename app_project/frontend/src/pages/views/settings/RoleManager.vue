@@ -94,32 +94,36 @@
         <div class="md:col-span-5 flex space-x-4 mt-2">
           <button
             v-permission.disable="'menu:settings:policy:create'"
-            @click="onAdd()"
-            class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 text-white font-semibold shadow-md hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="isCreateDisabled"
+            @click="onAdd"
+            :class="[
+              'flex items-center gap-2 bg-green-600 hover:bg-green-500 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+              createClass,
+            ]"
           >
             <Icon
-              icon="mdi:shield-plus"
-              class="text-lg group-hover:animate-pulse transition-transform duration-300"
+              :icon="isCreating ? 'mdi:loading' : 'mdi:plus-box'"
+              :class="['text-xl', { 'animate-spin': isCreating }]"
             />
-            <span>Add Roles</span>
-            <div
-              class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"
-            ></div>
+            <span>{{ isCreating ? "Creating..." : "Create Roles" }}</span>
           </button>
 
           <button
             v-permission.disable="'menu:settings:policy:delete'"
-            @click="onRemove()"
-            class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-500 text-white font-semibold shadow-md hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="isDeleteDisabled"
+            @click="onRemove"
+            :class="[
+              'btn-gradient-red flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold transition-all',
+              deleteClass,
+            ]"
           >
             <Icon
-              icon="mdi:shield-remove"
-              class="text-lg group-hover:animate-pulse transition-transform duration-300"
+              :icon="isDeleting ? 'mdi:loading' : 'mdi:account-remove'"
+              :class="['text-lg', { 'animate-spin': isDeleting }]"
             />
-            <span>Remove Roles</span>
-            <div
-              class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"
-            ></div>
+            <span>
+              {{ isDeleting ? "Deleting..." : "Delete Roles" }}
+            </span>
           </button>
         </div>
       </div>
@@ -169,7 +173,7 @@
           <div class="relative w-72">
             <input
               v-model="quickFilterText"
-              :disabled="loading"
+              :disabled="isLoading"
               placeholder="Search Roles..."
               class="w-full pl-4 pr-10 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-400/30 transition-all"
             />
@@ -184,14 +188,16 @@
       <div
         ref="gridContainer"
         class="grid-wrapper overflow-x-auto overflow-y-visible relative p-4 bg-gray-800 rounded-2xl shadow-xl border border-white/10 transition-all"
-        style="overflow-x: auto"
       >
-        <div v-if="loading" class="flex items-center justify-center h-[600px]">
-          <Icon icon="mdi:loading" class="animate-spin w-8 h-8 text-blue-400" />
+        <div
+          v-if="delayedLoading"
+          class="h-[600px] w-full flex items-start gap-2"
+        >
+          <SkeletonTable />
         </div>
 
         <ag-grid-vue
-          v-if="!loading"
+          v-else
           class="ag-theme-material-futura h-[600px] w-full"
           :defaultColDef="defaultColDef"
           :columnDefs="columnDefs"
@@ -231,13 +237,33 @@ import RoleActionCell from "@/components/ui/RoleActionCell.vue";
 import { useAutoResizeGrid } from "@/composables/useAutoReSizeGrid";
 import { showConfirmToast } from "@/utils/confirmToast";
 import { setQuickFilterSafe } from "@/utils/agGrid";
+import { useActionDisabled } from "@/composables/useActionDisabled";
+import SkeletonTable from "@/components/skeletons/SkeletonTable.vue";
+import { useDelayedLoading } from "@/composables/useDelayedLoading";
+import { usePolicyRealtime } from "@/composables/settings/usePolicyRealtime";
 
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
 
-const { fetchPoliciesGroup, addNewPolicyGroup, removePolicyGroup, loading } =
-  usePolicy();
+const {
+  policiesGroup,
+  isLoading,
+  isLoadingGroups,
+  isCreating,
+  isDeleting,
+  fetchPolicyGroups,
+  addPolicyGroup,
+  removePolicyGroup,
+} = usePolicy();
 
-const policiesGroup = computed(() => usePolicy().policiesGroup.value);
+usePolicyRealtime();
+
+const { isDisabled: isCreateDisabled, disabledClass: createClass } =
+  useActionDisabled(isCreating, isLoading);
+const { isDisabled: isDeleteDisabled, disabledClass: deleteClass } =
+  useActionDisabled(isDeleting, isLoading);
+
+const delayedLoading = useDelayedLoading(isLoadingGroups, 300);
+
 const { fetchUsers, users } = useUser();
 const roles = Object.values(UserRole);
 
@@ -309,7 +335,7 @@ const { onGridReady, onFirstDataRendered, resizeNow } = useAutoResizeGrid(
   columnsToAutoSize
 );
 
-const itemsPerPage = ref(5);
+const itemsPerPage = ref(10);
 const currentPage = ref(1);
 
 const gridOptions = ref<GridOptions>({
@@ -354,7 +380,7 @@ watch(quickFilterText, (val) => {
 
 onMounted(() => {
   fetchUsers();
-  fetchPoliciesGroup();
+  fetchPolicyGroups();
 });
 
 function resetForm() {
@@ -367,7 +393,7 @@ async function onAdd() {
     toast.value?.showToast("Please fill subject, resource.", "error");
     return;
   }
-  const resp = await addNewPolicyGroup(form.value);
+  const resp = await addPolicyGroup(form.value);
   if (resp.success) {
     toast.value?.showToast(resp.message, "success");
     resetForm();

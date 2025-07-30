@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     RABBITMQ_URL: str | None = None
+    REDIS_URL: str = "redis://localhost:6379"
 
     model_config = SettingsConfigDict(
         env_file=str(env_file_path),

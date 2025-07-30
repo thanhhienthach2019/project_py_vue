@@ -291,19 +291,16 @@
           <div
             ref="gridContainer"
             class="grid-wrapper overflow-x-auto overflow-y-visible relative p-4 bg-gray-800 rounded-2xl shadow-xl border border-white/10 transition-all"
-            style="overflow-x: auto"
           >
-            <!-- <div
-              v-if="isLoading"
-              class="flex items-center justify-center h-[600px]"
+            <div
+              v-if="delayedLoadingRouter"
+              class="h-[600px] w-full flex items-start gap-2"
             >
-              <Icon
-                icon="mdi:loading"
-                class="animate-spin w-8 h-8 text-blue-400"
-              />
-            </div> -->
+              <SkeletonTable />
+            </div>
 
             <ag-grid-vue
+              v-else
               class="ag-theme-material-futura h-[600px] w-full"
               :defaultColDef="defaultColDef"
               :columnDefs="columnDefs"
@@ -548,19 +545,16 @@
           <div
             ref="gridContainerPer"
             class="grid-wrapper overflow-x-auto overflow-y-visible relative p-4 bg-gray-800 rounded-2xl shadow-xl border border-white/10 transition-all"
-            style="overflow-x: auto"
           >
-            <!-- <div
-              v-if="isLoadingPermissions"
-              class="flex items-center justify-center h-[600px]"
+            <div
+              v-if="delayedLoadingPermission"
+              class="h-[600px] w-full flex items-start gap-2"
             >
-              <Icon
-                icon="mdi:loading"
-                class="animate-spin w-8 h-8 text-blue-400"
-              />
-            </div> -->
+              <SkeletonTable />
+            </div>
 
             <ag-grid-vue
+              v-else
               class="ag-theme-material-futura h-[600px] w-full"
               :defaultColDef="defaultColDefPer"
               :columnDefs="columnDefsPer"
@@ -621,22 +615,14 @@
               <label class="block text-sm font-medium text-gray-300 mb-2"
                 >Router</label
               >
-              <select
-                v-model.number="bindForm.router_id"
-                class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white"
-              >
-                <option class="bg-gray-800 text-gray-200" disabled value="0">
-                  Select Router
-                </option>
-                <option
-                  class="bg-gray-800 text-gray-200"
-                  v-for="r in routers"
-                  :key="r.id"
-                  :value="r.id"
-                >
-                  {{ r.name }}
-                </option>
-              </select>
+              <SearchableSelect
+                v-model="bindForm.router_id"
+                :options="routerOptions"
+                label-key="label"
+                value-key="id"
+                code-key="code"
+                placeholder="Select router"
+              />
             </div>
 
             <!-- Permission -->
@@ -794,19 +780,16 @@
           <div
             ref="gridContainerBind"
             class="grid-wrapper overflow-x-auto overflow-y-visible relative p-4 bg-gray-800 rounded-2xl shadow-xl border border-white/10 transition-all"
-            style="overflow-x: auto"
           >
-            <!-- <div
-              v-if="isLoadingBindings"
-              class="flex items-center justify-center h-[600px]"
+            <div
+              v-if="delayedLoadingBinding"
+              class="h-[600px] w-full flex items-start gap-2"
             >
-              <Icon
-                icon="mdi:loading"
-                class="animate-spin w-8 h-8 text-blue-400"
-              />
-            </div> -->
+              <SkeletonTable />
+            </div>
 
             <ag-grid-vue
+              v-else
               class="ag-theme-material-futura h-[600px] w-full"
               :defaultColDef="defaultColDefBind"
               :columnDefs="columnDefsBind"
@@ -857,6 +840,9 @@ import type {
 } from "@/models/settings/permissionRouter";
 import SearchableSelect from "@/components/ui/SearchableSelect.vue";
 import { useActionDisabled } from "@/composables/useActionDisabled";
+import SkeletonTable from "@/components/skeletons/SkeletonTable.vue";
+import { useDelayedLoading } from "@/composables/useDelayedLoading";
+import { usePermissionRouterRealtime } from "@/composables/settings/usePermissionRouterRealtime";
 
 // Composable
 const {
@@ -885,6 +871,7 @@ const {
   deleteBinding: removeBinding,
 } = usePermissionRouter();
 
+usePermissionRouterRealtime();
 //router
 const { isDisabled: isCreateRouterDisabled, disabledClass: createRouterClass } =
   useActionDisabled(isCreating, isLoadingRouters);
@@ -909,8 +896,14 @@ const { isDisabled: isUpdateBindDisabled, disabledClass: updateBindClass } =
 const { isDisabled: isDeleteBindDisabled, disabledClass: deleteBindClass } =
   useActionDisabled(isDeleting, isLoadingBindings);
 
+const delayedLoadingRouter = useDelayedLoading(isLoadingRouters, 300);
+
+const delayedLoadingPermission = useDelayedLoading(isLoadingPermissions, 300);
+
+const delayedLoadingBinding = useDelayedLoading(isLoadingBindings, 300);
+
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
-const { allMenus, fetchMenus } = useMenu();
+const { allMenus, loadMenus } = useMenu();
 //Router
 const routeKey = ref("");
 const { fetchAvailableRoutes, availableRoutes } = useRouter();
@@ -952,7 +945,7 @@ const { onGridReady, onFirstDataRendered, resizeNow } = useAutoResizeGrid(
   columnsToAutoSize
 );
 
-const itemsPerPage = ref(5);
+const itemsPerPage = ref(10);
 const currentPage = ref(1);
 
 const gridOptions = ref<GridOptions>({
@@ -997,7 +990,7 @@ watch(quickFilterText, (val) => {
 
 onMounted(() => {
   fetchAvailableRoutes();
-  fetchMenus();
+  loadMenus();
 });
 
 const casbinActions = Object.values(Action).filter(
@@ -1037,6 +1030,13 @@ watch(routeKey, (val) => {
     routerForm.value.name = selected.name;
   }
 });
+const routerOptions = computed(() =>
+  routers.value.map((r) => ({
+    id: r.id,
+    label: `${r.name} (${r.method} ${r.path})`,
+    code: `${r.method}:${r.path}`,
+  }))
+);
 
 // State
 const activeTab = ref<"routers" | "permissions" | "bindings">("routers");
@@ -1166,7 +1166,7 @@ const {
   resizeNow: resizeNowPer,
 } = useAutoResizeGrid(gridApiPer, gridContainerPer, columnsToAutoSizePer);
 
-const itemsPerPagePer = ref(5);
+const itemsPerPagePer = ref(10);
 const currentPagePer = ref(1);
 
 const gridOptionsPer = ref<GridOptions>({
@@ -1346,7 +1346,7 @@ const {
   resizeNow: resizeNowBind,
 } = useAutoResizeGrid(gridApiBind, gridContainerBind, columnsToAutoSizeBind);
 
-const itemsPerPageBind = ref(5);
+const itemsPerPageBind = ref(10);
 const currentPageBind = ref(1);
 
 const gridOptionsBind = ref<GridOptions>({

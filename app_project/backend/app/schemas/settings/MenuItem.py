@@ -1,6 +1,4 @@
-# app/schemas/menu/MenuItem.py
-
-from typing import Optional, List
+from typing import List, Optional
 from pydantic import BaseModel, Field, ConfigDict
 
 class MenuItemBase(BaseModel):
@@ -12,7 +10,7 @@ class MenuItemBase(BaseModel):
     order: int
 
 class MenuItemCreate(MenuItemBase):
-    children: Optional[List["MenuItemCreate"]] = []  # Allow nested children
+    children: Optional[List["MenuItemCreate"]] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
 
 class MenuItemUpdate(MenuItemBase):
@@ -20,9 +18,9 @@ class MenuItemUpdate(MenuItemBase):
 
 class MenuItemResponse(MenuItemBase):
     id: int
-    children: List["MenuItemResponse"] = []
+    children: Optional[List["MenuItemResponse"]] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
 
-# For recursive models
+# Rebuild for recursive
 MenuItemCreate.model_rebuild()
 MenuItemResponse.model_rebuild()

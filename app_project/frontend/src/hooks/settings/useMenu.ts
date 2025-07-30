@@ -1,74 +1,70 @@
 // src/hooks/useMenu.ts
 import { computed } from 'vue'
 import { useMenuStore } from '@/store/settings/menuStore'
-import { registerStateStatusStore } from '@/composables/stateStatusRegistry'
 import type { MenuItemCreate, MenuItemUpdate } from '@/models/settings/menu'
 
 export function useMenu() {
   const store = useMenuStore()
-  registerStateStatusStore(store)
 
   // ============ State Getters ============
-  const state = {
-    allMenus: computed(() => store.menus),
-    isLoading: computed(() => store.isLoading),
-    isCreating: computed(() => store.isCreating),
-    isUpdating: computed(() => store.isUpdating),
-    isDeleting: computed(() => store.isDeleting),
-    updatingId: computed(() => store.updatingId),
-    deletingId: computed(() => store.deletingId),
+  const allMenus    = computed(() => store.menus)
+  const isLoading   = computed(() => store.isLoading)
+  const isLoadingMenus = computed(() => store.isLoadingMenus)
+  const isCreating  = computed(() => store.isCreating)
+  const isUpdating  = computed(() => store.isUpdating)
+  const isDeleting  = computed(() => store.isDeleting)
+  const updatingId  = computed(() => store.updatingId)
+  const deletingId  = computed(() => store.deletingId)
+
+  // ============ Loaders ============
+  async function loadMenus() {
+    const res = await store.loadMenus()
+    return res?.success
+      ? { success: true }
+      : { success: false, message: (res as any)?.message || 'Failed to load menus' }
   }
 
-  // ============ Data Loading ============
-  const loaders = {
-    fetchMenus: async () => {
-      try {
-        await store.loadMenus()
-        return { success: true }
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to load menus' }
-      }
-    },
+  // ============ Actions ============
+  async function createMenu(data: MenuItemCreate) {
+    const res = await store.createMenu(data)
+    return res
   }
 
-  // ============ Menu Operations ============
-  const actions = {
-    createMenu: async (data: MenuItemCreate) => {
-      try {
-        return await store.createMenu(data)
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to create menu' }
-      }
-    },
-    updateMenu: async (id: number, data: MenuItemUpdate) => {
-      try {
-        return await store.updateMenu(id, data)
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to update menu' }
-      }
-    },
-    deleteMenu: async (id: number) => {
-      try {
-        return await store.deleteMenu(id)
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to delete menu' }
-      }
-    },
+  async function updateMenu(id: number, data: MenuItemUpdate) {
+    const res = await store.updateMenu(id, data)
+    return res
+  }
+
+  async function deleteMenu(id: number) {
+    const res = await store.deleteMenu(id)
+    return res
   }
 
   // ============ Helper Getters ============
-  const getters = {
-    getMenuById: (id: number) => store.getMenuById(id),
+  function getMenuById(id: number) {
+    return store.getMenuById(id)
   }
 
   return {
     // State
-    ...state,
+    allMenus,
+    isLoading,
+    isLoadingMenus,
+    isCreating,
+    isUpdating,
+    isDeleting,
+    updatingId,
+    deletingId,
+
     // Loaders
-    ...loaders,
+    loadMenus,
+
     // Actions
-    ...actions,
-    // Getters
-    ...getters,
+    createMenu,
+    updateMenu,
+    deleteMenu,
+
+    // Getter
+    getMenuById,
   }
 }

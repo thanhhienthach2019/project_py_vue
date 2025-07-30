@@ -1,12 +1,11 @@
-// utils/piniaHelpers.ts
-import { getCurrentInstance } from 'vue'; // Để truy cập instance trong Composition API
+import { getCurrentInstance } from 'vue'; // Access instance in Composition API
 
-// 1. Định nghĩa type BooleanKeys
+// 1. Define BooleanKeys type
 export type BooleanKeys<T> = {
   [K in keyof T]: T[K] extends boolean ? K : never;
 }[keyof T];
 
-// 2. Khai báo kiểu cho $toastLoading
+// 2. Declare type for $toastLoading
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     $toastLoading: {
@@ -17,9 +16,18 @@ declare module '@vue/runtime-core' {
   }
 }
 
-
 /**
- * Loading + toast (hiện "loading..." và tự ẩn sau khi xong)
+ * Loading + toast with guaranteed minimum spinner duration
+ * @param store       - Pinia store instance
+ * @param key         - boolean key to set loading state
+ * @param fn          - main async function
+ * @param options     - toast + timing configuration
+ *    - loadingMsg?: string
+ *    - successMsg?: string
+ *    - errorMsg?: string
+ *    - subMessage?: string
+ *    - progressUpdate?: (progress: number) => void
+ *    - minDurationMs?: number   // ensure spinner lasts at least this many ms
  */
 export async function withLoadingToast<T, S extends Record<string, any>>(
   store: S,
@@ -31,61 +39,63 @@ export async function withLoadingToast<T, S extends Record<string, any>>(
     errorMsg?: string;
     subMessage?: string;
     progressUpdate?: (progress: number) => void;
+    minDurationMs?: number;
   }
 ): Promise<T | null> {
-  // Lấy instance hiện tại để truy cập $toastLoading
   const instance = getCurrentInstance();
   const $toastLoading = instance?.appContext.config.globalProperties.$toastLoading;
-
   if (!$toastLoading) {
-    console.error('ToastLoading plugin chưa được đăng ký');
+    console.error('ToastLoading plugin is not registered');
     return null;
   }
 
   const loadingId = $toastLoading.show(
-    options?.loadingMsg || "Đang xử lý...",
+    options?.loadingMsg || 'Processing...',
     {
-      subMessage: options?.subMessage || "",
-      duration: 0 // Không tự động ẩn
+      subMessage: options?.subMessage || '',
+      duration: 0 // stay until updated or dismissed
     }
   );
 
+  // Enable loading state
   store[key] = true as S[BooleanKeys<S>];
 
+  const minDuration = options?.minDurationMs ?? 0;
+  const startTime = Date.now();
+
   try {
-    // Hỗ trợ cập nhật tiến trình
-    if (options?.progressUpdate && loadingId) {
-      options.progressUpdate = (progress: number) => {
-        $toastLoading.update(loadingId, { progress });
-      };
+    // Execute main function
+    const result = await fn();
+
+    // Calculate elapsed and wait remaining time if needed
+    const elapsed = Date.now() - startTime;
+    if (elapsed < minDuration) {
+      await new Promise(res => setTimeout(res, minDuration - elapsed));
     }
 
-    const result = await fn();
-    
-    // Hiển thị thành công trong 3s
+    // Update toast on success
     if (loadingId) {
       $toastLoading.update(loadingId, {
-        message: options?.successMsg || "Thành công!",
+        message: options?.successMsg || 'Completed successfully',
         progress: 100,
         duration: 3000
       });
     }
-    
     return result;
   } catch (error: any) {
-    // Hiển thị lỗi trong 5s
+    // Update toast on error
     if (loadingId) {
       $toastLoading.update(loadingId, {
-        message: options?.errorMsg || error?.message || "Có lỗi xảy ra!",
+        message: options?.errorMsg || error?.message || 'An error occurred',
         progress: undefined,
         duration: 5000
       });
     }
     return null;
   } finally {
+    // Disable loading state
     store[key] = false as S[BooleanKeys<S>];
-    
-    // Không xóa ngay nếu đang hiển thị thông báo thành công/lỗi
+    // If no custom messages, dismiss immediately
     if (!options?.successMsg && !options?.errorMsg && loadingId) {
       $toastLoading.dismiss(loadingId);
     }

@@ -16,7 +16,7 @@
         © 2025 Company LLC. All rights reserved.
       </footer>
     </div>
-    <StateStatusPanel />
+    <!-- <StateStatusPanel /> -->
   </div>
 </template>
 
@@ -25,6 +25,6 @@ import { ref } from "vue";
 import HeaderComponent from "@/components/layout/AdminHeader.vue";
 import Sidebar from "@/components/layout/AdminSidebar.vue";
 import MainContent from "@/components/layout/AdminMainContent.vue";
-import StateStatusPanel from "@/components/StateStatusPanel.vue";
+// import StateStatusPanel from "@/components/StateStatusPanel.vue";
 const sidebarOpen = ref(true);
 </script>

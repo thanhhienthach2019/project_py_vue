@@ -9,6 +9,7 @@ from app.schemas.settings.MenuItem import (
     MenuItemResponse
 )
 from app.core.casbin import enforcer
+from app.core.redis import publish_update
 
 
 def _build_tree(items: List[Dict]) -> List[Dict]:
@@ -38,7 +39,7 @@ def get_all_menu_items_response(db: Session) -> List[MenuItemResponse]:
             permission_key=it.permission_key,
             parent_id=it.parent_id,
             order=it.order,
-            children=[]  # Always return list
+            children=[] 
         )
 
     return [map_item(i) for i in items]
@@ -61,7 +62,12 @@ def get_menu_tree_for_user(db: Session, username: str) -> List[MenuItemResponse]
     return [MenuItemResponse(**node) for node in tree]
 
 
-def create_menu_item(db: Session, data: MenuItemCreate, parent_id: Optional[int] = None) -> MenuItemResponse:
+# 🟢 CREATE
+async def create_menu_item(
+    db: Session,
+    data: MenuItemCreate,
+    parent_id: Optional[int] = None
+) -> MenuItemResponse:
     m = MenuItem(
         title=data.title,
         path=data.path,
@@ -73,10 +79,12 @@ def create_menu_item(db: Session, data: MenuItemCreate, parent_id: Optional[int]
     db.add(m)
     db.commit()
     db.refresh(m)
+    item_dict = MenuItemResponse.from_orm(m).model_dump()
+    await publish_update("create", "menu", item_dict)
 
-    children_responses = []
+    children_responses: List[MenuItemResponse] = []
     for child_data in data.children or []:
-        child_response = create_menu_item(db, child_data, parent_id=m.id)
+        child_response = await create_menu_item(db, child_data, parent_id=m.id)
         children_responses.append(child_response)
 
     return MenuItemResponse(
@@ -91,17 +99,27 @@ def create_menu_item(db: Session, data: MenuItemCreate, parent_id: Optional[int]
     )
 
 
-def update_menu_item(db: Session, menu_id: int, data: MenuItemUpdate) -> MenuItemResponse:
+# 🟡 UPDATE
+async def update_menu_item(
+    db: Session,
+    menu_id: int,
+    data: MenuItemUpdate
+) -> MenuItemResponse:
     m = db.query(MenuItem).filter(MenuItem.id == menu_id).first()
     if not m:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"MenuItem {menu_id} does not exist"
         )
+
     for field, val in data.dict().items():
         setattr(m, field, val)
+
     db.commit()
     db.refresh(m)
+
+    item_dict = MenuItemResponse.from_orm(m).model_dump()
+    await publish_update("update", "menu", item_dict)
 
     return MenuItemResponse(
         id=m.id,
@@ -111,16 +129,23 @@ def update_menu_item(db: Session, menu_id: int, data: MenuItemUpdate) -> MenuIte
         permission_key=m.permission_key,
         parent_id=m.parent_id,
         order=m.order,
-        children=[]
+        children=[] 
     )
 
 
-def delete_menu_item(db: Session, menu_id: int) -> None:
+# 🔴 DELETE
+async def delete_menu_item(
+    db: Session,
+    menu_id: int
+) -> None:
     m = db.query(MenuItem).filter(MenuItem.id == menu_id).first()
     if not m:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"MenuItem {menu_id} does not exist"
         )
+    item_dict = MenuItemResponse.from_orm(m).model_dump()
     db.delete(m)
     db.commit()
+
+    await publish_update("delete", "menu", item_dict)

@@ -1,159 +1,184 @@
-import { defineStore } from "pinia";
+// src/store/auth/userStore.ts
+import { defineStore } from 'pinia'
 import {
   fetchUsers,
   fetchUserById,
   createUser,
   updateUser,
   deleteUser,
-} from "@/services/auth/userService";
+} from '@/services/auth/userService'
+
 import {
   type UserResponse,
   type UserCreate,
   type UserUpdate,
   UserRole,
-} from "@/models/auth/user";
+} from '@/models/auth/user'
 
 interface UserState {
-  users: UserResponse[];
-  selectedUser?: UserResponse;
-  loading: boolean;
-  creating: boolean;
-  updating: boolean;
-  deleting: boolean;
+  users: UserResponse[]
+  selectedUser?: UserResponse
+
+  isLoadingUsers: boolean
+  isLoadingUserById: boolean
+  isCreating: boolean
+  isUpdating: boolean
+  isDeleting: boolean
+
+  updatingId: number | null
+  deletingId: number | null
 }
 
 function buildOptimisticUser(user: UserCreate, tempId: number): UserResponse {
-  const now = new Date().toISOString();
+  const now = new Date().toISOString()
   return {
     id: tempId,
     username: user.username,
     email: user.email,
-    full_name: user.full_name || "",
-    phone_number: user.phone_number || "",
-    profile_picture: user.profile_picture || "",
+    full_name: user.full_name || '',
+    phone_number: user.phone_number || '',
+    profile_picture: user.profile_picture || '',
     is_active: true,
     is_verified: false,
     role: user.role || UserRole.USER,
     created_at: now,
     updated_at: now,
     last_login: null,
-  };
+  }
 }
 
-export const useUserStore = defineStore("user", {
+export const useUserStore = defineStore('user', {
   state: (): UserState => ({
     users: [],
     selectedUser: undefined,
-    loading: false,
-    creating: false,
-    updating: false,
-    deleting: false,
+
+    isLoadingUsers: false,
+    isLoadingUserById: false,
+    isCreating: false,
+    isUpdating: false,
+    isDeleting: false,
+
+    updatingId: null,
+    deletingId: null,
   }),
 
+  getters: {
+    isLoading(state): boolean {
+      return (
+        state.isLoadingUsers ||
+        state.isLoadingUserById ||
+        state.isCreating ||
+        state.isUpdating ||
+        state.isDeleting
+      )
+    },
+
+    getUserByIdFromList: (state) => (userId: number) => {
+      return state.users.find((u) => u.id === userId)
+    },
+  },
+
   actions: {
+    // 🚀 LOAD
     async loadUsers(skip = 0, limit = 100, is_active = true) {
-      this.loading = true;
+      this.isLoadingUsers = true
       try {
-        const response = await fetchUsers(skip, limit, is_active);
+        const response = await fetchUsers(skip, limit, is_active)
         if (response.success && response.data) {
-          this.users = response.data;
-        } else {
-          console.error(response.message);
+          this.users = response.data
         }
-      } catch (error) {
-        console.error("An error occurred while fetching users:", error);
+        return response
+      } catch (err: any) {
+        return { success: false, message: err.message || 'Failed to load users' }
       } finally {
-        this.loading = false;
+        this.isLoadingUsers = false
       }
     },
 
     async loadUserById(userId: number) {
-      this.loading = true;
+      this.isLoadingUserById = true
       try {
-        const response = await fetchUserById(userId);
+        const response = await fetchUserById(userId)
         if (response.success && response.data) {
-          this.selectedUser = response.data;
-        } else {
-          console.error(response.message);
+          this.selectedUser = response.data
         }
-      } catch (error) {
-        console.error("An error occurred while fetching user by ID:", error);
+        return response
+      } catch (err: any) {
+        return { success: false, message: err.message || 'Failed to load user' }
       } finally {
-        this.loading = false;
+        this.isLoadingUserById = false
       }
     },
 
-    async createNewUser(user: UserCreate, imageFile?: File | null) {
-      const tempId = -Date.now();
-      const optimisticUser = buildOptimisticUser(user, tempId);
-
-      this.users.push(optimisticUser);
-      this.creating = true;
+    // ➕ CREATE
+    async createUser(data: UserCreate, imageFile?: File | null) {
+      const tempId = -Date.now()
+      const optimisticUser = buildOptimisticUser(data, tempId)
+      this.users.push(optimisticUser)
+      this.isCreating = true
 
       try {
-        const response = await createUser(user, imageFile);
+        const response = await createUser(data, imageFile)
         if (response.success && response.data) {
-          const index = this.users.findIndex(u => u.id === tempId);
-          if (index !== -1) {
-            this.users.splice(index, 1, response.data);
-          }
-        } else {
-          this.users = this.users.filter(u => u.id !== tempId); // rollback
+          const idx = this.users.findIndex((u) => u.id === tempId)
+          if (idx !== -1) this.users.splice(idx, 1, response.data)
+          return { success: true, message: 'User created', data: response.data }
         }
-        return response;
-      } catch (error) {
-        this.users = this.users.filter(u => u.id !== tempId); // rollback
-        return { success: false, message: "Unexpected error when creating user." };
+        throw new Error(response.message || 'Failed to create user')
+      } catch (err: any) {
+        this.users = this.users.filter((u) => u.id !== tempId)
+        return { success: false, message: err.message }
       } finally {
-        this.creating = false;
+        this.isCreating = false
       }
     },
 
-    async updateExistingUser(userId: number, data: UserUpdate, imageFile?: File | null) {
-      const index = this.users.findIndex(u => u.id === userId);
-      if (index === -1) return { success: false, message: "User not found." };
+    // ✏️ UPDATE
+    async updateUser(userId: number, data: UserUpdate, imageFile?: File | null) {
+      const idx = this.users.findIndex((u) => u.id === userId)
+      if (idx === -1) return { success: false, message: 'User not found' }
 
-      const backup = [...this.users];
-      this.users[index] = { ...this.users[index], ...data } as UserResponse;
-      this.updating = true;
+      const backup = { ...this.users[idx] }
+      this.users[idx] = { ...backup, ...data }
+      this.isUpdating = true
+      this.updatingId = userId
 
       try {
-        const response = await updateUser(userId, data, imageFile);
+        const response = await updateUser(userId, data, imageFile)
         if (response.success && response.data) {
-          this.users[index] = response.data;
-        } else {
-          this.users = backup;
+          this.users[idx] = response.data
+          return { success: true, message: 'User updated', data: response.data }
         }
-        return response;
-      } catch (error) {
-        this.users = backup;
-        return { success: false, message: "Unexpected error when updating user." };
+        throw new Error(response.message || 'Failed to update user')
+      } catch (err: any) {
+        this.users[idx] = backup
+        return { success: false, message: err.message }
       } finally {
-        this.updating = false;
+        this.isUpdating = false
+        this.updatingId = null
       }
     },
 
-    async removeUser(userId: number) {
-      const backup = [...this.users];
-      this.users = this.users.filter(u => u.id !== userId);
-      this.deleting = true;
+    // 🗑️ DELETE
+    async deleteUser(userId: number) {
+      const backup = [...this.users]
+      this.users = this.users.filter((u) => u.id !== userId)
+      this.isDeleting = true
+      this.deletingId = userId
 
       try {
-        const response = await deleteUser(userId);
-        if (!response.success) {
-          this.users = backup;
+        const response = await deleteUser(userId)
+        if (response.success) {
+          return { success: true, message: 'User deleted' }
         }
-        return response;
-      } catch (error) {
-        this.users = backup;
-        return { success: false, message: "Unexpected error when deleting user." };
+        throw new Error(response.message || 'Failed to delete user')
+      } catch (err: any) {
+        this.users = backup
+        return { success: false, message: err.message }
       } finally {
-        this.deleting = false;
+        this.isDeleting = false
+        this.deletingId = null
       }
     },
-
-    getUserByIdFromList(userId: number): UserResponse | undefined {
-      return this.users.find(u => u.id === userId);
-    },
-  }
-});
+  },
+})

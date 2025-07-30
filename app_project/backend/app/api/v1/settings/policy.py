@@ -32,8 +32,8 @@ def list_view_policies():
     return PolicyService.list_view_policies()
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def add_policy(item: PolicyCreate):
-    PolicyService.add_policy(item)
+async def add_policy(item: PolicyCreate):
+    await PolicyService.add_policy(item)
     return {
         "msg": "Policy added",
         "data": item  
@@ -43,5 +43,5 @@ def add_policy(item: PolicyCreate):
     "/",
     status_code=status.HTTP_204_NO_CONTENT    
 )
-def remove_policy(item: PolicyCreate = Body(...)):
-    PolicyService.remove_policy(item)
+async def remove_policy(item: PolicyCreate = Body(...)):
+    await PolicyService.remove_policy(item)

@@ -1,56 +1,85 @@
-import { computed } from "vue";
-import { useUserStore } from "@/store/auth/userStore"; 
-import type { UserCreate, UserUpdate } from "@/models/auth/user";
+// src/hooks/useUser.ts
+import { computed } from 'vue'
+import { useUserStore } from '@/store/auth/userStore'
+import type { UserCreate, UserUpdate } from '@/models/auth/user'
 
 export function useUser() {
-  const userStore = useUserStore();
+  const store = useUserStore()
 
-  // === CRUD ACTIONS ===
-  const fetchUsers = async (
-    skip = 0,
-    limit = 100,
-    is_active = true
-  ) => {
-    return await userStore.loadUsers(skip, limit, is_active);
-  };
+  // ============ State Getters ============
+  const state = {
+    users: computed(() => store.users),
+    selectedUser: computed(() => store.selectedUser),
 
-  const fetchUserById = async (userId: number) => {
-    return await userStore.loadUserById(userId);
-  };
+    isLoading: computed(() => store.isLoading),
+    isCreating: computed(() => store.isCreating),
+    isUpdating: computed(() => store.isUpdating),
+    isDeleting: computed(() => store.isDeleting),
+    updatingId: computed(() => store.updatingId),
+    deletingId: computed(() => store.deletingId),
+  }
 
-  const createUser = async (user: UserCreate, imageFile?: File | null) => {
-    return await userStore.createNewUser(user, imageFile);
-  };
+  // ============ Loaders ============
+  const loaders = {
+    fetchUsers: async (skip = 0, limit = 100, is_active = true) => {
+      try {
+        await store.loadUsers(skip, limit, is_active)
+        return { success: true }
+      } catch (error: any) {
+        return { success: false, message: error.message || 'Failed to load users' }
+      }
+    },
 
-  const updateUser = async (userId: number, data: UserUpdate, imageFile?: File | null) => {
-    return await userStore.updateExistingUser(userId, data, imageFile);
-  };
+    fetchUserById: async (userId: number) => {
+      try {
+        await store.loadUserById(userId)
+        return { success: true }
+      } catch (error: any) {
+        return { success: false, message: error.message || 'Failed to load user' }
+      }
+    },
+  }
 
-  const deleteUser = async (userId: number) => {
-    return await userStore.removeUser(userId);
-  };
+  // ============ Actions ============
+  const actions = {
+    createUser: async (user: UserCreate, imageFile?: File | null) => {
+      try {
+        return await store.createUser(user, imageFile)
+      } catch (error: any) {
+        return { success: false, message: error.message || 'Failed to create user' }
+      }
+    },
 
-  const getUserByIdFromList = (userId: number) => {
-    return userStore.getUserByIdFromList(userId);
-  };
+    updateUser: async (userId: number, data: UserUpdate, imageFile?: File | null) => {
+      try {
+        return await store.updateUser(userId, data, imageFile)
+      } catch (error: any) {
+        return { success: false, message: error.message || 'Failed to update user' }
+      }
+    },
 
-  // === STATE BINDINGS ===
+    deleteUser: async (userId: number) => {
+      try {
+        return await store.deleteUser(userId)
+      } catch (error: any) {
+        return { success: false, message: error.message || 'Failed to delete user' }
+      }
+    },
+  }
+
+  // ============ Getters ============
+  const getters = {
+    getUserByIdFromList: (userId: number) => store.getUserByIdFromList(userId),
+  }
+
   return {
-    users: computed(() => userStore.users),
-    selectedUser: computed(() => userStore.selectedUser),
-
-    // Loading states
-    loading: computed(() => userStore.loading),
-    creating: computed(() => userStore.creating),
-    updating: computed(() => userStore.updating),
-    deleting: computed(() => userStore.deleting),
-
+    // State
+    ...state,
+    // Loaders
+    ...loaders,
     // Actions
-    fetchUsers,
-    fetchUserById,
-    createUser,
-    updateUser,
-    deleteUser,
-    getUserByIdFromList,
-  };
+    ...actions,
+    // Getters
+    ...getters,
+  }
 }

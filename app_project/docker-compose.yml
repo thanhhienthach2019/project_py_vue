@@ -5,8 +5,8 @@ services:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - "5672:5672"      # AMQP
-      - "15672:15672"    # Web UI
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: hien_dev
       RABBITMQ_DEFAULT_PASS: Hien@2024
@@ -16,6 +16,13 @@ services:
       timeout: 5s
       retries: 5
     restart: always
+
+  redis:
+    image: redis:latest
+    container_name: my-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
 
   py_api:
     build:
@@ -30,6 +37,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      redis:
+        condition: service_started
     ports:
       - "${PORT}:${PORT}"   # map 9600:9600
     restart: always
