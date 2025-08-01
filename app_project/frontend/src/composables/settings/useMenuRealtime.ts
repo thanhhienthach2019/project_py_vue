@@ -1,29 +1,37 @@
 // composables/settings/useMenuRealtime.ts
 import { useMenuStore } from "@/store/settings/menuStore"
-import type {
-  MenuItemResponse
-} from "@/models/settings/menu"
+import type { MenuItemResponse } from "@/models/settings/menu"
 import { useRealtimeWebSocket } from "@/composables/ws/useRealtimeWebSocket"
 
-type Message = {
+type MenuMessage = {
   action: "create" | "update" | "delete"
-  type: "menu" 
+  type: "menu"
   item: MenuItemResponse
 }
 
 export function useMenuRealtime() {
   const store = useMenuStore()
 
-  useRealtimeWebSocket<Message>("/api/v1/ws/menus", ({ action, type, item }) => {
-    switch (type) {
-      case "menu": {
-        const r = item as MenuItemResponse
-        const index = store.menus.findIndex((x) => x.id === r.id)
-        if (action === "create") store.menus.push(r)
-        else if (action === "update" && index !== -1) store.menus.splice(index, 1, r)
-        else if (action === "delete") store.menus = store.menus.filter((x) => x.id !== r.id)
-        break
-      }      
+  const { onMessage, isConnected, disconnect, connect } =
+    useRealtimeWebSocket<MenuMessage>("/menus")
+
+  const off = onMessage(({ action, item, type }) => {
+    if (type !== "menu") return
+    const index = store.menus.findIndex(x => x.id === item.id)
+
+    if (action === "create" && index < 0) {
+      store.menus.push(item)
+    } else if (action === "update" && index >= 0) {
+      store.menus.splice(index, 1, item)
+    } else if (action === "delete") {
+      store.menus = store.menus.filter(x => x.id !== item.id)
     }
   })
+
+  return {
+    isConnected,
+    connect,
+    disconnect,
+    unsubscribe: off,
+  }
 }

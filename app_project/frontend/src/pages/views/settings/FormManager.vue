@@ -247,6 +247,7 @@ import { UserRole } from "@/models/auth/user";
 import { useActionDisabled } from "@/composables/useActionDisabled";
 import SkeletonTable from "@/components/skeletons/SkeletonTable.vue";
 import { useDelayedLoading } from "@/composables/useDelayedLoading";
+import { useViewPolicyRealtime } from "@/composables/settings/useViewPolicyRealtime";
 
 const {
   viewPolicies,
@@ -258,6 +259,8 @@ const {
   addViewPolicy,
   removeViewPolicy,
 } = usePolicy();
+
+useViewPolicyRealtime();
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
 const { loadMenus, allMenus } = useMenu();
 

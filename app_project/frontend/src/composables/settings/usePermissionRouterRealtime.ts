@@ -1,49 +1,42 @@
 // composables/settings/usePermissionRouterRealtime.ts
-import { usePermissionRouterStore } from "@/store/settings/permissionRouterStore"
-import type {
-  RouterResponse,
-  PermissionResponse,
-  RouterPermissionResponse,
-} from "@/models/settings/permissionRouter"
-import { useRealtimeWebSocket } from "@/composables/ws/useRealtimeWebSocket"
-
-type Message = {
-  action: "create" | "update" | "delete"
-  type: "router" | "permission" | "binding"
-  item: RouterResponse | PermissionResponse | RouterPermissionResponse
-}
+import { useRouterRealtime } from "@/composables/settings/useRouterRealtime"
+import { usePermissionRealtime } from "@/composables/settings/usePermissionRealtime"
+import { useBindingRealtime } from "@/composables/settings/useBindingRealtime"
+import { computed } from "vue"
 
 export function usePermissionRouterRealtime() {
-  const store = usePermissionRouterStore()
+  const routerWS = useRouterRealtime()
+  const permissionWS = usePermissionRealtime()
+  const bindingWS = useBindingRealtime()
 
-  useRealtimeWebSocket<Message>("/api/v1/ws/permission-routers", ({ action, type, item }) => {
-    switch (type) {
-      case "router": {
-        const r = item as RouterResponse
-        const index = store.routers.findIndex((x) => x.id === r.id)
-        if (action === "create") store.routers.push(r)
-        else if (action === "update" && index !== -1) store.routers.splice(index, 1, r)
-        else if (action === "delete") store.routers = store.routers.filter((x) => x.id !== r.id)
-        break
-      }
+  const connect = () => {
+    routerWS.connect()
+    permissionWS.connect()
+    bindingWS.connect()
+  }
 
-      case "permission": {
-        const p = item as PermissionResponse
-        const index = store.permissions.findIndex((x) => x.id === p.id)
-        if (action === "create") store.permissions.push(p)
-        else if (action === "update" && index !== -1) store.permissions.splice(index, 1, p)
-        else if (action === "delete") store.permissions = store.permissions.filter((x) => x.id !== p.id)
-        break
-      }
+  const disconnect = () => {
+    routerWS.disconnect()
+    permissionWS.disconnect()
+    bindingWS.disconnect()
+  }
 
-      case "binding": {
-        const b = item as RouterPermissionResponse
-        const index = store.bindings.findIndex((x) => x.id === b.id)
-        if (action === "create") store.bindings.push(b)
-        else if (action === "update" && index !== -1) store.bindings.splice(index, 1, b)
-        else if (action === "delete") store.bindings = store.bindings.filter((x) => x.id !== b.id)
-        break
-      }
-    }
-  })
+  const unsubscribe = () => {
+    routerWS.unsubscribe()
+    permissionWS.unsubscribe()
+    bindingWS.unsubscribe()
+  }
+
+  const isConnected = computed(() =>
+    routerWS.isConnected.value &&
+    permissionWS.isConnected.value &&
+    bindingWS.isConnected.value
+  )
+
+  return {
+    connect,
+    disconnect,
+    unsubscribe,
+    isConnected,
+  }
 }

@@ -1,30 +1,53 @@
 # app/api/v1/ws/settings/policy_ws.py
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from typing import List
+from fastapi import APIRouter, WebSocket, Query, Depends
+from sqlalchemy.orm import Session
+from app.core.database import get_db
+from app.api.v1.ws.ws_common import (
+    authenticate_websocket,
+    authorize_websocket,
+    add_client_to_channel,
+    remove_client_from_channel,
+)
+from app.api.v1.ws.ws_channels import POLICY_CHANNEL
 
 router = APIRouter()
-connected_clients: List[WebSocket] = []
 
-async def broadcast_to_policy_clients(message: str):
-    disconnected = []
-    for client in connected_clients:
-        try:
-            await client.send_text(message)
-        except WebSocketDisconnect:
-            disconnected.append(client)
-    for client in disconnected:
-        connected_clients.remove(client)
+@router.websocket("/policies/permission")
+async def websocket_permission_policy(
+    websocket: WebSocket,
+    token: str = Query(...),
+    db: Session = Depends(get_db),
+):
+    await handle_policy_ws(websocket, token, db, POLICY_CHANNEL, "/policies/permission")
 
-@router.websocket("/policies")
-async def websocket_policy(websocket: WebSocket):
-    print("📡 Client connecting to /policies...")
-    await websocket.accept()
-    connected_clients.append(websocket)
-    print(f"✅ Client connected: {websocket.client}")
+@router.websocket("/policies/group")
+async def websocket_group_policy(
+    websocket: WebSocket,
+    token: str = Query(...),
+    db: Session = Depends(get_db),
+):
+    await handle_policy_ws(websocket, token, db, POLICY_CHANNEL, "/policies/group")
+
+@router.websocket("/policies/permission/view")
+async def websocket_view_policy(
+    websocket: WebSocket,
+    token: str = Query(...),
+    db: Session = Depends(get_db),
+):
+    await handle_policy_ws(websocket, token, db, POLICY_CHANNEL, "/policies/permission/view")
+
+
+async def handle_policy_ws(websocket: WebSocket, token: str, db: Session, channel: str, path: str):
     try:
+        username = await authenticate_websocket(websocket, token)
+        await authorize_websocket(websocket, db, username, path)
+        await websocket.accept()
+        add_client_to_channel(channel, websocket)
+
         while True:
-            await websocket.receive_text()  # Keep connection alive
-    except WebSocketDisconnect:
-        print("❌ Client disconnected from /policies")
-        connected_clients.remove(websocket)
+            await websocket.receive_text()
+    except Exception:
+        pass
+    finally:
+        remove_client_from_channel(channel, websocket)

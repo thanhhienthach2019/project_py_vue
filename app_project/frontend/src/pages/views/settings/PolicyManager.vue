@@ -288,6 +288,7 @@ import { setQuickFilterSafe } from "@/utils/agGrid";
 import { useActionDisabled } from "@/composables/useActionDisabled";
 import SkeletonTable from "@/components/skeletons/SkeletonTable.vue";
 import { useDelayedLoading } from "@/composables/useDelayedLoading";
+import { usePermissionPolicyRealtime } from "@/composables/settings/usePermissionPolicyRealtime";
 
 const {
   policies,
@@ -299,6 +300,8 @@ const {
   addPolicy,
   removePolicy,
 } = usePolicy();
+
+usePermissionPolicyRealtime();
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
 
 const { isDisabled: isCreateDisabled, disabledClass: createClass } =

@@ -1,30 +1,34 @@
-# app/api/v1/ws/settings/menu_ws.py
+from fastapi import APIRouter, WebSocket, Query, Depends
+from sqlalchemy.orm import Session
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from typing import List
+from app.core.database import get_db
+from app.api.v1.ws.ws_common import (
+    authenticate_websocket,
+    authorize_websocket,
+    add_client_to_channel,
+    remove_client_from_channel,
+    safe_close_websocket,
+)
+from app.api.v1.ws.ws_channels import MENU_CHANNEL
 
 router = APIRouter()
-connected_clients: List[WebSocket] = []
-
-async def broadcast_to_menu_clients(message: str):
-    disconnected = []
-    for client in connected_clients:
-        try:
-            await client.send_text(message)
-        except WebSocketDisconnect:
-            disconnected.append(client)
-    for client in disconnected:
-        connected_clients.remove(client)
 
 @router.websocket("/menus")
-async def websocket_menu(websocket: WebSocket):
-    print("📡 Client connecting to /menus...")
-    await websocket.accept()
-    connected_clients.append(websocket)
-    print(f"✅ Client connected: {websocket.client}")
+async def websocket_menu(
+    websocket: WebSocket,
+    token: str = Query(...),
+    db: Session = Depends(get_db),
+):
     try:
+        username = await authenticate_websocket(websocket, token)
+        await authorize_websocket(websocket, db, username, path="/menus")
+        await websocket.accept()
+        add_client_to_channel(MENU_CHANNEL, websocket)
+
         while True:
-            await websocket.receive_text()  # Keep connection alive
-    except WebSocketDisconnect:
-        print("❌ Client disconnected from /menus")
-        connected_clients.remove(websocket)
+            await websocket.receive_text()
+
+    except Exception:
+        pass
+    finally:
+        remove_client_from_channel(MENU_CHANNEL, websocket)

@@ -12,16 +12,15 @@ from app.api.v1.inventory import inventory, machine, maintenance, material
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.inventory import warehouse
 from app.api.v1.otrao_news import announcement, document, donor, festival, news, scripture, slide
-from app.api.v1.ws.ws import start_redis_listener
-from app.api.v1.ws import ws
-from app.api.v1.ws.settings.permission_router_ws import router as ws_permission_router
+from app.api.v1.ws.ws_listener import start_redis_listeners
+from app.api.v1.ws import ws_router
 
 Base.metadata.create_all(bind=engine_sqlite)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await rabbit_client.connect()
-    start_redis_listener()
+    start_redis_listeners()
     yield
     await rabbit_client.close()
     # Optional: cleanup
@@ -61,7 +60,7 @@ app.include_router(scripture.router, prefix="/api/v1/scriptures", tags=["Scriptu
 app.include_router(slide.router, prefix="/api/v1/slides", tags=["Slides"])
 
 # Web socket
-app.include_router(ws.router, prefix="/api/v1/ws")
+app.include_router(ws_router.router, prefix="/api/v1/ws")
 
 
 upload_path = settings.upload_path
@@ -78,6 +77,7 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=settings.PORT,
         reload=True,
+        log_level="warning",
         ssl_certfile="./cert/localhost.crt",  
         ssl_keyfile="./cert/localhost.key",   
     )
