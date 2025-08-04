@@ -12,7 +12,6 @@ import {
   type UserResponse,
   type UserCreate,
   type UserUpdate,
-  UserRole,
 } from '@/models/auth/user'
 
 interface UserState {
@@ -29,23 +28,6 @@ interface UserState {
   deletingId: number | null
 }
 
-function buildOptimisticUser(user: UserCreate, tempId: number): UserResponse {
-  const now = new Date().toISOString()
-  return {
-    id: tempId,
-    username: user.username,
-    email: user.email,
-    full_name: user.full_name || '',
-    phone_number: user.phone_number || '',
-    profile_picture: user.profile_picture || '',
-    is_active: true,
-    is_verified: false,
-    role: user.role || UserRole.USER,
-    created_at: now,
-    updated_at: now,
-    last_login: null,
-  }
-}
 
 export const useUserStore = defineStore('user', {
   state: (): UserState => ({
@@ -112,22 +94,15 @@ export const useUserStore = defineStore('user', {
 
     // ➕ CREATE
     async createUser(data: UserCreate, imageFile?: File | null) {
-      const tempId = -Date.now()
-      const optimisticUser = buildOptimisticUser(data, tempId)
-      this.users.push(optimisticUser)
       this.isCreating = true
-
-      try {
+      try{
         const response = await createUser(data, imageFile)
-        if (response.success && response.data) {
-          const idx = this.users.findIndex((u) => u.id === tempId)
-          if (idx !== -1) this.users.splice(idx, 1, response.data)
-          return { success: true, message: 'User created', data: response.data }
-        }
-        throw new Error(response.message || 'Failed to create user')
+        if (response.success) {
+            return { success: true, message: 'User created', data: response.data }
+          }
+          throw new Error(response.message || 'Failed to create user')
       } catch (err: any) {
-        this.users = this.users.filter((u) => u.id !== tempId)
-        return { success: false, message: err.message }
+        return { success: false, message: err.message}
       } finally {
         this.isCreating = false
       }
@@ -135,23 +110,15 @@ export const useUserStore = defineStore('user', {
 
     // ✏️ UPDATE
     async updateUser(userId: number, data: UserUpdate, imageFile?: File | null) {
-      const idx = this.users.findIndex((u) => u.id === userId)
-      if (idx === -1) return { success: false, message: 'User not found' }
-
-      const backup = { ...this.users[idx] }
-      this.users[idx] = { ...backup, ...data }
       this.isUpdating = true
       this.updatingId = userId
-
       try {
         const response = await updateUser(userId, data, imageFile)
-        if (response.success && response.data) {
-          this.users[idx] = response.data
-          return { success: true, message: 'User updated', data: response.data }
+        if (response.success) {
+          return { success: true, message: 'User updated', data: response.data}
         }
-        throw new Error(response.message || 'Failed to update user')
+        throw new Error(response.message || 'Failed to update user')        
       } catch (err: any) {
-        this.users[idx] = backup
         return { success: false, message: err.message }
       } finally {
         this.isUpdating = false
@@ -161,19 +128,15 @@ export const useUserStore = defineStore('user', {
 
     // 🗑️ DELETE
     async deleteUser(userId: number) {
-      const backup = [...this.users]
-      this.users = this.users.filter((u) => u.id !== userId)
       this.isDeleting = true
       this.deletingId = userId
-
       try {
         const response = await deleteUser(userId)
         if (response.success) {
-          return { success: true, message: 'User deleted' }
+          return { success: true, message: 'User deleted' }          
         }
         throw new Error(response.message || 'Failed to delete user')
       } catch (err: any) {
-        this.users = backup
         return { success: false, message: err.message }
       } finally {
         this.isDeleting = false

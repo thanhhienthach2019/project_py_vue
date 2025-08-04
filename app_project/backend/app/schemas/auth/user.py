@@ -70,3 +70,6 @@ class MyProfileUpdate(BaseModel):
 
     class Config:
         from_attributes = True
+
+class UpdateLanguageRequest(BaseModel):
+    lang: str

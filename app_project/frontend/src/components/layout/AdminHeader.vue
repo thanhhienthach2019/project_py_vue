@@ -92,6 +92,24 @@
           </div>
         </Transition>
       </div>
+      <li class="border-t border-white/10 mt-2 pt-2">
+        <div class="px-5 pb-2 text-xs text-gray-400">Language</div>
+        <div class="px-3 pb-2">
+          <select
+            v-model="currentLang"
+            @change="changeLanguage(currentLang)"
+            class="w-full text-sm bg-[#2F3A48] text-white border border-white/10 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option
+              v-for="lang in availableLanguages"
+              :key="lang.value"
+              :value="lang.value"
+            >
+              {{ lang.label }}
+            </option>
+          </select>
+        </div>
+      </li>
     </div>
   </header>
 </template>
@@ -100,12 +118,36 @@
 import { ref, computed, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
+import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/store/auth/authStore";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { LANGUAGE_STORAGE_KEY } from "@/utils/i18n_types";
+import type { SupportedLang } from "@/utils/i18n_types";
 
 const authStore = useAuthStore();
 const router = useRouter();
 const { user } = useAuth();
+
+const { setPreferredLanguage } = useAuth();
+const { locale } = useI18n();
+
+const availableLanguages: { label: string; value: SupportedLang }[] = [
+  { label: "English", value: "en-US" },
+  { label: "Tiếng Việt", value: "vi-VN" },
+  { label: "简体中文", value: "zh-CN" },
+];
+
+const currentLang = ref<SupportedLang>(locale.value as SupportedLang);
+
+async function changeLanguage(lang: SupportedLang) {
+  const result = await setPreferredLanguage(lang);
+  if (result.success) {
+    locale.value = lang;
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+  } else {
+    currentLang.value = locale.value as SupportedLang;
+  }
+}
 
 const username = computed(() => user.value?.username ?? "User");
 

@@ -18,7 +18,7 @@ router = APIRouter(
 )
 
 @router.get(
-    "/",
+    "",
     response_model=List[UserResponse]
 )
 def read_users(
@@ -30,10 +30,10 @@ def read_users(
     return user_service.get_users(db, skip=skip, limit=limit, is_active=is_active)
 
 @router.post(
-    "/",
+    "",
     status_code=status.HTTP_201_CREATED
 )
-def create_user(
+async def create_user(
     username: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
@@ -78,7 +78,7 @@ def create_user(
         profile_picture=image_url
     )
 
-    return user_service.create_user(db, user_data)
+    return await user_service.create_user(db, user_data)
 
 @router.get(
     "/{user_id}",
@@ -94,7 +94,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     "/{user_id}",
     response_model=UserResponse
 )
-def update_user(
+async def update_user(
     user_id: int,
     email: str = Form(None),
     full_name: str = Form(None),
@@ -139,15 +139,15 @@ def update_user(
         profile_picture=image_url
     )
 
-    updated_user = user_service.update_user(db, user_id, user_update)
+    updated_user = await user_service.update_user(db, user_id, user_update)
     return updated_user
 
 @router.delete(
     "/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT
 )
-def delete_user(user_id: int, db: Session = Depends(get_db)):
-    deleted = user_service.delete_user(db, user_id)
+async def delete_user(user_id: int, db: Session = Depends(get_db)):
+    deleted = await user_service.delete_user(db, user_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="User not found")
     return

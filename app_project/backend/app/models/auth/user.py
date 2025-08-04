@@ -19,3 +19,4 @@ class User(Base):
     updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
     last_login = Column(DateTime, nullable=True)
     is_verified = Column(Boolean, default=False)  
+    preferred_language = Column(String, default="en-US")

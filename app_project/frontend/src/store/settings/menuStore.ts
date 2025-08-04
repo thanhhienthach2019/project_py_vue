@@ -1,4 +1,3 @@
-// src/store/settings/menuStore.ts
 import { defineStore } from 'pinia'
 import {
   fetchAllMenus,
@@ -14,18 +13,13 @@ import type {
 } from '@/models/settings/menu'
 
 interface MenuState {
-  // Data
   menus: MenuItemResponse[]
 
-  // Loading states
   isLoadingMenus: boolean
-
-  // Action states
   isCreating: boolean
   isUpdating: boolean
   isDeleting: boolean
 
-  // IDs for current operations
   updatingId: number | null
   deletingId: number | null
 }
@@ -33,9 +27,8 @@ interface MenuState {
 export const useMenuStore = defineStore('menu', {
   state: (): MenuState => ({
     menus: [],
-    
-    isLoadingMenus: false,
 
+    isLoadingMenus: false,
     isCreating: false,
     isUpdating: false,
     isDeleting: false,
@@ -45,9 +38,6 @@ export const useMenuStore = defineStore('menu', {
   }),
 
   getters: {
-    /**
-     * Checks if any operation is loading
-     */
     isLoading(state): boolean {
       return (
         state.isLoadingMenus ||
@@ -57,94 +47,107 @@ export const useMenuStore = defineStore('menu', {
       )
     },
 
-    /**
-     * Gets menu item by ID
-     */
     getMenuById: (state) => (id: number) => {
       return state.menus.find((menu) => menu.id === id)
     },
   },
 
   actions: {
-    // ========================
-    // 🚀 DATA LOADING
-    // ========================
-
     async loadMenus() {
       this.isLoadingMenus = true
       try {
-        // await new Promise(resolve => setTimeout(resolve, 3000))
         const response = await fetchAllMenus()
-        if (response.success && response.data) {
-          this.menus = response.data
+        if (!response.success) {
+          return {
+            success: false,
+            message: response.message,
+            args: response.args,
+          };
         }
-        return response 
+        if (response.success && response.data) {
+          this.menus = response.data 
+        }
+        return response
       } finally {
         this.isLoadingMenus = false
       }
     },
 
-    // ========================
-    // ➕ CREATE
-    // ========================
-
     async createMenu(data: MenuItemCreate) {
       this.isCreating = true
-
       try {
         const response = await createMenu(data)
-        if (response.success && response.data) {
-          return { success: true, message: 'Menu created', data: response.data }
+        if (!response.success) {
+          return {
+            success: false,
+            message: response.message,
+            args: response.args,
+          };
         }
-        throw new Error(response.message || 'Failed to create menu')
+        return {
+          success: true,
+          message: response.message,
+          args: response.args,
+          data: response.data,
+        }
       } catch (err: any) {
-        return { success: false, message: err.message }
+        return {
+          success: false,
+          message: err?.message ?? "error.unknown",
+          args: err?.args ?? {},
+        };
       } finally {
         this.isCreating = false
       }
     },
 
-    // ========================
-    // ✏️ UPDATE
-    // ========================
-
     async updateMenu(id: number, data: MenuItemUpdate) {
       this.isUpdating = true
       this.updatingId = id
-
       try {
         const response = await updateMenu(id, data)
-        if (response.success && response.data) {
-          return { success: true, message: 'Menu updated', data: response.data }
+        if (!response.success) {
+          return {
+            success: false,
+            message: response.message,
+            args: response.args,
+          };
         }
-        throw new Error(response.message || 'Failed to update menu')
+        return {
+          success: true,
+          message: response.message,
+          args: response.args,
+          data: response.data,
+        }
       } catch (err: any) {
-        return { success: false, message: err.message }
+        return {
+          success: false,
+          message: err?.message ?? "error.unknown",
+          args: err?.args ?? {},
+        };
       } finally {
         this.isUpdating = false
         this.updatingId = null
       }
     },
 
-    // ========================
-    // 🗑️ DELETE
-    // ========================
-
     async deleteMenu(id: number) {
-      const backup = [...this.menus]
-      this.menus = this.menus.filter((m) => m.id !== id)
       this.isDeleting = true
       this.deletingId = id
-
       try {
         const response = await deleteMenu(id)
-        if (response.success) {
-          return { success: true, message: 'Menu deleted' }
+        if (!response.success) throw new Error(response.message)
+        return {
+          success: true,
+          message: response.message,
+          args: response.args,
         }
-        throw new Error(response.message || 'Failed to delete menu')
       } catch (err: any) {
-        this.menus = backup
-        return { success: false, message: err.message }
+        return {
+          success: false,
+          message: err.message,
+          args: err.args ?? {},
+        }
       } finally {
         this.isDeleting = false
         this.deletingId = null

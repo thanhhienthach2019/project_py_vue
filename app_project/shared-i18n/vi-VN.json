@@ -1,0 +1,49 @@
+{
+  "error": {
+    "menu": {
+      "not_found": "Không tìm thấy mục menu với ID {id}.",
+      "permission_key_conflict": "Permission key '{key}' đã tồn tại.",
+      "fetch_failed": "Không thể tải dữ liệu menu. Vui lòng thử lại sau."
+    },
+    "auth": {
+      "login_failed": "Đăng nhập thất bại.",
+      "logout_failed": "Đăng xuất thất bại.",
+      "fetch_user_failed": "Không thể lấy thông tin người dùng.",
+      "language_update_failed": "Cập nhật ngôn ngữ thất bại.",
+      "session_expired": "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.",
+      "invalid_token": "Token không hợp lệ.",
+      "user_not_found": "Không tìm thấy người dùng.",
+      "unauthenticated": "Người dùng chưa đăng nhập",
+      "invalid_credentials": "Sai tên đăng nhập hoặc mật khẩu",
+      "no_refresh_token": "Không có refresh token",
+      "invalid_refresh_token": "Refresh token không hợp lệ",
+      "refresh_token_expired": "Refresh token đã hết hạn"
+    }
+  },
+  "notification": {
+    "create": {
+      "success": "Đã tạo {entity} thành công"
+    },
+    "update": {
+      "success": "Đã cập nhật {entity} thành công"
+    },
+    "delete": {
+      "success": "Đã xoá {entity} thành công"
+    },
+    "fetch": {
+      "success": "Lấy {entity} thành công"
+    },
+    "auth": {
+      "login_successful": "Đăng nhập thành công.",
+      "authenticated": "Đã xác thực",
+      "logout_successful": "Đăng xuất thành công.",
+      "token_refreshed": "Làm mới token thành công",
+      "language_updated": "Đã cập nhật ngôn ngữ."
+    }
+  },
+  "entity": {
+    "menu": "Menu",
+    "user": "Người dùng",
+    "document": "Tài liệu"
+  }
+}

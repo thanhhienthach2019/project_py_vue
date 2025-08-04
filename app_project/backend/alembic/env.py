@@ -3,18 +3,21 @@ from dotenv import load_dotenv
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
+from pathlib import Path
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent.parent.parent  
+DOTENV_PATH = BASE_DIR / ".env.dev"
 
-config = context.config
+load_dotenv(dotenv_path=DOTENV_PATH)
 
 USE_SQLITE = True
 
-if USE_SQLITE:
-    db_url = os.getenv("DATABASE_URL_SQLITE")
-else:
-    db_url = os.getenv("DATABASE_URL")
+db_url = os.getenv("DATABASE_URL_SQLITE") if USE_SQLITE else os.getenv("DATABASE_URL")
 
+if not db_url:
+    raise ValueError("❌ DATABASE_URL_SQLITE or DATABASE_URL not loaded from .env.dev")
+
+config = context.config
 config.set_main_option("sqlalchemy.url", db_url)
 
 if config.config_file_name is not None:

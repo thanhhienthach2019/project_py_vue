@@ -1,0 +1,49 @@
+{
+  "error": {
+    "menu": {
+      "not_found": "Menu item with ID {id} not found.",
+      "permission_key_conflict": "The permission key '{key}' already exists.",
+      "fetch_failed": "Failed to fetch menu data. Please try again later."
+    },
+    "auth": {
+      "login_failed": "Login failed.",
+      "logout_failed": "Logout failed.",
+      "fetch_user_failed": "Failed to fetch user profile.",
+      "language_update_failed": "Failed to update language.",
+      "session_expired": "Your session has expired. Please login again.",      
+      "invalid_token": "Invalid authentication token.",
+      "user_not_found": "User not found.",
+      "unauthenticated": "User not logged in",
+      "invalid_credentials": "Invalid username or password",
+      "no_refresh_token": "No refresh token provided",
+      "invalid_refresh_token": "Invalid refresh token",
+      "refresh_token_expired": "Refresh token expired"
+    }
+  },
+  "notification": {
+    "create": {
+      "success": "{entity} created successfully"
+    },
+    "update": {
+      "success": "{entity} updated successfully"
+    },
+    "delete": {
+      "success": "{entity} deleted successfully"
+    },
+    "fetch": {
+      "success": "{entity} fetched successfully"
+    },
+    "auth": {
+      "login_successful": "Login successful.",
+      "authenticated": "Authenticated",
+      "logout_successful": "Logout successful.",
+      "token_refreshed": "Token refreshed successfully",
+      "language_updated": "Language updated."
+    }
+  },
+  "entity": {
+    "menu": "Menu",
+    "user": "User",
+    "document": "Document"
+  }
+}

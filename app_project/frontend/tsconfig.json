@@ -8,7 +8,7 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "types": ["vite/client", "node", "vuetify"],
+    "types": ["vite/client", "node", "vuetify", "vue-i18n"],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,

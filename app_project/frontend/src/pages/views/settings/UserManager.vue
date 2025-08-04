@@ -285,6 +285,7 @@ import InputField from "@/components/ui/InputField.vue";
 import { useActionDisabled } from "@/composables/useActionDisabled";
 import SkeletonTable from "@/components/skeletons/SkeletonTable.vue";
 import { useDelayedLoading } from "@/composables/useDelayedLoading";
+import { useUserRealtime } from "@/composables/auth/useUserRealtime";
 
 // Define UserForm interface directly if not in models/user.ts
 interface UserForm {
@@ -300,6 +301,7 @@ interface UserForm {
 const {
   users,
   isLoading,
+  isLoadingUsers,
   isCreating,
   isUpdating,
   isDeleting,
@@ -310,6 +312,9 @@ const {
   updateUser,
   deleteUser,
 } = useUser();
+
+useUserRealtime();
+
 const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
 
 const { isDisabled: isCreateDisabled, disabledClass: createClass } =
@@ -318,7 +323,7 @@ const { isDisabled: isUpdateDisabled, disabledClass: updateClass } =
   useActionDisabled(isUpdating, isLoading);
 const { isDisabled: isDeleteDisabled, disabledClass: deleteClass } =
   useActionDisabled(isDeleting, isLoading);
-const delayedLoading = useDelayedLoading(() => isLoading.value, 500);
+const delayedLoading = useDelayedLoading(isLoadingUsers, 500);
 
 // Form state
 const form = ref<UserForm>({

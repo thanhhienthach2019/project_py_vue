@@ -15,6 +15,8 @@ import * as lucideIcons from 'lucide-vue-next';
 import { vPermission } from "./directives/permission";
 import { ToastLoading } from '@/utils/toast-manager';
 import LoadingToast from '@/pages/Toast/LoadingToast.vue';
+import i18n from '@/i18n'
+
 
 // Đăng ký các module cần thiết cho ag-grid
 import { ModuleRegistry } from 'ag-grid-community';
@@ -87,6 +89,7 @@ async function bootstrap() {
   app.use(router);
   setupRouterGuard();
   app.use(ElementPlus);
+  app.use(i18n);
   // app.use(vuetify);
 
   // Mount app

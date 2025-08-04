@@ -1,45 +1,47 @@
 import { apiClient } from "@/utils/apiClient";
 import type { MenuItemCreate, MenuItemUpdate, MenuItemResponse } from "@/models/settings/menu";
+import type { GenericResponse } from "@/types/api";
 
-// 🔹 Get all menu items (no filtering by user permission)
-export const fetchAllMenus = async (): Promise<{
-  success: boolean;
-  data?: MenuItemResponse[];
-  message: string;
-}> => {
+// 🔹 Get all menu items (admin only)
+export const fetchAllMenus = async (): Promise<GenericResponse<MenuItemResponse[]>> => {
   try {
     const response = await apiClient.get("/menus/all");
     return {
       success: true,
-      data: response.data,
-      message: "Fetched all menu items successfully",
+      data: response.data.data,
+      message: response.data.message,
+      args: response.data.args,
     };
   } catch (error: any) {
+    const detail = error?.response?.data?.detail;
+
     return {
       success: false,
-      message: "Failed to fetch all menu items",
-      // message: error.response?.data?.detail || "Failed to fetch all menu items",
+      data: undefined,
+      message: detail?.message || "error.unknown",   
+      args: detail?.args || {},
     };
   }
 };
 
 // 🔹 Get menu tree for current user (filtered by permission)
-export const fetchUserMenus = async (): Promise<{
-  success: boolean;
-  data?: MenuItemResponse[];
-  message: string;
-}> => {
+export const fetchUserMenus = async (): Promise<GenericResponse<MenuItemResponse[]>> => {
   try {
-    const response = await apiClient.get("/menus"); 
+    const response = await apiClient.get("/menus");
     return {
       success: true,
-      data: response.data,
-      message: "Fetched user menu tree successfully",
+      data: response.data.data,
+      message: response.data.message,
+      args: response.data.args,
     };
   } catch (error: any) {
+    const detail = error?.response?.data?.detail;
+    console.log(detail)
     return {
       success: false,
-      message: "Failed to fetch user menus",
+      data: undefined,
+      message: detail?.message || "error.unknown",   
+      args: detail?.args || {},
     };
   }
 };
@@ -47,22 +49,23 @@ export const fetchUserMenus = async (): Promise<{
 // 🔹 Create new menu item
 export const createMenu = async (
   data: MenuItemCreate
-): Promise<{
-  success: boolean;
-  message: string;
-  data?: MenuItemResponse;
-}> => {
+): Promise<GenericResponse<MenuItemResponse>> => {
   try {
     const response = await apiClient.post("/menus", data);
     return {
       success: true,
-      message: "Menu item created successfully",
-      data: response.data,
+      data: response.data.data,
+      message: response.data.message,
+      args: response.data.args,
     };
   } catch (error: any) {
+    const detail = error?.response?.data?.detail;
+
     return {
       success: false,
-      message: "Failed to create menu item",
+      data: undefined,
+      message: detail?.message || "error.unknown",   
+      args: detail?.args || {},
     };
   }
 };
@@ -71,43 +74,41 @@ export const createMenu = async (
 export const updateMenu = async (
   menuId: number,
   data: MenuItemUpdate
-): Promise<{
-  success: boolean;
-  message: string;
-  data?: MenuItemResponse;
-}> => {
+): Promise<GenericResponse<MenuItemResponse>> => {
   try {
     const response = await apiClient.put(`/menus/${menuId}`, data);
     return {
       success: true,
-      message: "Menu item updated successfully",
-      data: response.data,
+      data: response.data.data,
+      message: response.data.message,
+      args: response.data.args,
     };
   } catch (error: any) {
+    const detail = error?.response?.data?.detail;
+
     return {
       success: false,
-      message: "Failed to update menu item",
+      data: undefined,
+      message: detail?.message || "error.unknown",   
+      args: detail?.args || {},
     };
   }
 };
 
 // 🔹 Delete menu item by ID
-export const deleteMenu = async (
-  menuId: number
-): Promise<{
-  success: boolean;
-  message: string;
-}> => {
+export const deleteMenu = async (menuId: number): Promise<GenericResponse<null>> => {
   try {
-    await apiClient.delete(`/menus/${menuId}`);
+    const response = await apiClient.delete(`/menus/${menuId}`);
     return {
       success: true,
-      message: "Menu item deleted successfully",
+      data: null,
+      message: response.data.message,
+      args: response.data.args,
     };
   } catch (error: any) {
     return {
       success: false,
-      message: "Failed to delete menu item",
+      message: error?.response?.data?.detail || "error.menu.delete_failed",
     };
   }
 };

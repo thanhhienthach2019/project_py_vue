@@ -12,6 +12,7 @@ export function useUser() {
     selectedUser: computed(() => store.selectedUser),
 
     isLoading: computed(() => store.isLoading),
+    isLoadingUsers: computed(() => store.isLoadingUsers),
     isCreating: computed(() => store.isCreating),
     isUpdating: computed(() => store.isUpdating),
     isDeleting: computed(() => store.isDeleting),

@@ -1,13 +1,15 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from typing import Optional, List, Dict
-from fastapi import HTTPException, status
-
+from fastapi import Request
+from app.core.http_exceptions import http_404, http_400, http_500
 from app.models.settings.MenuItem import MenuItem
 from app.schemas.settings.MenuItem import (
     MenuItemCreate,
     MenuItemUpdate,
     MenuItemResponse
 )
+from app.schemas.generic_response import GenericResponse
 from app.core.casbin import enforcer
 from app.core.redis import publish_update
 
@@ -27,29 +29,37 @@ def _build_tree(items: List[Dict]) -> List[Dict]:
 def get_all_menu_items(db: Session) -> List[MenuItem]:
     return db.query(MenuItem).order_by(MenuItem.order).all()
 
-def get_all_menu_items_response(db: Session) -> List[MenuItemResponse]:
-    items = get_all_menu_items(db)
 
-    def map_item(it: MenuItem) -> MenuItemResponse:
-        return MenuItemResponse(
-            id=it.id,
-            title=it.title,
-            path=it.path,
-            icon=it.icon,
-            permission_key=it.permission_key,
-            parent_id=it.parent_id,
-            order=it.order,
-            children=[] 
+def get_all_menu_items_response(db: Session) -> GenericResponse[List[MenuItemResponse]]:
+    try:
+        items = get_all_menu_items(db)
+        result = [
+            MenuItemResponse(
+                id=i.id,
+                title=i.title,
+                path=i.path,
+                icon=i.icon,
+                permission_key=i.permission_key,
+                parent_id=i.parent_id,
+                order=i.order,
+                children=[]
+            )
+            for i in items
+        ]
+        return GenericResponse(
+            data=result,
+            message="notification.fetch.success",
+            args={"entity": "Menu"}
         )
+    except Exception as e:
+        raise http_500("error.fetch.failed", {"entity": "Menu"})
 
-    return [map_item(i) for i in items]
 
-def get_menu_tree_for_user(db: Session, username: str) -> List[MenuItemResponse]:
-    raw = get_all_menu_items(db)
-    allowed: List[Dict] = []
-    for it in raw:
-        if enforcer.enforce(username, it.permission_key, "view"):
-            allowed.append({
+def get_menu_tree_for_user(db: Session, username: str) -> GenericResponse[List[MenuItemResponse]]:
+    try:
+        raw = get_all_menu_items(db)
+        allowed = [
+            {
                 "id": it.id,
                 "title": it.title,
                 "path": it.path,
@@ -57,9 +67,19 @@ def get_menu_tree_for_user(db: Session, username: str) -> List[MenuItemResponse]
                 "permission_key": it.permission_key,
                 "parent_id": it.parent_id,
                 "order": it.order,
-            })
-    tree = _build_tree(allowed)
-    return [MenuItemResponse(**node) for node in tree]
+            }
+            for it in raw
+            if enforcer.enforce(username, it.permission_key, "view")
+        ]
+        tree = _build_tree(allowed)
+        result = [MenuItemResponse(**node) for node in tree]
+        return GenericResponse(
+            data=result,
+            message="notification.fetch.success",
+            args={"entity": "Menu"}
+        )
+    except Exception:
+        raise http_500("error.fetch.failed", {"entity": "Menu"})
 
 
 # 🟢 CREATE
@@ -67,7 +87,7 @@ async def create_menu_item(
     db: Session,
     data: MenuItemCreate,
     parent_id: Optional[int] = None
-) -> MenuItemResponse:
+) -> GenericResponse[MenuItemResponse]:
     m = MenuItem(
         title=data.title,
         path=data.path,
@@ -76,18 +96,21 @@ async def create_menu_item(
         parent_id=parent_id or data.parent_id,
         order=data.order
     )
-    db.add(m)
-    db.commit()
-    db.refresh(m)
-    item_dict = MenuItemResponse.from_orm(m).model_dump()
-    await publish_update("create", "menu", item_dict)
+    try:
+        db.add(m)
+        db.commit()
+        db.refresh(m)
+    except IntegrityError:
+        db.rollback()
+        http_400("error.menu.permission_key_conflict", {"key": data.permission_key})
 
-    children_responses: List[MenuItemResponse] = []
-    for child_data in data.children or []:
-        child_response = await create_menu_item(db, child_data, parent_id=m.id)
-        children_responses.append(child_response)
+    await publish_update("create", "menu", MenuItemResponse.from_orm(m).model_dump())
 
-    return MenuItemResponse(
+    children = [
+        await create_menu_item(db, child, parent_id=m.id)
+        for child in (data.children or [])
+    ]
+    item = MenuItemResponse(
         id=m.id,
         title=m.title,
         path=m.path,
@@ -95,7 +118,12 @@ async def create_menu_item(
         permission_key=m.permission_key,
         parent_id=m.parent_id,
         order=m.order,
-        children=children_responses
+        children=[c.data for c in children]  # unwrap GenericResponse
+    )
+    return GenericResponse(
+        data=item,
+        message="notification.create.success",
+        args={"entity": "Menu"}
     )
 
 
@@ -103,49 +131,50 @@ async def create_menu_item(
 async def update_menu_item(
     db: Session,
     menu_id: int,
-    data: MenuItemUpdate
-) -> MenuItemResponse:
+    data: MenuItemUpdate,
+    request: Request
+) -> GenericResponse[MenuItemResponse]:
     m = db.query(MenuItem).filter(MenuItem.id == menu_id).first()
     if not m:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"MenuItem {menu_id} does not exist"
-        )
+        http_404("error.menu.not_found", {"id": menu_id})
 
     for field, val in data.dict().items():
         setattr(m, field, val)
+    print(data)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        http_400("error.menu.permission_key_conflict", {"key": data.permission_key})
 
-    db.commit()
     db.refresh(m)
 
-    item_dict = MenuItemResponse.from_orm(m).model_dump()
-    await publish_update("update", "menu", item_dict)
+    await publish_update("update", "menu", MenuItemResponse.from_orm(m).model_dump())
 
-    return MenuItemResponse(
-        id=m.id,
-        title=m.title,
-        path=m.path,
-        icon=m.icon,
-        permission_key=m.permission_key,
-        parent_id=m.parent_id,
-        order=m.order,
-        children=[] 
+    return GenericResponse(
+        data=MenuItemResponse.from_orm(m),
+        message="notification.update.success",
+        args={"entity": "Menu"}
     )
 
 
 # 🔴 DELETE
 async def delete_menu_item(
     db: Session,
-    menu_id: int
-) -> None:
+    menu_id: int,
+    request: Request
+) -> GenericResponse[None]:
     m = db.query(MenuItem).filter(MenuItem.id == menu_id).first()
     if not m:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"MenuItem {menu_id} does not exist"
-        )
-    item_dict = MenuItemResponse.from_orm(m).model_dump()
+        http_404("error.menu.not_found", {"id": menu_id})
+
+    await publish_update("delete", "menu", MenuItemResponse.from_orm(m).model_dump())
+
     db.delete(m)
     db.commit()
 
-    await publish_update("delete", "menu", item_dict)
+    return GenericResponse(
+        data=None,
+        message="notification.delete.success",
+        args={"entity": "Menu"}
+    )

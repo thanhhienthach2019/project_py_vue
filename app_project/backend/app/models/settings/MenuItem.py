@@ -10,7 +10,7 @@ class MenuItem(Base):
     title = Column(String(100), nullable=False)
     path = Column(String(200), nullable=False)
     icon = Column(String(50), nullable=True)
-    permission_key = Column(String(50), nullable=False)
+    permission_key = Column(String, unique=True, index=True)
     parent_id = Column(Integer, ForeignKey("menu_items.id"), nullable=True)
     order = Column(Integer, default=0)
 

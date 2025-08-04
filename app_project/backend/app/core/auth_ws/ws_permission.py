@@ -45,7 +45,7 @@ async def check_ws_permission_by_path(
     if not perm:
         await websocket.close(code=WS_1008_POLICY_VIOLATION)
         raise WebSocketException(code=WS_1008_POLICY_VIOLATION, reason="Permission not found")
-
+    
     method_to_action = {
         "GET": "read",
         "POST": "create",

@@ -1,5 +1,10 @@
 from app.api.v1.ws.ws_common import broadcast_to_clients
-from app.api.v1.ws.ws_channels import MENU_CHANNEL, PERMISSION_CHANNEL, POLICY_CHANNEL
+from app.api.v1.ws.ws_channels import (
+    MENU_CHANNEL,
+    PERMISSION_CHANNEL,
+    POLICY_CHANNEL,
+    USER_CHANNEL
+    )
 
 # Mapping type (logic app) → channel name
 TYPE_TO_CHANNEL_MAP = {
@@ -8,6 +13,7 @@ TYPE_TO_CHANNEL_MAP = {
     "router": PERMISSION_CHANNEL,
     "binding": PERMISSION_CHANNEL,
     "policy": POLICY_CHANNEL,
+    "user": USER_CHANNEL,
 }
 
 # Return function broadcast for Redis pub/sub

@@ -27,7 +27,6 @@
         </button>
       </div>
     </div>
-
     <!-- Form -->
     <div
       class="bg-white/5 backdrop-blur-2xl rounded-2xl p-8 border border-white/15 shadow-xl"
@@ -286,9 +285,8 @@
 <script setup lang="ts">
 import { AgGridVue } from "ag-grid-vue3";
 import type { ColDef, GridApi, GridOptions } from "ag-grid-community";
-import { ref, onMounted, inject, type Ref, watch, nextTick } from "vue";
+import { ref, onMounted, watch, nextTick } from "vue";
 import { Icon } from "@iconify/vue";
-import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { useMenu } from "@/hooks/settings/useMenu";
 import EditActionCell from "@/components/ui/EditActionCell.vue";
 import { useAutoResizeGrid } from "@/composables/useAutoReSizeGrid";
@@ -330,7 +328,6 @@ const { isDisabled: isDeleteDisabled, disabledClass: deleteClass } =
 
 const delayedLoading = useDelayedLoading(isLoadingMenus, 300);
 
-const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
 const inputRef = ref<HTMLInputElement | null>(null);
 const quickFilterText = ref("");
 
@@ -455,10 +452,7 @@ async function onAdd() {
   if (isCreateDisabled.value) return;
   const resp = await createMenu(form.value);
   if (resp.success) {
-    toast.value.showToast(resp.message, "success");
     resetForm();
-  } else {
-    toast.value.showToast(resp.message, "error");
   }
 }
 
@@ -476,10 +470,7 @@ async function onUpdate() {
     form.value as MenuItemUpdate
   );
   if (resp.success) {
-    toast.value.showToast(resp.message, "success");
     resetForm();
-  } else {
-    toast.value.showToast(resp.message, "error");
   }
 }
 
@@ -492,10 +483,7 @@ async function onDelete() {
   if (!confirmed) return;
   const resp = await deleteMenu(currentEditId.value);
   if (resp.success) {
-    toast.value.showToast(resp.message, "success");
     resetForm();
-  } else {
-    toast.value.showToast(resp.message, "error");
   }
 }
 </script>
