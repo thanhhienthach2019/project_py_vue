@@ -1,46 +1,33 @@
 // src/hooks/useMenu.ts
-import { computed, inject, type Ref, } from 'vue'
+import { computed} from 'vue'
 import { useMenuStore } from '@/store/settings/menuStore'
 import { createWithToastAction } from '@/utils/withToastAction'
-import type ToastTailwind from '@/pages/Toast/ToastTailwind.vue'
-import { useI18n } from 'vue-i18n'
-import type { MenuItemCreate, MenuItemUpdate, MenuItemResponse } from '@/models/settings/menu'
-import type { ActionResult } from '@/types/api'
+import type { MenuItemCreate, MenuItemUpdate } from '@/models/settings/menu'
 
 export function useMenu() {
   const store = useMenuStore()
-  const { t } = useI18n()
-  const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!
-  const withToastAction = createWithToastAction(toast, t)
-
-  const allMenus = computed(() => store.menus)
-  const isLoading = computed(() => store.isLoading)
-  const isLoadingMenus = computed(() => store.isLoadingMenus)
-  const isCreating = computed(() => store.isCreating)
-  const isUpdating = computed(() => store.isUpdating)
-  const isDeleting = computed(() => store.isDeleting)
-  const updatingId = computed(() => store.updatingId)
-  const deletingId = computed(() => store.deletingId)
-
+  const withToastAction = createWithToastAction()
+  const state = {
+    allMenus: computed(() => store.menus),
+    isLoading: computed(() => store.isLoading),
+    isLoadingMenus: computed(() => store.isLoadingMenus),
+    isCreating: computed(() => store.isCreating),
+    isUpdating: computed(() => store.isUpdating),
+    isDeleting: computed(() => store.isDeleting),
+    updatingId: computed(() => store.updatingId),
+    deletingId: computed(() => store.deletingId)
+  }    
+  
   // ============ Loaders ============
-  function loadMenus(): Promise<ActionResult> {
-    return withToastAction(() => store.loadMenus(), {
-      error: 'error.menu.fetch_failed',
-      success: false,
-    })
+  const loaders = {
+    loadMenus: () => withToastAction(() => store.loadMenus()),
   }
 
   // ============ Actions ============
-  function createMenu(data: MenuItemCreate): Promise<ActionResult<MenuItemResponse>> {
-    return withToastAction(() => store.createMenu(data))
-  }
-
-  function updateMenu(id: number, data: MenuItemUpdate): Promise<ActionResult<MenuItemResponse>> {
-    return withToastAction(() => store.updateMenu(id, data))
-  }
-
-  function deleteMenu(id: number): Promise<ActionResult> {
-    return withToastAction(() => store.deleteMenu(id))
+  const actions = {
+    createMenu: (data: MenuItemCreate) => withToastAction(() => store.createMenu(data)),
+    updateMenu: (id: number, data: MenuItemUpdate) => withToastAction(() => store.updateMenu(id, data)),
+    deleteMenu: (id: number) => withToastAction(() => store.deleteMenu(id))
   }
 
   // ============ Getter ============
@@ -50,21 +37,10 @@ export function useMenu() {
 
   return {
     // State
-    allMenus,
-    isLoading,
-    isLoadingMenus,
-    isCreating,
-    isUpdating,
-    isDeleting,
-    updatingId,
-    deletingId,
-
+    ...state,
     // Loaders & Actions
-    loadMenus,
-    createMenu,
-    updateMenu,
-    deleteMenu,
-
+    ...loaders,
+    ...actions,
     // Getter
     getMenuById,
   }

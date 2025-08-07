@@ -1,10 +1,11 @@
 import { computed } from 'vue'
 import { usePolicyStore } from '@/store/settings/policyStore'
 import type { PolicyCreate, PolicyItem } from '@/models/settings/policy'
+import { createWithToastAction } from "@/utils/withToastAction";
 
 export function usePolicy() {
   const store = usePolicyStore()
-
+  const withToastAction = createWithToastAction();
   // ============ State Getters ============
   const state = {
     policies: computed<PolicyItem[]>(() => store.policies),
@@ -21,73 +22,19 @@ export function usePolicy() {
 
   // ============ Data Loading ============
   const loaders = {
-    fetchPolicies: async () => {
-      try {
-        return await store.loadPolicies()
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to load policies' }
-      }
-    },
-    fetchPolicyGroups: async () => {
-      try {
-        return await store.loadPoliciesGroup()
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to load group policies' }
-      }
-    },
-    fetchViewPolicies: async () => {
-      try {
-        return await store.loadViewPolicies()
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to load view policies' }
-      }
-    },
+    fetchPolicies: () => withToastAction(() => store.loadPolicies()),
+    fetchPolicyGroups: () => withToastAction(() => store.loadPoliciesGroup()),
+    fetchViewPolicies: () => withToastAction(() => store.loadViewPolicies())
   }
 
   // ============ Policy Operations ============
   const actions = {
-    addPolicy: async (data: PolicyCreate) => {
-      try {
-        return await store.addNewPolicy(data)
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to add policy' }
-      }
-    },
-    addPolicyGroup: async (data: PolicyCreate) => {
-      try {
-        return await store.addNewPolicyGroup(data)
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to add group policy' }
-      }
-    },
-    addViewPolicy: async (data: PolicyCreate) => {
-      try {
-        return await store.addNewViewPolicy(data)
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to add view policy' }
-      }
-    },
-    removePolicy: async (data: PolicyCreate) => {
-      try {
-        return await store.removeExistingPolicy(data)
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to remove policy' }
-      }
-    },
-    removePolicyGroup: async (data: PolicyCreate) => {
-      try {
-        return await store.removeExistingPolicyGroup(data)
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to remove group policy' }
-      }
-    },
-    removeViewPolicy: async (data: PolicyCreate) => {
-      try {
-        return await store.removeExistingViewPolicy(data)
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to remove view policy' }
-      }
-    },
+    addPolicy: (data: PolicyCreate)  => withToastAction(() => store.addPolicy(data)),
+    addPolicyGroup: (data: PolicyCreate) => withToastAction(() => store.addPolicy(data)),
+    addViewPolicy: (data: PolicyCreate) => withToastAction(() => store.addPolicy(data)),
+    removePolicy: (data: PolicyCreate) => withToastAction(() => store.removePolicy(data)),
+    removePolicyGroup: (data: PolicyCreate) => withToastAction(() => store.removePolicy(data)),
+    removeViewPolicy: (data: PolicyCreate) => withToastAction(() => store.removePolicy(data))
   }
 
   // ============ Helper Getters ============

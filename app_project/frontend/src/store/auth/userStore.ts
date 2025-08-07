@@ -62,16 +62,14 @@ export const useUserStore = defineStore('user', {
 
   actions: {
     // 🚀 LOAD
-    async loadUsers(skip = 0, limit = 100, is_active = true) {
+    async loadUsers() {
       this.isLoadingUsers = true
       try {
-        const response = await fetchUsers(skip, limit, is_active)
+        const response = await fetchUsers()
         if (response.success && response.data) {
           this.users = response.data
         }
         return response
-      } catch (err: any) {
-        return { success: false, message: err.message || 'Failed to load users' }
       } finally {
         this.isLoadingUsers = false
       }
@@ -85,41 +83,27 @@ export const useUserStore = defineStore('user', {
           this.selectedUser = response.data
         }
         return response
-      } catch (err: any) {
-        return { success: false, message: err.message || 'Failed to load user' }
       } finally {
         this.isLoadingUserById = false
       }
     },
 
     // ➕ CREATE
-    async createUser(data: UserCreate, imageFile?: File | null) {
+    async createUser(data: UserCreate, imageFile?: File | null, removeImage?: boolean) {
       this.isCreating = true
       try{
-        const response = await createUser(data, imageFile)
-        if (response.success) {
-            return { success: true, message: 'User created', data: response.data }
-          }
-          throw new Error(response.message || 'Failed to create user')
-      } catch (err: any) {
-        return { success: false, message: err.message}
+          return await createUser(data, imageFile, removeImage);
       } finally {
         this.isCreating = false
       }
     },
 
     // ✏️ UPDATE
-    async updateUser(userId: number, data: UserUpdate, imageFile?: File | null) {
+    async updateUser(userId: number, data: UserUpdate, imageFile?: File | null, removeImage?: boolean) {
       this.isUpdating = true
       this.updatingId = userId
       try {
-        const response = await updateUser(userId, data, imageFile)
-        if (response.success) {
-          return { success: true, message: 'User updated', data: response.data}
-        }
-        throw new Error(response.message || 'Failed to update user')        
-      } catch (err: any) {
-        return { success: false, message: err.message }
+          return await updateUser(userId, data, imageFile, removeImage);        
       } finally {
         this.isUpdating = false
         this.updatingId = null
@@ -131,13 +115,7 @@ export const useUserStore = defineStore('user', {
       this.isDeleting = true
       this.deletingId = userId
       try {
-        const response = await deleteUser(userId)
-        if (response.success) {
-          return { success: true, message: 'User deleted' }          
-        }
-        throw new Error(response.message || 'Failed to delete user')
-      } catch (err: any) {
-        return { success: false, message: err.message }
+        return await deleteUser(userId);        
       } finally {
         this.isDeleting = false
         this.deletingId = null

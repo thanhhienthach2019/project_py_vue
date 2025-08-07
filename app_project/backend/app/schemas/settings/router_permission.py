@@ -1,12 +1,13 @@
-from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from typing import Optional, Annotated
+from pydantic import BaseModel, ConfigDict, StringConstraints
 
+StrippedNonEmptyStr = Annotated[str, StringConstraints(min_length=1, strip_whitespace=True)]
 # ======== Router Schemas ========
 
 class RouterBase(BaseModel):
-    name: str
-    path: str
-    method: str
+    name: StrippedNonEmptyStr
+    path: StrippedNonEmptyStr
+    method: StrippedNonEmptyStr
 
 class RouterCreate(RouterBase):
     pass
@@ -14,15 +15,18 @@ class RouterCreate(RouterBase):
 class RouterUpdate(RouterBase):
     pass
 
-class RouterResponse(RouterBase):
+class RouterResponse(BaseModel):
     id: int
+    name: str
+    path: str
+    method: str
     model_config = ConfigDict(from_attributes=True)
 
 # ======== Permission Schemas ========
 
 class PermissionBase(BaseModel):
-    resource: str
-    action: str
+    resource: StrippedNonEmptyStr
+    action: StrippedNonEmptyStr
 
 class PermissionCreate(PermissionBase):
     pass
@@ -30,8 +34,10 @@ class PermissionCreate(PermissionBase):
 class PermissionUpdate(PermissionBase):
     pass
 
-class PermissionResponse(PermissionBase):
+class PermissionResponse(BaseModel):
     id: int
+    resource: str
+    action: str
     model_config = ConfigDict(from_attributes=True)
 
 # ======== RouterPermission Schemas ========

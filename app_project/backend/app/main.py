@@ -1,17 +1,36 @@
 import uvicorn
 import os
-from app.api.v1.auth import auth, permissions, users
-from app.api.v1.settings import menu, permission_router, policy
+from app.api.v1.auth import auth, permissions, users, profile
+from app.api.v1.settings import (
+    menu,
+    permission_router,
+    policy
+    )
 from app.core.database import Base, engine_sqlite
 from app.core.rabbit import rabbit_client
+from app.exceptions.handlers import validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
-from app.api.v1.inventory import inventory, machine, maintenance, material
+from app.api.v1.inventory import (
+    inventory,
+    machine,
+    maintenance,
+    material,
+    warehouse
+    )
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.inventory import warehouse
-from app.api.v1.otrao_news import announcement, document, donor, festival, news, scripture, slide
+from app.api.v1.otrao_news import (
+    announcement,
+    document,
+    donor,
+    festival,
+    news,
+    scripture,
+    slide
+    )
 from app.api.v1.ws.ws_listener import start_redis_listeners
 from app.api.v1.ws import ws_router
 
@@ -38,17 +57,22 @@ app.add_middleware(
     allow_methods=["*"],  
     allow_headers=["*"],  
 )
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+# auth
 app.include_router(auth.router, prefix="/api/v1", tags=["Authentication"])
 app.include_router(users.router, prefix="/api/v1", tags=["Users"])
+app.include_router(profile.router, prefix="/api/v1", tags=["Profile"])
+#settings
+app.include_router(menu.router, prefix="/api/v1", tags=["Menu"])
+app.include_router(policy.router, prefix="/api/v1", tags=["Policy"])
+app.include_router(permissions.router, prefix="/api/v1", tags=["Permission"])
+app.include_router(permission_router.router, prefix="/api/v1", tags=["Router"])
+# inventory
 app.include_router(inventory.router, prefix="/api/v1", tags=["Inventory"])
 app.include_router(material.router, prefix="/api/v1", tags=["Material"])
 app.include_router(warehouse.router, prefix="/api/v1", tags=["Warehouse"])
 app.include_router(maintenance.router, prefix="/api/v1", tags=["Maintenance"])
 app.include_router(machine.router, prefix="/api/v1", tags=["Machine"])
-app.include_router(menu.router, prefix="/api/v1", tags=["Menu"])
-app.include_router(policy.router, prefix="/api/v1", tags=["Policy"])
-app.include_router(permissions.router, prefix="/api/v1", tags=["Permission"])
-app.include_router(permission_router.router, prefix="/api/v1", tags=["Router"])
 
 # otrao_news
 app.include_router(announcement.router, prefix="/api/v1/announcements", tags=["Announcements"])
@@ -63,9 +87,9 @@ app.include_router(slide.router, prefix="/api/v1/slides", tags=["Slides"])
 app.include_router(ws_router.router, prefix="/api/v1/ws")
 
 
-upload_path = settings.upload_path
-upload_path.mkdir(parents=True, exist_ok=True)
-app.mount("/public", StaticFiles(directory=upload_path), name="public")
+static_path  = settings.upload_path.parent
+static_path.mkdir(parents=True, exist_ok=True)
+app.mount("/public", StaticFiles(directory=static_path ), name="public")
 # print("DEBUG: UPLOAD_DIR =", settings.UPLOAD_DIR)
 @app.get("/")
 def home():

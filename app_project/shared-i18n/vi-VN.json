@@ -1,9 +1,33 @@
 {
   "error": {
+    "unknown": "Đã xảy ra lỗi không xác định. Vui lòng thử lại sau.",
+    "validation": {
+      "failed": "Xác thực không thành công với các trường: {errors}"
+    },
     "menu": {
       "not_found": "Không tìm thấy mục menu với ID {id}.",
       "permission_key_conflict": "Permission key '{key}' đã tồn tại.",
-      "fetch_failed": "Không thể tải dữ liệu menu. Vui lòng thử lại sau."
+      "fetch_failed": "Không thể tải dữ liệu menu. Vui lòng thử lại sau.",
+      "create_failed": "Không thể tạo menu. Vui lòng thử lại sau.",
+      "update_failed": "Không thể cập nhật menu. Vui lòng thử lại sau.",
+      "delete_failed": "Không thể xoá menu. Vui lòng thử lại sau."
+    },
+    "user": {
+      "create_failed": "Không thể tạo người dùng",
+      "update_failed": "Không thể cập nhật người dùng",
+      "delete_failed": "Không thể xoá người dùng",
+      "not_found": "Không tìm thấy người dùng",
+      "duplicate_email": "Email đã được đăng ký.",
+      "duplicate_username": "Tên người dùng đã được sử dụng.",
+      "invalid_old_password": "Old password is incorrect",
+      "change_password_failed": "Failed to change password"
+    },
+    "policy": {
+      "invalid_type": "Loại policy không hợp lệ: {type}",
+      "already_exists": "Chính sách đã tồn tại hoặc không hợp lệ.",
+      "not_found": "Không tìm thấy chính sách tương ứng.",
+      "fetch_failed": "Không thể tải dữ liệu policy. Vui lòng thử lại sau.",
+      "missing_fields": "Thiếu các trường bắt buộc: {fields}"
     },
     "auth": {
       "login_failed": "Đăng nhập thất bại.",
@@ -16,8 +40,27 @@
       "unauthenticated": "Người dùng chưa đăng nhập",
       "invalid_credentials": "Sai tên đăng nhập hoặc mật khẩu",
       "no_refresh_token": "Không có refresh token",
-      "invalid_refresh_token": "Refresh token không hợp lệ",
-      "refresh_token_expired": "Refresh token đã hết hạn"
+      "invalid_refresh_token": "Mật khẩu cũ không chính xác",
+      "refresh_token_expired": "Đổi mật khẩu thất bại"
+    },
+    "router": {
+      "not_found": "Không tìm thấy router với ID {id}.",
+      "duplicate": "Đã tồn tại router với path '{path}' và method '{method}'.",
+      "fetch_failed": "Không thể tải dữ liệu router. Vui lòng thử lại sau."
+    },
+    "permission": {
+      "not_found": "Không tìm thấy permission với ID {id}.",
+      "duplicate": "Permission key '{key}' đã tồn tại.",
+      "fetch_failed": "Không thể tải dữ liệu permission. Vui lòng thử lại sau."
+    },
+    "binding": {
+      "not_found": "Không tìm thấy binding với ID {id}.",
+      "duplicate": "Binding giữa router ID {router_id} và permission ID {permission_id} đã tồn tại.",
+      "fetch_failed": "Không thể tải dữ liệu binding. Vui lòng thử lại sau."
+    },
+    "file": {
+      "missing_filename": "Thiếu tên tập tin trong tệp tải lên.",
+      "invalid_format": "Định dạng ảnh không hợp lệ. Các định dạng được phép: jpg, jpeg, png, gif, bmp."
     }
   },
   "notification": {
@@ -39,11 +82,27 @@
       "logout_successful": "Đăng xuất thành công.",
       "token_refreshed": "Làm mới token thành công",
       "language_updated": "Đã cập nhật ngôn ngữ."
+    },
+    "change_password": {
+      "success": "Đổi mật khẩu thành công" 
     }
   },
   "entity": {
     "menu": "Menu",
     "user": "Người dùng",
-    "document": "Tài liệu"
+    "policy": "Chính sách",
+    "router": "Định tuyến",
+    "permission": "Quyền",
+    "binding": "Liên kết"
+  },
+  "confirm": {
+    "delete": "Bạn có chắc chắn muốn xoá mục này không?",
+    "logout": "Bạn có muốn đăng xuất không?",
+    "logoutYes": "Đăng xuất",
+    "confirm": "Xác nhận",
+    "cancel": "Huỷ",
+    "reset": "Bạn có chắc chắn muốn đặt lại không?",
+    "deactivate": "Bạn có chắc chắn muốn vô hiệu hoá mục này không?",
+    "submit": "Bạn có chắc chắn muốn gửi không?"
   }
 }

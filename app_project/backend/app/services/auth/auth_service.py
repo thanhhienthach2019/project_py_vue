@@ -47,17 +47,34 @@ def login_user(db: Session, username: str, password: str, response: Response) ->
     )
 
 
-def check_user_auth(request: Request) -> GenericResponse[dict]:
+def check_user_auth(db: Session, request: Request) -> GenericResponse[dict]:
     token = request.cookies.get("_aid-atk_")
     if not token:
         return GenericResponse(
             data={"authenticated": False},
             message="error.auth.unauthenticated"
         )
-
-    user_data = decode_access_token(token)
+    payload = decode_access_token(token)
+    username  = payload.get("username")
+    if not username:
+        return GenericResponse(
+            data={"authenticated": False},
+            message="error.auth.invalid_token"
+        )
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        return GenericResponse(
+            data={"authenticated": False},
+            message="error.auth.user_not_found"
+        )
     return GenericResponse(
-        data={"authenticated": True, "user": user_data},
+        data={
+            "authenticated": True,
+            "user": {
+                "username": user.username,
+                "preferred_language": user.preferred_language
+            }
+        },
         message="notification.auth.authenticated"
     )
 

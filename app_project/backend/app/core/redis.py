@@ -23,7 +23,7 @@ async def publish_update(action: str, type_: str, item: dict):
         raise ValueError(f"[REDIS] ❌ Unknown type '{type_}', cannot determine channel.")
 
     await _redis.publish(channel_name, json.dumps(message))
-    print(f"[REDIS] ✅ Published to {channel_name}: {message}")
+    # print(f"[REDIS] ✅ Published to {channel_name}: {message}")
 
 
 async def redis_subscriber(channel_name: str):

@@ -1,31 +1,17 @@
-<!-- src/App.vue -->
-<!-- <template>
-  <router-view />
-  <ToastTailwind ref="toastRef" />
-</template> -->
-
 <template>
   <router-view />
-  <!-- <LoadingToast /> -->
-  <ToastTailwind ref="toastRef" />
-  <!-- <SessionTimeoutModal
-    v-if="showSessionModal"
-    @refresh="handleRefresh"
-    @logout="handleLogout"
-  /> -->
+  <ToastTailwind />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, provide, onUnmounted } from "vue";
+import { onMounted, ref, onUnmounted } from "vue";
 import { useAuthStore } from "@/store/auth/authStore";
 import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
-// import SessionTimeoutModal from "@/components/ui/SessionTimeoutModal.vue";
 import { apiClient } from "@/utils/apiClient";
+import { loadPreferredLanguage } from "@/utils/lang";
 
 const authStore = useAuthStore();
-const toastRef = ref<InstanceType<typeof ToastTailwind> | null>(null);
 const showSessionModal = ref(false);
-provide("toast", toastRef);
 
 // Xử lý khi phát hiện token hết hạn
 const handleTokenExpired = () => {
@@ -43,25 +29,6 @@ apiClient.interceptors.response.use(null, (error) => {
   return Promise.reject(error);
 });
 
-// // Xử lý khi người dùng chọn refresh session
-// const handleRefresh = async () => {
-//   try {
-//     await authStore.refreshToken();
-//     showSessionModal.value = false;
-//     toastRef.value?.showToast("Session renewed successfully", "success");
-//   } catch (error) {
-//     toastRef.value?.showToast("Failed to renew session", "error");
-//     await authStore.logout();
-//   }
-// };
-
-// // Xử lý khi người dùng chọn logout
-// const handleLogout = async () => {
-//   await authStore.logout();
-//   showSessionModal.value = false;
-// };
-
-// Tự động kiểm tra session mỗi 5 phút
 let sessionCheckInterval: number;
 onMounted(() => {
   sessionCheckInterval = window.setInterval(async () => {
@@ -72,6 +39,7 @@ onMounted(() => {
 });
 
 onMounted(() => {
+  loadPreferredLanguage();
   authStore.fetchUser();
 });
 

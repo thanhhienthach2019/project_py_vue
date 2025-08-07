@@ -23,7 +23,7 @@ export function useRealtimeWebSocket<T = any>(
   const connect = () => {
     const token = document.cookie.match(/_aid-atk_=([^;]+)/)?.[1]
     if (!token) {
-      console.warn(`[WS] ⛔ No token, skipping connection to ${path}`)
+      // console.warn(`[WS] ⛔ No token, skipping connection to ${path}`)
       return
     }
 
@@ -31,7 +31,7 @@ export function useRealtimeWebSocket<T = any>(
     ws.value = new WebSocket(`${url}?token=${encodeURIComponent(token)}`)
 
     ws.value.onopen = () => {
-      console.info(`[WS] ✅ Connected to ${path}`)
+      // console.info(`[WS] ✅ Connected to ${path}`)
       handshakeDone = true
       isConnected.value = true
       backoff.value = 1000
@@ -49,12 +49,12 @@ export function useRealtimeWebSocket<T = any>(
         const data = JSON.parse(event.data) as T
         handlers.forEach(h => h(data))
       } catch (err) {
-        console.error(`[WS] ❌ Invalid JSON on ${path}:`, err)
+        // console.error(`[WS] ❌ Invalid JSON on ${path}:`, err)
       }
     }
 
     ws.value.onclose = event => {
-      console.warn(`[WS] 🔌 Disconnected from ${path} (code: ${event.code})`)
+      // console.warn(`[WS] 🔌 Disconnected from ${path} (code: ${event.code})`)
       isConnected.value = false
       clearInterval(hbTimer)
 
@@ -63,16 +63,16 @@ export function useRealtimeWebSocket<T = any>(
       if (nonFatal && handshakeDone) {
         timeoutId.value = window.setTimeout(connect, backoff.value)
         backoff.value = Math.min(backoff.value * 2, maxBackoff)
-        console.info(`[WS] 🔁 Reconnecting to ${path} in ${backoff.value}ms...`)
+        // console.info(`[WS] 🔁 Reconnecting to ${path} in ${backoff.value}ms...`)
       } else if (nonFatal && !handshakeDone) {
-        console.warn(`[WS] 🛑 Handshake failed, not reconnecting to ${path}`)
+        // console.warn(`[WS] 🛑 Handshake failed, not reconnecting to ${path}`)
       } else {
-        console.info(`[WS] 🛑 Fatal code ${event.code}, will not reconnect to ${path}`)
+        // console.info(`[WS] 🛑 Fatal code ${event.code}, will not reconnect to ${path}`)
       }
     }
 
     ws.value.onerror = error => {
-      console.error(`[WS] ❌ Error on ${path}:`, error)
+      // console.error(`[WS] ❌ Error on ${path}:`, error)
       // Close to trigger onclose
       ws.value?.close()
     }

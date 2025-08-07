@@ -8,9 +8,12 @@ import type {
   RouterPermissionCreate,
   RouterPermissionUpdate
 } from "@/models/settings/permissionRouter";
+import { createWithToastAction } from "@/utils/withToastAction";
 
 export function usePermissionRouter() {
   const store = usePermissionRouterStore();
+  const withToastAction = createWithToastAction();
+  
 
   // ============ State Getters ============
   const state = {
@@ -31,161 +34,31 @@ export function usePermissionRouter() {
 
   // ============ Data Loading ============
   const loaders = {
-    fetchRouters: async () => {
-      try {
-        await store.loadRouters();
-        return { success: true };
-      } catch (error: any) {
-        return {
-          success: false,
-          message: error.message || "Failed to load routers"
-        };
-      }
-    },
-
-    fetchPermissions: async () => {
-      try {
-        await store.loadPermissions();
-        return { success: true };
-      } catch (error: any) {
-        return {
-          success: false,
-          message: error.message || "Failed to load permissions"
-        };
-      }
-    },
-
-    fetchBindings: async () => {
-      try {
-        await store.loadBindings();
-        return { success: true };
-      } catch (error: any) {
-        return {
-          success: false,
-          message: error.message || "Failed to load bindings"
-        };
-      }
-    },
-
-    fetchDetailedBindings: async () => {
-      try {
-        await store.loadDetailedBindings();
-        return { success: true };
-      } catch (error: any) {
-        return {
-          success: false,
-          message: error.message || "Failed to load detailed bindings"
-        };
-      }
-    }
+    fetchRouters: () => withToastAction(() => store.loadRouters()),
+    fetchPermissions: () => withToastAction(() => store.loadPermissions()),
+    fetchBindings: () => withToastAction(() => store.loadBindings()),
+    fetchDetailedBindings: () => withToastAction(() => store.loadDetailedBindings())
   };
 
   // ============ Router Operations ============
-  const routerActions = {
-    createRouter: async (data: RouterCreate) => {
-      try {
-        return await store.createRouter(data);
-      } catch (error: any) {
-        return {
-          success: false,
-          message: error.message || "Failed to create router"
-        };
-      }
-    },
-
-    updateRouter: async (id: number, data: RouterUpdate) => {
-      try {
-        return await store.updateRouter(id, data);
-      } catch (error: any) {
-        return {
-          success: false,
-          message: error.message || "Failed to update router"
-        };
-      }
-    },
-
-    deleteRouter: async (id: number) => {
-      try {
-        return await store.deleteRouter(id);
-      } catch (error: any) {
-        return {
-          success: false,
-          message: error.message || "Failed to delete router"
-        };
-      }
-    }
+   const routerActions = {
+    createRouter: (data: RouterCreate) => withToastAction(() => store.createRouter(data)),
+    updateRouter: (id: number, data: RouterUpdate) => withToastAction(() => store.updateRouter(id, data)),
+    deleteRouter: (id: number) => withToastAction(() => store.deleteRouter(id))
   };
 
   // ============ Permission Operations ============
-  const permissionActions = {
-    createPermission: async (data: PermissionCreate) => {
-      try {
-        return await store.createPermission(data);
-      } catch (error: any) {
-        return {
-          success: false,
-          message: error.message || "Failed to create permission"
-        };
-      }
-    },
-
-    updatePermission: async (id: number, data: PermissionUpdate) => {
-      try {
-        return await store.updatePermission(id, data);
-      } catch (error: any) {
-        return {
-          success: false,
-          message: error.message || "Failed to update permission"
-        };
-      }
-    },
-
-    deletePermission: async (id: number) => {
-      try {
-        return await store.deletePermission(id);
-      } catch (error: any) {
-        return {
-          success: false,
-          message: error.message || "Failed to delete permission"
-        };
-      }
-    }
+    const permissionActions = {
+    createPermission: (data: PermissionCreate) => withToastAction(() => store.createPermission(data)),
+    updatePermission: (id: number, data: PermissionUpdate) => withToastAction(() => store.updatePermission(id, data)),
+    deletePermission: (id: number) => withToastAction(() => store.deletePermission(id))
   };
 
   // ============ Binding Operations ============
-  const bindingActions = {
-    createBinding: async (data: RouterPermissionCreate) => {
-      try {
-        return await store.createBinding(data);
-      } catch (error: any) {
-        return {
-          success: false,
-          message: error.message || "Failed to create binding"
-        };
-      }
-    },
-
-    updateBinding: async (id: number, data: RouterPermissionUpdate) => {
-      try {
-        return await store.updateBinding(id, data);
-      } catch (error: any) {
-        return {
-          success: false,
-          message: error.message || "Failed to update binding"
-        };
-      }
-    },
-
-    deleteBinding: async (id: number) => {
-      try {
-        return await store.deleteBinding(id);
-      } catch (error: any) {
-        return {
-          success: false,
-          message: error.message || "Failed to delete binding"
-        };
-      }
-    }
+   const bindingActions = {
+    createBinding: (data: RouterPermissionCreate) => withToastAction(() => store.createBinding(data)),
+    updateBinding: (id: number, data: RouterPermissionUpdate) => withToastAction(() => store.updateBinding(id, data)),
+    deleteBinding: (id: number) => withToastAction(() => store.deleteBinding(id))
   };
 
   // ============ Helper Getters ============

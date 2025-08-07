@@ -147,6 +147,14 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'settings/my-profile',
+        name: 'MyProfile',
+        component: () => import('@/pages/views/settings/MyProfile.vue'),
+        meta: {
+          requiresAuth: true,
+        },
+      },
+      {
         path: 'news/slide',
         name: 'SlideManager',
         component: () => import('@/pages/views/news/admin/SlideManager.vue'),

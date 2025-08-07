@@ -1,19 +1,15 @@
-import { computed, inject, type Ref } from 'vue'
+import { computed} from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/store/auth/authStore'
 import { createWithToastAction } from '@/utils/withToastAction'
-import type ToastTailwind from '@/pages/Toast/ToastTailwind.vue'
 import type { SupportedLang } from '@/utils/i18n_types'
 import type { ActionResult } from '@/types/api'
 
 export function useAuth() {
   const authStore = useAuthStore()
   const router = useRouter()
-  const { t } = useI18n()
 
-  const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>('toast')!
-  const withToast = createWithToastAction(toast, t)
+  const withToast = createWithToastAction()
 
   // ==== Login ====
   const login = async (username: string, password: string): Promise<ActionResult> =>

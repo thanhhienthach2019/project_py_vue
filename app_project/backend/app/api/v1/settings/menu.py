@@ -24,12 +24,12 @@ router = APIRouter(
 )
 
 # --- GET: All menus (for admin) ---
-@router.get("/all", response_model=GenericResponse[List[MenuItemResponse]])
+@router.get("/all")
 def get_all_menus(db: Session = Depends(get_db)):
     return get_all_menu_items_response(db)
 
 
-@router.get("", response_model=GenericResponse[List[MenuItemResponse]])
+@router.get("")
 def get_user_menus(
     db: Session = Depends(get_db),
     payload: dict = Depends(permission_required),
@@ -37,7 +37,7 @@ def get_user_menus(
     return get_menu_tree_for_user(db, payload.get("sub"))
 
 
-@router.post("", response_model=GenericResponse[MenuItemResponse], status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def create_menu(
     data: MenuItemCreate,
     db: Session = Depends(get_db),
@@ -45,7 +45,7 @@ async def create_menu(
     return await create_menu_item(db, data)
 
 
-@router.put("/{menu_id}", response_model=GenericResponse[MenuItemResponse])
+@router.put("/{menu_id}")
 async def update_menu(
     request: Request,
     menu_id: int,
@@ -55,7 +55,7 @@ async def update_menu(
     return await update_menu_item(db, menu_id, data, request)
 
 
-@router.delete("/{menu_id}", response_model=GenericResponse[None])
+@router.delete("/{menu_id}")
 async def delete_menu(
     request: Request,
     menu_id: int,

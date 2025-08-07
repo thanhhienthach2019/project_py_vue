@@ -1,54 +1,41 @@
 import { apiClient } from "@/utils/apiClient";
 import { getAuthHeaders } from "@/utils/authHeaders";
 import type { UserCreate, UserUpdate, UserResponse } from "@/models/auth/user";
+import type { GenericResponse } from "@/types/api";
+import { handleApiError } from "@/utils/apiErrorHandler";
 
-export const fetchUsers = async (
-  skip: number = 0,
-  limit: number = 100,
-  is_active: boolean = true
-): Promise<{ success: boolean; data?: UserResponse[]; message: string }> => {
+export const fetchUsers = async (): Promise<GenericResponse<UserResponse[]>> => {
   try {
-    const response = await apiClient.get("/users", {
-      ...getAuthHeaders(),
-      params: { skip, limit, is_active }
-    });
-
+    const response = await apiClient.get("/users", getAuthHeaders());
     return {
       success: true,
-      data: response.data,
-      message: "Fetched users successfully",
+      data: response.data.data,      
     };
   } catch (error: any) {
-    return {
-      success: false,
-      message: error.response?.data?.detail || "Failed to fetch users",
-    };
+    return handleApiError(error);
   }
 };
 
 export const fetchUserById = async (
   userId: number
-): Promise<{ success: boolean; data?: UserResponse; message: string }> => {
+): Promise<GenericResponse<UserResponse>> => {
   try {
     const response = await apiClient.get(`/users/${userId}`, getAuthHeaders());
 
     return {
       success: true,
-      data: response.data,
-      message: "Fetched user successfully",
+      data: response.data.data,      
     };
   } catch (error: any) {
-    return {
-      success: false,
-      message: error.response?.data?.detail || "Failed to fetch user",
-    };
+    return handleApiError(error)
   }
 };
 
 export const createUser = async (
   user: UserCreate,              
-  imageFile?: File | null       
-): Promise<{ success: boolean; data?: UserResponse; message: string }> => {
+  imageFile?: File | null,
+  removeImage: boolean = false     
+): Promise<GenericResponse<UserResponse>> => {
   try {
     const formData = new FormData();
 
@@ -60,6 +47,8 @@ export const createUser = async (
 
     if (imageFile) {
       formData.append("image", imageFile);
+    }else if (removeImage) {
+      formData.append("remove_image", "true"); 
     }
 
     const response = await apiClient.post("/users/", formData, {
@@ -71,22 +60,21 @@ export const createUser = async (
 
     return {
       success: true,
-      data: response.data,
-      message: "User created successfully",
+      data: response.data.data,
+      message: response.data.message,
+      args: response.data.args
     };
   } catch (error: any) {
-    return {
-      success: false,
-      message: error.response?.data?.detail || "Failed to create user",
-    };
+    return handleApiError(error);
   }
 };
 
 export const updateUser = async (
   userId: number,
   userUpdate: UserUpdate,
-  imageFile?: File | null
-): Promise<{ success: boolean; data?: UserResponse; message: string }> => {
+  imageFile?: File | null,
+  removeImage: boolean = false
+): Promise<GenericResponse<UserResponse>> => {
   try {
     const formData = new FormData();
 
@@ -100,7 +88,9 @@ export const updateUser = async (
       formData.append("is_verified", String(userUpdate.is_verified));
 
     if (imageFile) {
-      formData.append("image", imageFile);
+      formData.append("image", imageFile); 
+    } else if (removeImage) {
+      formData.append("remove_image", "true"); 
     }
 
     const response = await apiClient.put(`/users/${userId}`, formData, {
@@ -112,32 +102,29 @@ export const updateUser = async (
 
     return {
       success: true,
-      data: response.data,
-      message: "User updated successfully",
+      data: response.data.data,
+      message: response.data.message,
+      args: response.data.args
     };
   } catch (error: any) {
-    return {
-      success: false,
-      message: error.response?.data?.detail || "Failed to update user",
-    };
+    return handleApiError(error);
   }
 };
 
 
 export const deleteUser = async (
   userId: number
-): Promise<{ success: boolean; message: string }> => {
+): Promise<GenericResponse<null>> => {
   try {
-    await apiClient.delete(`/users/${userId}`, getAuthHeaders());
+    const response = await apiClient.delete(`/users/${userId}`, getAuthHeaders());
 
     return {
+      data: undefined,
       success: true,
-      message: "User deleted successfully",
+      message: response.data.message,
+      args: response.data.args
     };
   } catch (error: any) {
-    return {
-      success: false,
-      message: error.response?.data?.detail || "Failed to delete user",
-    };
+    return handleApiError(error);
   }
 };

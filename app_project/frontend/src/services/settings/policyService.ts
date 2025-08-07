@@ -1,108 +1,74 @@
 import { apiClient } from "@/utils/apiClient";
 import type { PolicyItem, PolicyCreate } from "@/models/settings/policy";
+import type { GenericResponse } from "@/types/api";
+import { handleApiError } from "@/utils/apiErrorHandler";
 
-export const fetchPolicies = async (): Promise<{
-  success: boolean;
-  data?: PolicyItem[];
-  message: string;
-}> => {
+export const fetchPolicies = async (): Promise<GenericResponse<PolicyItem[]>> => {
   try {
     const response = await apiClient.get("/policies/permission");
     return {
       success: true,
-      data: response.data,
-      message: "Fetched policies permission successfully",
+      data: response.data.data,
     };
   } catch (error: any) {
-    return {
-      success: false,
-      message: "Failed to fetch policies",
-      // message: error.response?.data?.detail || "Failed to fetch policies",
-    };
+    return handleApiError(error);
   }
 };
 
-export const fetchPoliciesGroup = async (): Promise<{
-  success: boolean;
-  data?: PolicyItem[];
-  message: string;
-}> => {
+export const fetchPoliciesGroup = async (): Promise<GenericResponse<PolicyItem[]>> => {
   try {
     const response = await apiClient.get("/policies/group");
 
     return {
       success: true,
-      data: response.data,
-      message: "Fetched policies group successfully",
+      data: response.data.data,
     };
   } catch (error: any) {
-    return {
-      success: false,
-      message: "Failed to fetch policies",
-    };
+    return handleApiError(error);
   }
 };
 
-export const fetchViewPolicies = async (): Promise<{
-  success: boolean;
-  data?: PolicyItem[];
-  message: string;
-}> => {
+export const fetchViewPolicies = async (): Promise<GenericResponse<PolicyItem[]>> => {
   try {
     const response = await apiClient.get("/policies/permission/view");
     return {
       success: true,
-      data: response.data,
-      message: "Fetched view policies successfully",
+      data: response.data.data,
     };
   } catch (error: any) {
-    return {
-      success: false,
-      message: "Failed to fetch view policies",
-    };
+    return handleApiError(error);
   }
 };
 
 export const addPolicy = async (
   policy: PolicyCreate
-): Promise<{ success: boolean; message: string; data?: PolicyItem }> => {
+): Promise<GenericResponse<PolicyItem>> => {
   try {
     const response = await apiClient.post("/policies", policy);
     return {
       success: true,
-      message: response.data?.msg || "Policy added successfully",
-      data: response.data?.data,  
+      data: response.data.data,  
+      message: response.data.message,
+      args: response.data.args
     };
   } catch (error: any) {
-    return {
-      success: false,
-      message: "Failed to add policy",
-    };
+    return handleApiError(error);
   }
 };
 
 
 export const deletePolicy = async (
   policy: PolicyCreate
-): Promise<{ success: boolean; message: string }> => {
+): Promise<GenericResponse<null>> => {
   try {
-    await apiClient.delete("/policies", {
-      data: policy,
-    });
+    const response = await apiClient.delete("/policies", {data: policy});
     return {
       success: true,
-      message: "Policy deleted successfully",
+      data: null,
+      message: response.data.message,
+      args: response.data.args
     };
   } catch (error: any) {
-    let message = "Failed to delete policy";
-    // if (error.response && error.response.data) {
-    //   message = error.response.data.detail || message;
-    // } else if (error.message) {
-    //   message = error.message;
-    // }
-    return {
-      success: false,
-      message: message,
-    };
+    return handleApiError(error);
   }
 };

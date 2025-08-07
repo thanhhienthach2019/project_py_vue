@@ -8,7 +8,7 @@ import {
 } from '@/services/auth/authService'
 import { fetchMyPermissions } from '@/services/settings/permissionService'
 import router from '@/router'
-import { setPreferredLanguage as applyLang } from '@/utils/lang'
+import { setPreferredLanguage as applyLang, resetPreferredLanguage } from '@/utils/lang'
 import type { SupportedLang } from '@/utils/i18n_types'
 import type { ActionResult } from '@/types/api'
 
@@ -18,6 +18,11 @@ interface AuthUser {
   email?: string
   preferred_language?: SupportedLang
   [key: string]: any
+}
+
+interface AuthResponse {
+  authenticated: boolean
+  user: AuthUser
 }
 
 interface AuthState {
@@ -71,6 +76,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const res = await logoutApi()
         this.resetAuth()
+        resetPreferredLanguage()
         router.push('/')
         return { success: true, message: res.message }
       } catch (err: any) {
@@ -86,11 +92,11 @@ export const useAuthStore = defineStore('auth', {
       try {
         const res = await getProfileApi()
         const payload = res.data as AuthUser
+        const payloadLang = res.data as AuthResponse
         this.user = payload
         this.isAuthenticated = true
-
-        if (payload.preferred_language) {
-          applyLang(payload.preferred_language)
+        if (payloadLang.user?.preferred_language) {
+          applyLang(payloadLang.user?.preferred_language)
         }
 
         try {

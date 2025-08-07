@@ -5,7 +5,7 @@ from typing import List
 from app.core.database import get_db
 from app.core.permissions import permission_required_root
 from app.services.settings.router_service import get_available_routes_service
-
+from app.schemas.generic_response import GenericResponse
 from app.schemas.settings.router_permission import (
     RouterCreate, RouterUpdate, RouterResponse,
     PermissionCreate, PermissionUpdate, PermissionResponse,
@@ -16,7 +16,7 @@ from app.services.settings.permission_router_service import (
     create_router, get_all_routers, get_router_by_id, update_router, delete_router,
     create_permission, get_all_permissions, get_permission_by_id, update_permission, delete_permission,
     create_router_permission, get_all_router_permissions, get_router_permission_by_id,
-    update_router_permission, delete_router_permission, get_all_router_permissions_with_details
+    update_router_permission, delete_router_permission, get_all_router_permissions
 )
 
 router = APIRouter(
@@ -27,10 +27,7 @@ router = APIRouter(
 
 # ====== ROUTER ======
 
-@router.get(
-    "/routers/available",
-    summary="Get all available routes not yet registered in DB"
-)
+@router.get("/routers/available")
 def get_available_routes(
     request: Request,
     db: Session = Depends(get_db)
@@ -39,74 +36,71 @@ def get_available_routes(
         "available_routes": get_available_routes_service(request.app, db)
     }
 
-@router.get("/routers", response_model=List[RouterResponse])
+@router.get("/routers")
 def list_routers(db: Session = Depends(get_db)):
     return get_all_routers(db)
 
-@router.post("/routers", response_model=RouterResponse, status_code=status.HTTP_201_CREATED,
-             dependencies=[Depends(permission_required_root("menu:settings:router", "create"))])
+@router.post("/routers")
 async def create_new_router(data: RouterCreate, db: Session = Depends(get_db)):
     return await create_router(db, data)
 
-@router.get("/routers/{router_id}", response_model=RouterResponse)
+@router.get("/routers/{router_id}")
 def get_router(router_id: int, db: Session = Depends(get_db)):
     return get_router_by_id(db, router_id)
 
-@router.put("/routers/{router_id}", response_model=RouterResponse)
+@router.put("/routers/{router_id}")
 async def update_router_by_id(router_id: int, data: RouterUpdate, db: Session = Depends(get_db)):
     return await update_router(db, router_id, data)
 
-@router.delete("/routers/{router_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_router_by_id(router_id: int, db: Session = Depends(get_db)):
-   await delete_router(db, router_id)
+@router.delete("/routers/{router_id}")
+async def delete_router_by_id(request: Request, router_id: int, db: Session = Depends(get_db)):
+   return await delete_router(db, router_id, request)
 
 # ====== PERMISSION ======
 
-@router.get("/permissions", response_model=List[PermissionResponse])
+@router.get("/permissions")
 def list_permissions(db: Session = Depends(get_db)):
     return get_all_permissions(db)
 
-@router.post("/permissions", response_model=PermissionResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/permissions")
 async def create_new_permission(data: PermissionCreate, db: Session = Depends(get_db)):
     return await create_permission(db, data)
 
-@router.get("/permissions/{permission_id}", response_model=PermissionResponse)
+@router.get("/permissions/{permission_id}")
 def get_permission(permission_id: int, db: Session = Depends(get_db)):
     return get_permission_by_id(db, permission_id)
 
-@router.put("/permissions/{permission_id}", response_model=PermissionResponse)
+@router.put("/permissions/{permission_id}")
 async def update_permission_by_id(permission_id: int, data: PermissionUpdate, db: Session = Depends(get_db)):
     return await update_permission(db, permission_id, data)
 
-@router.delete("/permissions/{permission_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/permissions/{permission_id}")
 async def delete_permission_by_id(permission_id: int, db: Session = Depends(get_db)):
-    await delete_permission(db, permission_id)
+    return await delete_permission(db, permission_id)
 
 # ====== ROUTER-PERMISSION LINK ======
 
-@router.get("/bindings", response_model=List[RouterPermissionResponse])
+@router.get("/bindings")
 def list_router_permissions(db: Session = Depends(get_db)):
     return get_all_router_permissions(db)
 
-@router.get(
-    "/bindings/details",
-    response_model=List[RouterPermissionWithDetails])
+@router.get("/bindings/details")
 def list_router_permissions_with_details(db: Session = Depends(get_db)):
-    return get_all_router_permissions_with_details(db)
+    return get_all_router_permissions(db)
 
-@router.post("/bindings", response_model=RouterPermissionResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/bindings")
 async def bind_router_permission(data: RouterPermissionCreate, db: Session = Depends(get_db)):
     return await create_router_permission(db, data)
 
-@router.get("/bindings/{binding_id}", response_model=RouterPermissionResponse)
+@router.get("/bindings/{binding_id}")
 def get_router_permission_binding(binding_id: int, db: Session = Depends(get_db)):
     return get_router_permission_by_id(db, binding_id)
 
-@router.put("/bindings/{binding_id}", response_model=RouterPermissionResponse)
+@router.put("/bindings/{binding_id}")
 async def update_router_permission_binding(binding_id: int, data: RouterPermissionUpdate, db: Session = Depends(get_db)):
     return await update_router_permission(db, binding_id, data)
 
-@router.delete("/bindings/{binding_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/bindings/{binding_id}")
 async def delete_router_permission_binding(binding_id: int, db: Session = Depends(get_db)):
-    await delete_router_permission(db, binding_id)
+    return await delete_router_permission(db, binding_id)
 

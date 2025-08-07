@@ -47,8 +47,8 @@ async def login(
 
 
 @router.get("/auth/check-auth", response_model=GenericResponse[dict])
-def check_auth(request: Request):
-    return check_user_auth(request)
+def check_auth(request: Request, db: Session = Depends(get_db),):
+    return check_user_auth(db, request)
 
 
 @router.post("/auth/logout", response_model=GenericResponse[None])

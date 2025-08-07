@@ -17,14 +17,14 @@ class UserCreate(UserBase):
 
 
 class UserUpdate(BaseModel):
-    email: Optional[EmailStr]
-    full_name: Optional[str]
-    phone_number: Optional[str]
-    profile_picture: Optional[str]
-    is_active: Optional[bool]
-    role: Optional[str] = Field(default=None)
-    is_verified: Optional[bool]
-    password: Optional[str] = Field(None, min_length=6)
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    profile_picture: Optional[str] = None  
+    is_active: Optional[bool] = None
+    role: Optional[str] = None
+    is_verified: Optional[bool] = None
+    password: Optional[str] = Field(default=None, min_length=6)
 
     class Config:
         from_attributes = True

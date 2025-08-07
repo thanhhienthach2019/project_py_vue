@@ -224,18 +224,9 @@
 <script setup lang="ts">
 import { AgGridVue } from "ag-grid-vue3";
 import type { ColDef, GridApi, GridOptions } from "ag-grid-community";
-import {
-  ref,
-  computed,
-  onMounted,
-  inject,
-  type Ref,
-  watch,
-  nextTick,
-} from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { usePolicy } from "@/hooks/settings/usePolicy";
 import type { PolicyItem, PolicyCreate } from "@/models/settings/policy";
-import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { Icon } from "@iconify/vue";
 import { useMenu } from "@/hooks/settings/useMenu";
 import RoleActionCell from "@/components/ui/RoleActionCell.vue";
@@ -261,9 +252,7 @@ const {
 } = usePolicy();
 
 useViewPolicyRealtime();
-const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
 const { loadMenus, allMenus } = useMenu();
-
 const { isDisabled: isCreateDisabled, disabledClass: createClass } =
   useActionDisabled(isCreating, isLoading);
 const { isDisabled: isDeleteDisabled, disabledClass: deleteClass } =
@@ -404,37 +393,16 @@ function resetForm() {
 }
 
 async function onAdd() {
-  if (
-    !form.value.v0 ||
-    !form.value.v1 ||
-    (form.value.ptype === "p" && !form.value.v2)
-  ) {
-    toast.value?.showToast(
-      "Please fill subject, resource, and action.",
-      "error"
-    );
-    return;
-  }
   const resp = await addViewPolicy(form.value);
   if (resp.success) {
-    toast.value?.showToast("Policy added.", "success");
     resetForm();
-  } else {
-    toast.value?.showToast(resp.message, "error");
   }
 }
 
 async function onRemove() {
-  if (!form.value.v0 || !form.value.v1) {
-    toast.value?.showToast("Please fill subject and resource.", "error");
-    return;
-  }
   const resp = await removeViewPolicy(form.value);
   if (resp.success) {
-    toast.value?.showToast("Policy removed.", "success");
     resetForm();
-  } else {
-    toast.value?.showToast(resp.message, "error");
   }
 }
 
@@ -445,16 +413,12 @@ async function handleDeletePolicyLine(g: PolicyItem) {
     v1: g.v1,
     v2: g.v2,
   };
-  const confirmed = await showConfirmToast(
-    `Are you sure you want to delete this view Policy?`
-  );
+  const confirmed = await showConfirmToast();
   if (!confirmed) return;
 
   const resp = await removeViewPolicy(payload);
   if (resp.success) {
-    toast.value?.showToast("Policy removed successfully", "success");
-  } else {
-    toast.value?.showToast(resp.message, "error");
+    resetForm();
   }
 }
 </script>

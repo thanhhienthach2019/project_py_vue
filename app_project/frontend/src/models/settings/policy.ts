@@ -1,4 +1,4 @@
-export type PolicyType = "p" | "g" | "v";
+export type PolicyType = "p" | "g";
 
 export interface PolicyItem {
   id: string | number;

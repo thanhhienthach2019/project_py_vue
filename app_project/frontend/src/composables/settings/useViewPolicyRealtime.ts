@@ -17,8 +17,8 @@ export function useViewPolicyRealtime() {
   )
 
   const off = onMessage(({ action, type, item }) => {
-    if (type !== "policy" || item.ptype !== "v") return
-
+    if (type !== "policy" || item.ptype !== "p") return
+    
     const key = `${item.ptype}-${item.v0}-${item.v1}-${item.v2}`
     const index = store.viewPolicies.findIndex(i => `${i.ptype}-${i.v0}-${i.v1}-${i.v2}` === key)
 

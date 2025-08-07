@@ -59,7 +59,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["update:previewUrl", "update:file"]);
+const emit = defineEmits(["update:previewUrl", "update:file", "remove"]);
 
 const isDragging = ref(false);
 
@@ -96,6 +96,7 @@ const processFile = (file: File) => {
 const removeImage = () => {
   emit("update:previewUrl", null);
   emit("update:file", null);
+  emit("remove");
 };
 
 watch(

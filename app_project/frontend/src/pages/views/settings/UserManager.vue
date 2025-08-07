@@ -79,6 +79,7 @@
           <ImageUploader
             v-model:previewUrl="previewUrl"
             @update:file="handleImageUpload"
+            @remove="handleRemove"
           />
         </div>
 
@@ -271,9 +272,8 @@
 <script setup lang="ts">
 import { AgGridVue } from "ag-grid-vue3";
 import type { ColDef, GridApi, GridOptions } from "ag-grid-community";
-import { ref, onMounted, inject, type Ref, watch, nextTick } from "vue";
+import { ref, onMounted, watch, nextTick } from "vue";
 import { Icon } from "@iconify/vue";
-import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { useUser } from "@/hooks/auth/useUser";
 import type { UserResponse, UserCreate, UserUpdate } from "@/models/auth/user";
 import ImageUploader from "@/components/ui/ImageUploader.vue";
@@ -286,6 +286,8 @@ import { useActionDisabled } from "@/composables/useActionDisabled";
 import SkeletonTable from "@/components/skeletons/SkeletonTable.vue";
 import { useDelayedLoading } from "@/composables/useDelayedLoading";
 import { useUserRealtime } from "@/composables/auth/useUserRealtime";
+import { useToastStore } from "@/store/toast/toastStore";
+import { getImageUrl } from "@/helpers/imageUrl";
 
 // Define UserForm interface directly if not in models/user.ts
 interface UserForm {
@@ -314,8 +316,8 @@ const {
 } = useUser();
 
 useUserRealtime();
-
-const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
+defineProps<{ profile_picture?: string }>();
+const toast = useToastStore();
 
 const { isDisabled: isCreateDisabled, disabledClass: createClass } =
   useActionDisabled(isCreating, isLoading);
@@ -376,7 +378,7 @@ const { onGridReady, onFirstDataRendered, resizeNow } = useAutoResizeGrid(
   columnsToAutoSize
 );
 
-const itemsPerPage = ref(5);
+const itemsPerPage = ref(10);
 const currentPage = ref(1);
 
 const gridOptions = ref<GridOptions>({
@@ -418,8 +420,6 @@ watch(users, () => {
 watch(quickFilterText, (val) => {
   setQuickFilterSafe(gridApi.value, val);
 });
-// Image
-const imageFile = ref<File | null>(null);
 
 // Lifecycle
 onMounted(() => fetchUsers());
@@ -443,21 +443,26 @@ function resetForm() {
   nextTick(() => inputRef.value?.focus());
 }
 
+// Image
+const imageFile = ref<File | null>(null);
 // Preview
 const previewUrl = ref<string | undefined>(undefined);
-
+const shouldRemoveImage = ref(false);
 // File upload handler
 const handleImageUpload = (file: File | null) => {
   imageFile.value = file;
+  shouldRemoveImage.value = false;
 };
+
+function handleRemove() {
+  imageFile.value = null;
+  shouldRemoveImage.value = true;
+}
 
 // CRUD actions
 async function onAdd() {
   if (!form.value.password) {
-    toast.value?.showToast(
-      "Password is required for creating a new user.",
-      "error"
-    );
+    toast.show("Password is required for creating a new user.", "error");
     return;
   }
   const userCreate: UserCreate = {
@@ -470,10 +475,7 @@ async function onAdd() {
   };
   const resp = await createUser(userCreate, imageFile.value);
   if (resp.success) {
-    toast.value?.showToast(resp.message, "success");
     resetForm();
-  } else {
-    toast.value?.showToast(resp.message, "error");
   }
 }
 
@@ -481,6 +483,11 @@ async function handleEdit(user: UserResponse) {
   editMode.value = true;
   currentEditId.value = user.id;
   imageFile.value = null;
+
+  previewUrl.value = user.profile_picture
+    ? getImageUrl(user.profile_picture)
+    : undefined;
+
   form.value = {
     username: user.username,
     email: user.email,
@@ -512,29 +519,22 @@ async function onUpdate() {
   const resp = await updateUser(
     currentEditId.value,
     updateData,
-    imageFile.value
+    imageFile.value,
+    shouldRemoveImage.value
   );
 
   if (resp.success) {
-    toast.value?.showToast(resp.message, "success");
     resetForm();
-  } else {
-    toast.value?.showToast(resp.message, "error");
   }
 }
 
 async function onDelete() {
   if (currentEditId.value === null) return;
-  const confirmed = await showConfirmToast(
-    `Are you sure you want to delete this user?`
-  );
+  const confirmed = await showConfirmToast();
   if (!confirmed) return;
   const resp = await deleteUser(currentEditId.value);
   if (resp.success) {
-    toast.value?.showToast(resp.message, "success");
     resetForm();
-  } else {
-    toast.value?.showToast(resp.message, "error");
   }
 }
 </script>

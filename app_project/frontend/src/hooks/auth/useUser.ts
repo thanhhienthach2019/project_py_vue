@@ -1,11 +1,12 @@
 // src/hooks/useUser.ts
-import { computed } from 'vue'
-import { useUserStore } from '@/store/auth/userStore'
-import type { UserCreate, UserUpdate } from '@/models/auth/user'
+import { computed } from 'vue';
+import { useUserStore } from '@/store/auth/userStore';
+import type { UserCreate, UserUpdate } from '@/models/auth/user';
+import { createWithToastAction } from "@/utils/withToastAction";
 
 export function useUser() {
   const store = useUserStore()
-
+  const withToastAction = createWithToastAction();
   // ============ State Getters ============
   const state = {
     users: computed(() => store.users),
@@ -22,50 +23,15 @@ export function useUser() {
 
   // ============ Loaders ============
   const loaders = {
-    fetchUsers: async (skip = 0, limit = 100, is_active = true) => {
-      try {
-        await store.loadUsers(skip, limit, is_active)
-        return { success: true }
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to load users' }
-      }
-    },
-
-    fetchUserById: async (userId: number) => {
-      try {
-        await store.loadUserById(userId)
-        return { success: true }
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to load user' }
-      }
-    },
+    fetchUsers: () => withToastAction(() => store.loadUsers()),
+    fetchUserById: (userId: number) => withToastAction(() => store.loadUserById(userId))
   }
 
   // ============ Actions ============
   const actions = {
-    createUser: async (user: UserCreate, imageFile?: File | null) => {
-      try {
-        return await store.createUser(user, imageFile)
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to create user' }
-      }
-    },
-
-    updateUser: async (userId: number, data: UserUpdate, imageFile?: File | null) => {
-      try {
-        return await store.updateUser(userId, data, imageFile)
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to update user' }
-      }
-    },
-
-    deleteUser: async (userId: number) => {
-      try {
-        return await store.deleteUser(userId)
-      } catch (error: any) {
-        return { success: false, message: error.message || 'Failed to delete user' }
-      }
-    },
+    createUser: (user: UserCreate, imageFile?: File | null, removeImage?: boolean) => withToastAction(() => store.createUser(user, imageFile, removeImage)),
+    updateUser: (userId: number, data: UserUpdate, imageFile?: File | null, removeImage?: boolean) => withToastAction(() => store.updateUser(userId, data, imageFile, removeImage)),
+    deleteUser: (userId: number) => withToastAction(() => store.deleteUser(userId)) 
   }
 
   // ============ Getters ============

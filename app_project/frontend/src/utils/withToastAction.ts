@@ -1,13 +1,12 @@
 // src/utils/withToastAction.ts
-import type { Ref } from 'vue'
 import type { ActionResult } from '@/types/api'
-import type ToastTailwind from '@/pages/Toast/ToastTailwind.vue'
-import type { ComposerTranslation } from 'vue-i18n'
+import { useI18n } from 'vue-i18n'
+import { useToastStore } from '@/store/toast/toastStore'
 
-export function createWithToastAction(
-  toast: Ref<InstanceType<typeof ToastTailwind>>,
-  t: ComposerTranslation
-) {
+export function createWithToastAction() {
+  const { t } = useI18n()
+  const toast = useToastStore()
+
   return async function withToastAction<T>(
     action: () => Promise<ActionResult<T>>,
     options?: {
@@ -18,23 +17,29 @@ export function createWithToastAction(
     }
   ): Promise<ActionResult<T>> {
     const res = await action()
-    
     if (res.success) {
       const key = typeof options?.success === 'string'
         ? options.success
-        : res.message || 'notification.success'
-      const msg = t(key, res.args || {})
-
-      if (options?.success !== false) toast.value.showToast(msg, 'success')
+        : res.message
+      
+      if (key) {
+        const msg = t(key, res.args || {})
+        if (options?.success !== false) {
+          toast.show(msg, 'success')
+        }
+      }
       options?.onSuccess?.()
     } else {
       const key = typeof options?.error === 'string'
         ? options.error
-        : res.message || 'error.unknown'
+        : res.message
 
-        const msg = t(key, res.args || {})
-
-      if (options?.error !== false) toast.value.showToast(msg, 'error')
+        if (key) {
+          const msg = t(key, res.args || {})
+          if (options?.error !== false) {
+            toast.show(msg, 'error')
+          }
+        }
       options?.onError?.()
     }
 

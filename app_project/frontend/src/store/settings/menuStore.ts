@@ -56,18 +56,11 @@ export const useMenuStore = defineStore('menu', {
     async loadMenus() {
       this.isLoadingMenus = true
       try {
-        const response = await fetchAllMenus()
-        if (!response.success) {
-          return {
-            success: false,
-            message: response.message,
-            args: response.args,
-          };
-        }
+        const response = await fetchAllMenus();
         if (response.success && response.data) {
-          this.menus = response.data 
+          this.menus = response.data;
         }
-        return response
+        return response;
       } finally {
         this.isLoadingMenus = false
       }
@@ -76,26 +69,7 @@ export const useMenuStore = defineStore('menu', {
     async createMenu(data: MenuItemCreate) {
       this.isCreating = true
       try {
-        const response = await createMenu(data)
-        if (!response.success) {
-          return {
-            success: false,
-            message: response.message,
-            args: response.args,
-          };
-        }
-        return {
-          success: true,
-          message: response.message,
-          args: response.args,
-          data: response.data,
-        }
-      } catch (err: any) {
-        return {
-          success: false,
-          message: err?.message ?? "error.unknown",
-          args: err?.args ?? {},
-        };
+        return await createMenu(data);
       } finally {
         this.isCreating = false
       }
@@ -105,26 +79,7 @@ export const useMenuStore = defineStore('menu', {
       this.isUpdating = true
       this.updatingId = id
       try {
-        const response = await updateMenu(id, data)
-        if (!response.success) {
-          return {
-            success: false,
-            message: response.message,
-            args: response.args,
-          };
-        }
-        return {
-          success: true,
-          message: response.message,
-          args: response.args,
-          data: response.data,
-        }
-      } catch (err: any) {
-        return {
-          success: false,
-          message: err?.message ?? "error.unknown",
-          args: err?.args ?? {},
-        };
+        return await updateMenu(id, data);        
       } finally {
         this.isUpdating = false
         this.updatingId = null
@@ -135,19 +90,7 @@ export const useMenuStore = defineStore('menu', {
       this.isDeleting = true
       this.deletingId = id
       try {
-        const response = await deleteMenu(id)
-        if (!response.success) throw new Error(response.message)
-        return {
-          success: true,
-          message: response.message,
-          args: response.args,
-        }
-      } catch (err: any) {
-        return {
-          success: false,
-          message: err.message,
-          args: err.args ?? {},
-        }
+        return await deleteMenu(id);        
       } finally {
         this.isDeleting = false
         this.deletingId = null

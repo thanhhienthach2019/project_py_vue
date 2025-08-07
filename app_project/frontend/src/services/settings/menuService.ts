@@ -1,6 +1,7 @@
 import { apiClient } from "@/utils/apiClient";
 import type { MenuItemCreate, MenuItemUpdate, MenuItemResponse } from "@/models/settings/menu";
 import type { GenericResponse } from "@/types/api";
+import { handleApiError } from "@/utils/apiErrorHandler";
 
 // 🔹 Get all menu items (admin only)
 export const fetchAllMenus = async (): Promise<GenericResponse<MenuItemResponse[]>> => {
@@ -9,18 +10,9 @@ export const fetchAllMenus = async (): Promise<GenericResponse<MenuItemResponse[
     return {
       success: true,
       data: response.data.data,
-      message: response.data.message,
-      args: response.data.args,
     };
   } catch (error: any) {
-    const detail = error?.response?.data?.detail;
-
-    return {
-      success: false,
-      data: undefined,
-      message: detail?.message || "error.unknown",   
-      args: detail?.args || {},
-    };
+    return handleApiError(error);
   }
 };
 
@@ -31,18 +23,9 @@ export const fetchUserMenus = async (): Promise<GenericResponse<MenuItemResponse
     return {
       success: true,
       data: response.data.data,
-      message: response.data.message,
-      args: response.data.args,
     };
   } catch (error: any) {
-    const detail = error?.response?.data?.detail;
-    console.log(detail)
-    return {
-      success: false,
-      data: undefined,
-      message: detail?.message || "error.unknown",   
-      args: detail?.args || {},
-    };
+    return handleApiError(error);
   }
 };
 
@@ -59,14 +42,7 @@ export const createMenu = async (
       args: response.data.args,
     };
   } catch (error: any) {
-    const detail = error?.response?.data?.detail;
-
-    return {
-      success: false,
-      data: undefined,
-      message: detail?.message || "error.unknown",   
-      args: detail?.args || {},
-    };
+    return handleApiError(error);
   }
 };
 
@@ -84,14 +60,7 @@ export const updateMenu = async (
       args: response.data.args,
     };
   } catch (error: any) {
-    const detail = error?.response?.data?.detail;
-
-    return {
-      success: false,
-      data: undefined,
-      message: detail?.message || "error.unknown",   
-      args: detail?.args || {},
-    };
+    return handleApiError(error);
   }
 };
 
@@ -106,9 +75,6 @@ export const deleteMenu = async (menuId: number): Promise<GenericResponse<null>>
       args: response.data.args,
     };
   } catch (error: any) {
-    return {
-      success: false,
-      message: error?.response?.data?.detail || "error.menu.delete_failed",
-    };
+    return handleApiError(error);
   }
 };

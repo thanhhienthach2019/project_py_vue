@@ -11,50 +11,41 @@ import type {
   RouterPermissionResponse,
   RouterPermissionWithDetails
 } from "@/models/settings/permissionRouter";
-
-// 🔧 Handle API error uniformly
-const handleError = (error: any, fallback: string) => ({
-  success: false,
-  message: error.response?.data?.detail || fallback,
-});
+import type { GenericResponse } from "@/types/api";
+import { handleApiError } from "@/utils/apiErrorHandler";
 
 // ========= 🔹 ROUTERS =========
 
 // Get all routers
-export const fetchRouters = async (): Promise<{
-  success: boolean;
-  data?: RouterResponse[];
-  message: string;
-}> => {
+export const fetchRouters = async (): Promise<GenericResponse<RouterResponse[]>> => {
   try {
     const response = await apiClient.get("/router-permissions/routers");
     return {
       success: true,
-      data: response.data,
-      message: "Fetched routers successfully",
+      data: response.data.data,
+      // message: response.data.message,
+      // args: response.data.args,
     };
   } catch (error: any) {
-    return handleError(error, "Failed to fetch routers");
+    return handleApiError(error);
   }
 };
 
 // Create new router
 export const createRouter = async (
   data: RouterCreate
-): Promise<{
-  success: boolean;
-  message: string;
-  data?: RouterResponse;
-}> => {
+): Promise<GenericResponse<RouterResponse>> => {
   try {
     const response = await apiClient.post("/router-permissions/routers", data);
+
     return {
       success: true,
-      message: "Router created successfully",
-      data: response.data,
+      data: response.data.data,
+      message: response.data.message,
+      args: response.data.args,
     };
   } catch (error: any) {
-    return handleError(error, "Failed to create router");
+    return handleApiError(error);
   }
 };
 
@@ -62,78 +53,68 @@ export const createRouter = async (
 export const updateRouter = async (
   routerId: number,
   data: RouterUpdate
-): Promise<{
-  success: boolean;
-  message: string;
-  data?: RouterResponse;
-}> => {
+): Promise<GenericResponse<RouterResponse>> => {
   try {
     const response = await apiClient.put(`/router-permissions/routers/${routerId}`, data);
     return {
       success: true,
-      message: "Router updated successfully",
-      data: response.data,
+      data: response.data.data,
+      message: response.data.message,
+      args: response.data.args,
     };
   } catch (error: any) {
-    return handleError(error, "Failed to update router");
+    return handleApiError(error);
   }
 };
 
 // Delete router by ID
 export const deleteRouter = async (
   routerId: number
-): Promise<{
-  success: boolean;
-  message: string;
-}> => {
+): Promise<GenericResponse<null>> => {
   try {
-    await apiClient.delete(`/router-permissions/routers/${routerId}`);
+    const response = await apiClient.delete(`/router-permissions/routers/${routerId}`);
     return {
       success: true,
-      message: "Router deleted successfully",
+      data: null,
+      message: response.data.message,
+      args: response.data.args,
     };
   } catch (error: any) {
-    return handleError(error, "Failed to delete router");
+    return handleApiError(error);
   }
 };
 
 // ========= 🔹 PERMISSIONS =========
 
 // Get all permissions
-export const fetchPermissions = async (): Promise<{
-  success: boolean;
-  data?: PermissionResponse[];
-  message: string;
-}> => {
+export const fetchPermissions = async (): Promise<GenericResponse<PermissionResponse[]>> => {
   try {
     const response = await apiClient.get("/router-permissions/permissions");
     return {
       success: true,
-      data: response.data,
-      message: "Fetched permissions successfully",
+      data: response.data.data,
+      // message: response.data.message,
+      // args: response.data.args
     };
   } catch (error: any) {
-    return handleError(error, "Failed to fetch permissions");
+    return handleApiError(error);
   }
 };
 
 // Create new permission
 export const createPermission = async (
   data: PermissionCreate
-): Promise<{
-  success: boolean;
-  message: string;
-  data?: PermissionResponse;
-}> => {
+): Promise<GenericResponse<PermissionResponse>> => {
   try {
     const response = await apiClient.post("/router-permissions/permissions", data);
     return {
       success: true,
-      message: "Permission created successfully",
-      data: response.data,
+      data: response.data.data,
+      message: response.data.message,
+      args: response.data.args
     };
   } catch (error: any) {
-    return handleError(error, "Failed to create permission");
+    return handleApiError(error);
   }
 };
 
@@ -141,96 +122,82 @@ export const createPermission = async (
 export const updatePermission = async (
   permissionId: number,
   data: PermissionUpdate
-): Promise<{
-  success: boolean;
-  message: string;
-  data?: PermissionResponse;
-}> => {
+): Promise<GenericResponse<PermissionResponse>> => {
   try {
     const response = await apiClient.put(`/router-permissions/permissions/${permissionId}`, data);
     return {
       success: true,
-      message: "Permission updated successfully",
-      data: response.data,
+      data: response.data.data,
+      message: response.data.message,
+      args: response.data.args
     };
   } catch (error: any) {
-    return handleError(error, "Failed to update permission");
+    return handleApiError(error);
   }
 };
 
 // Delete permission by ID
 export const deletePermission = async (
   permissionId: number
-): Promise<{
-  success: boolean;
-  message: string;
-}> => {
+): Promise<GenericResponse<null>> => {
   try {
-    await apiClient.delete(`/router-permissions/permissions/${permissionId}`);
+    const response = await apiClient.delete(`/router-permissions/permissions/${permissionId}`);
     return {
       success: true,
-      message: "Permission deleted successfully",
+      data: null,
+      message: response.data.message,
+      args: response.data.args
     };
   } catch (error: any) {
-    return handleError(error, "Failed to delete permission");
+    return handleApiError(error);
   }
 };
 
 // ========= 🔹 ROUTER-PERMISSION BINDINGS =========
 
-// Get all bindings (simple)
-export const fetchRouterPermissions = async (): Promise<{
-  success: boolean;
-  data?: RouterPermissionResponse[];
-  message: string;
-}> => {
+// Get all bindings
+export const fetchRouterPermissions = async (): Promise<GenericResponse<RouterPermissionResponse[]>> => {
   try {
     const response = await apiClient.get("/router-permissions/bindings");
+    
     return {
       success: true,
-      data: response.data,
-      message: "Fetched bindings successfully",
+      data: response.data.data,
+      // message: response.data.message,
+      // args: response.data.args
     };
   } catch (error: any) {
-    return handleError(error, "Failed to fetch bindings");
+    return handleApiError(error);
   }
 };
 
 // Get all bindings with router & permission details
-export const fetchRouterPermissionsWithDetails = async (): Promise<{
-  success: boolean;
-  data?: RouterPermissionWithDetails[];
-  message: string;
-}> => {
+export const fetchRouterPermissionsWithDetails = async (): Promise<GenericResponse<RouterPermissionWithDetails[]>> => {
   try {
     const response = await apiClient.get("/router-permissions/bindings/details");
     return {
       success: true,
-      data: response.data,
-      message: "Fetched detailed bindings successfully",
+      data: response.data.data,
     };
   } catch (error: any) {
-    return handleError(error, "Failed to fetch router-permission with details");
+    return handleApiError(error);
   }
 };
 
 // Create new router-permission binding
 export const createRouterPermission = async (
   data: RouterPermissionCreate
-): Promise<{
-  success: boolean;
-  message: string;
-  data?: RouterPermissionResponse;
-}> => {
+): Promise<GenericResponse<RouterPermissionResponse>> => {
   try {
     const response = await apiClient.post("/router-permissions/bindings", data);
     return {
       success: true,
-      message: "Binding created successfully",
-      data: response.data,
+      data: response.data.data,
+      message: response.data.message,
+      args: response.data.args
     };
   } catch (error: any) {
-    return handleError(error, "Failed to create binding");
+    return handleApiError(error);
   }
 };
 
@@ -238,37 +205,33 @@ export const createRouterPermission = async (
 export const updateRouterPermission = async (
   id: number,
   data: RouterPermissionUpdate
-): Promise<{
-  success: boolean;
-  message: string;
-  data?: RouterPermissionResponse;
-}> => {
+): Promise<GenericResponse<RouterPermissionResponse>> => {
   try {
     const response = await apiClient.put(`/router-permissions/bindings/${id}`, data);
     return {
       success: true,
-      message: "Binding updated successfully",
-      data: response.data,
+      data: response.data.data,
+      message: response.data.message,
+      args: response.data.args
     };
   } catch (error: any) {
-    return handleError(error, "Failed to update binding");
+    return handleApiError(error);
   }
 };
 
 // Delete binding by ID
 export const deleteRouterPermission = async (
   id: number
-): Promise<{
-  success: boolean;
-  message: string;
-}> => {
+): Promise<GenericResponse<null>> => {
   try {
-    await apiClient.delete(`/router-permissions/bindings/${id}`);
+    const response = await apiClient.delete(`/router-permissions/bindings/${id}`);
     return {
       success: true,
-      message: "Binding deleted successfully",
+      data: null,
+      message: response.data.message,
+      args: response.data.args
     };
   } catch (error: any) {
-    return handleError(error, "Failed to delete binding");
+    return handleApiError(error);
   }
 };

@@ -477,9 +477,7 @@ async function onUpdate() {
 async function onDelete() {
   if (isCreateDisabled.value) return;
   if (currentEditId.value === null) return;
-  const confirmed = await showConfirmToast(
-    `Are you sure you want to delete this menu?`
-  );
+  const confirmed = await showConfirmToast();
   if (!confirmed) return;
   const resp = await deleteMenu(currentEditId.value);
   if (resp.success) {

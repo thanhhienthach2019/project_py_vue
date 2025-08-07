@@ -1,9 +1,33 @@
 {
   "error": {
+    "unknown": "发生未知错误。请稍后再试。",
+    "validation": {
+      "failed": "以下字段验证失败：{errors}"
+    },
     "menu": {
       "not_found": "未找到 ID 为 {id} 的菜单项。",
       "permission_key_conflict": "权限键 '{key}' 已存在。",
-      "fetch_failed": "无法获取菜单数据。请稍后再试。"
+      "fetch_failed": "无法获取菜单数据。请稍后再试。",
+      "create_failed": "创建菜单失败，请稍后重试。",
+      "update_failed": "更新菜单失败，请稍后重试。",
+      "delete_failed": "删除菜单失败，请稍后重试。"
+    },
+    "user": {
+      "create_failed": "无法创建用户",
+      "update_failed": "无法更新用户",
+      "delete_failed": "无法删除用户",
+      "not_found": "未找到用户",
+      "duplicate_email": "该邮箱已被注册。",
+      "duplicate_username": "用户名已被占用。",
+      "invalid_old_password": "旧密码不正确",
+      "change_password_failed": "修改密码失败"
+    },
+    "policy": {
+      "invalid_type": "无效的策略类型：{type}",
+      "already_exists": "策略已存在或无效。",
+      "not_found": "未找到对应的策略。",
+      "fetch_failed": "无法获取 {entity} 数据，请稍后再试。",
+      "missing_fields": "缺少必填字段：{fields}"
     },
     "auth": {
       "login_failed": "登录失败。",
@@ -18,6 +42,25 @@
       "no_refresh_token": "未提供刷新令牌",
       "invalid_refresh_token": "刷新令牌无效",
       "refresh_token_expired": "刷新令牌已过期"
+    },
+     "router": {
+      "not_found": "未找到 ID 为 {id} 的路由。",
+      "duplicate": "路径为 '{path}' 且方法为 '{method}' 的路由已存在。",
+      "fetch_failed": "无法获取路由数据。请稍后再试。"
+    },
+    "permission": {
+      "not_found": "未找到 ID 为 {id} 的权限。",
+      "duplicate": "权限键 '{key}' 已存在。",
+      "fetch_failed": "无法获取权限数据。请稍后再试。"
+    },
+    "binding": {
+      "not_found": "未找到 ID 为 {id} 的绑定关系。",
+      "duplicate": "路由 ID {router_id} 和权限 ID {permission_id} 的绑定关系已存在。",
+      "fetch_failed": "无法获取绑定数据。请稍后再试。"
+    },
+    "file": {
+      "missing_filename": "上传的文件缺少文件名。",
+      "invalid_format": "无效的图片格式。允许的格式包括：jpg，jpeg，png，gif，bmp。"
     }
   },
   "notification": {
@@ -39,11 +82,26 @@
       "logout_successful": "登出成功。",
       "token_refreshed": "刷新令牌成功",
       "language_updated": "语言已更新。"
+    },
+    "change_password": {
+      "success": "密码修改成功" 
     }
   },
   "entity": {
     "menu": "菜单",
     "user": "用户",
-    "document": "文档"
+    "policy": "策略",
+    "router": "路由",
+    "permission": "权限",
+    "binding": "绑定"
+  },
+  "confirm": {
+    "delete": "您确定要删除此项目吗？",
+    "logout": "您确定要退出登录吗？",
+    "logoutYes": "退出登录",
+    "confirm": "确认",
+    "cancel": "取消",
+    "deactivate": "您确定要停用此项目吗？",
+    "submit": "您确定要提交吗？"
   }
 }

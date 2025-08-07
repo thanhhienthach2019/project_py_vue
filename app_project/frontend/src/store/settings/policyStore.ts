@@ -52,9 +52,7 @@ export const usePolicyStore = defineStore('policy', {
       try {
         const resp = await fetchPolicies()
         if (resp.success && resp.data) this.policies = resp.data
-        return resp
-      } catch (err: any) {
-        return { success: false, message: err.message || 'Failed to load policies' }
+        return resp      
       } finally {
         this.isLoadingPolicies = false
       }
@@ -65,9 +63,7 @@ export const usePolicyStore = defineStore('policy', {
       try {
         const resp = await fetchPoliciesGroup()
         if (resp.success && resp.data) this.policiesGroup = resp.data
-        return resp
-      } catch (err: any) {
-        return { success: false, message: err.message || 'Failed to load group policies' }
+        return resp      
       } finally {
         this.isLoadingGroups = false
       }
@@ -78,90 +74,32 @@ export const usePolicyStore = defineStore('policy', {
       try {
         const resp = await fetchViewPolicies()
         if (resp.success && resp.data) this.viewPolicies = resp.data
-        return resp
-      } catch (err: any) {
-        return { success: false, message: err.message || 'Failed to load view policies' }
+        return resp      
       } finally {
         this.isLoadingViews = false
       }
     },
 
-    async addNewPolicy(newPolicy: PolicyCreate) {
+    async addPolicy(newPolicy: PolicyCreate) {
       this.isCreating = true
       try {
-        return await addPolicy(newPolicy)
-      } catch (err: any) {
-        return { success: false, message: err.message || 'Error creating policy' }
+        return await addPolicy(newPolicy)      
       } finally {
         this.isCreating = false
       }
-    },
+    },    
 
-    async addNewPolicyGroup(newPolicy: PolicyCreate) {
-      this.isCreating = true
-      try {
-        return await addPolicy(newPolicy)
-      } catch (err: any) {
-        return { success: false, message: err.message || 'Error creating group policy' }
-      } finally {
-        this.isCreating = false
-      }
-    },
-
-    async addNewViewPolicy(newPolicy: PolicyCreate) {
-      this.isCreating = true
-      try {
-        return await addPolicy(newPolicy)
-      } catch (err: any) {
-        return { success: false, message: err.message || 'Error creating view policy' }
-      } finally {
-        this.isCreating = false
-      }
-    },
-
-    async removeExistingPolicy(policy: PolicyCreate) {
+    async removePolicy(policy: PolicyCreate) {
       const key = JSON.stringify(policy)
       this.isDeleting = true
       this.deletingKey = key
 
       try {
-        return await deletePolicy(policy)
-      } catch (err: any) {
-        return { success: false, message: err.message || 'Error deleting policy' }
+        return await deletePolicy(policy)      
       } finally {
         this.isDeleting = false
         this.deletingKey = null
       }
-    },
-
-    async removeExistingPolicyGroup(policy: PolicyCreate) {
-      const key = JSON.stringify(policy)
-      this.isDeleting = true
-      this.deletingKey = key
-
-      try {
-        return await deletePolicy(policy)
-      } catch (err: any) {
-        return { success: false, message: err.message || 'Error deleting group policy' }
-      } finally {
-        this.isDeleting = false
-        this.deletingKey = null
-      }
-    },
-
-    async removeExistingViewPolicy(policy: PolicyCreate) {
-      const key = JSON.stringify(policy)
-      this.isDeleting = true
-      this.deletingKey = key
-
-      try {
-        return await deletePolicy(policy)
-      } catch (err: any) {
-        return { success: false, message: err.message || 'Error deleting view policy' }
-      } finally {
-        this.isDeleting = false
-        this.deletingKey = null
-      }
-    },
+    },    
   },
 })

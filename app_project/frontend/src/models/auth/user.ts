@@ -71,3 +71,15 @@ export interface PaginatedUsers {
   skip: number;
   limit: number;
 }
+
+export interface MyProfileUpdate {
+  full_name?: string;
+  email?: string;
+  phone_number?: string;
+  profile_picture?: string;  
+}
+
+export interface ChangePassword {
+  old_password: string;
+  new_password: string;
+}

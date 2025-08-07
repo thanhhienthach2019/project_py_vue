@@ -3,16 +3,19 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.casbin import enforcer
 from app.core.middleware import custom_verify_token
+from app.core.http_exceptions import http_401, http_403, http_404
+from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 from app.models.settings.router_permission import Router, RouterPermission, Permission
 
 def permission_required_root(permission_key: str, action: str = "view"):
     def dependency(payload: dict = Depends(custom_verify_token)):
         username = payload.get("sub")
         if not username:
-            raise HTTPException(status_code=401, detail="Invalid token: missing 'sub'")
+            http_401("error.token.invalid", {})
         if not enforcer.enforce(username, permission_key, action):
-            raise HTTPException(status_code=403, detail="Permission denied")
-        return payload  
+            raise HTTPException(status_code=HTTP_403_FORBIDDEN)
+        return payload
+
     return dependency
 
 def get_user_permissions(username: str) -> list[str]:
@@ -27,25 +30,23 @@ def permission_required(router_prefix: str = "/api/v1"):
     ):
         username = payload.get("sub")
         if not username:
-            raise HTTPException(status_code=401, detail="Invalid token: missing 'sub'")
+            http_401("error.token.invalid", {})
 
         full_path = request.scope["route"].path
         trimmed_path = (
-            full_path[len(router_prefix):] 
-            if full_path.startswith(router_prefix) 
+            full_path[len(router_prefix):]
+            if full_path.startswith(router_prefix)
             else full_path
         )
+        method = request.method.upper()
 
-        method = request.method.upper()    
-        
         router = (
             db.query(Router)
               .filter(Router.path == trimmed_path, Router.method == method)
               .first()
         )
-
         if not router:
-            raise HTTPException(status_code=404, detail="Router not found")
+            http_404("error.router.not_found", {"path": trimmed_path})
 
         rp = (
             db.query(RouterPermission)
@@ -53,11 +54,11 @@ def permission_required(router_prefix: str = "/api/v1"):
               .first()
         )
         if not rp:
-            raise HTTPException(status_code=403, detail="No permissions configured for this router")
+            raise HTTPException(status_code=HTTP_403_FORBIDDEN)
 
         perm = db.query(Permission).get(rp.permission_id)
         if not perm:
-            raise HTTPException(status_code=403, detail="Permission not found")
+            raise HTTPException(status_code=HTTP_403_FORBIDDEN)
 
         method_to_action = {
             "GET": "read",
@@ -68,17 +69,15 @@ def permission_required(router_prefix: str = "/api/v1"):
         }
         expected_action = method_to_action.get(method)
         if perm.action != expected_action:
-            raise HTTPException(
-                status_code=403,
-                detail=f"Invalid action for {method}: expected '{expected_action}', got '{perm.action}'"
-            )
+            http_403("error.action.invalid", {"expected": expected_action, "got": perm.action})
 
         if not enforcer.enforce(username, perm.resource, perm.action):
-            raise HTTPException(status_code=403, detail="Permission denied")
+            raise HTTPException(status_code=HTTP_403_FORBIDDEN)
 
         return payload
 
     return dependency
+
 
 def permission_required_safe(router_prefix: str = "/api/v1"):
     def dependency(
@@ -88,17 +87,17 @@ def permission_required_safe(router_prefix: str = "/api/v1"):
         method = request.method.upper()
 
         if method == "GET":
-            return None  
+            return None
 
         payload = custom_verify_token(request)
         username = payload.get("sub")
         if not username:
-            raise HTTPException(status_code=401, detail="Invalid token: missing 'sub'")
+            http_401("error.token.invalid", {})
 
         full_path = request.scope["route"].path
         trimmed_path = (
-            full_path[len(router_prefix):] 
-            if full_path.startswith(router_prefix) 
+            full_path[len(router_prefix):]
+            if full_path.startswith(router_prefix)
             else full_path
         )
 
@@ -107,9 +106,8 @@ def permission_required_safe(router_prefix: str = "/api/v1"):
               .filter(Router.path == trimmed_path, Router.method == method)
               .first()
         )
-
         if not router:
-            raise HTTPException(status_code=404, detail="Router not found")
+            http_404("error.router.not_found", {"path": trimmed_path})
 
         rp = (
             db.query(RouterPermission)
@@ -117,11 +115,11 @@ def permission_required_safe(router_prefix: str = "/api/v1"):
               .first()
         )
         if not rp:
-            raise HTTPException(status_code=403, detail="No permissions configured for this router")
+            raise HTTPException(status_code=HTTP_403_FORBIDDEN)
 
         perm = db.query(Permission).get(rp.permission_id)
         if not perm:
-            raise HTTPException(status_code=403, detail="Permission not found")
+            raise HTTPException(status_code=HTTP_403_FORBIDDEN)
 
         method_to_action = {
             "POST": "create",
@@ -131,14 +129,13 @@ def permission_required_safe(router_prefix: str = "/api/v1"):
         }
         expected_action = method_to_action.get(method)
         if not expected_action or perm.action != expected_action:
-            raise HTTPException(
-                status_code=403,
-                detail=f"Invalid action for {method}: expected '{expected_action}', got '{perm.action}'"
-            )
+            http_403("error.action.invalid", {"expected": expected_action, "got": perm.action})
 
         if not enforcer.enforce(username, perm.resource, perm.action):
-            raise HTTPException(status_code=403, detail="Permission denied")
+            # silent 403
+            raise HTTPException(status_code=HTTP_403_FORBIDDEN)
 
         return payload
 
     return dependency
+

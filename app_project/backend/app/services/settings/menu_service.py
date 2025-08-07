@@ -88,28 +88,38 @@ async def create_menu_item(
     data: MenuItemCreate,
     parent_id: Optional[int] = None
 ) -> GenericResponse[MenuItemResponse]:
-    m = MenuItem(
-        title=data.title,
-        path=data.path,
-        icon=data.icon,
-        permission_key=data.permission_key,
-        parent_id=parent_id or data.parent_id,
-        order=data.order
-    )
     try:
+        m = MenuItem(
+            title=data.title,
+            path=data.path,
+            icon=data.icon,
+            permission_key=data.permission_key,
+            parent_id=parent_id or data.parent_id,
+            order=data.order
+        )
         db.add(m)
         db.commit()
         db.refresh(m)
     except IntegrityError:
         db.rollback()
-        http_400("error.menu.permission_key_conflict", {"key": data.permission_key})
+        raise http_400("error.menu.permission_key_conflict", {"key": data.permission_key})
+    except Exception as e:
+        db.rollback()
+        raise http_500("error.create.failed", {"entity": "Menu"})
 
-    await publish_update("create", "menu", MenuItemResponse.from_orm(m).model_dump())
+    try:
+        await publish_update("create", "menu", MenuItemResponse.from_orm(m).model_dump())
+    except Exception:
+        pass  
 
-    children = [
-        await create_menu_item(db, child, parent_id=m.id)
-        for child in (data.children or [])
-    ]
+    children = []
+    for child in (data.children or []):
+        try:
+            child_resp = await create_menu_item(db, child, parent_id=m.id)
+            children.append(child_resp.data)
+        except Exception:
+            continue 
+
     item = MenuItemResponse(
         id=m.id,
         title=m.title,
@@ -118,7 +128,7 @@ async def create_menu_item(
         permission_key=m.permission_key,
         parent_id=m.parent_id,
         order=m.order,
-        children=[c.data for c in children]  # unwrap GenericResponse
+        children=children
     )
     return GenericResponse(
         data=item,
@@ -136,20 +146,26 @@ async def update_menu_item(
 ) -> GenericResponse[MenuItemResponse]:
     m = db.query(MenuItem).filter(MenuItem.id == menu_id).first()
     if not m:
-        http_404("error.menu.not_found", {"id": menu_id})
+        raise http_404("error.menu.not_found", {"id": menu_id})
 
     for field, val in data.dict().items():
         setattr(m, field, val)
-    print(data)
+
     try:
         db.commit()
     except IntegrityError:
         db.rollback()
-        http_400("error.menu.permission_key_conflict", {"key": data.permission_key})
+        raise http_400("error.menu.permission_key_conflict", {"key": data.permission_key})
+    except Exception:
+        db.rollback()
+        raise http_500("error.update.failed", {"entity": "Menu"})
 
     db.refresh(m)
 
-    await publish_update("update", "menu", MenuItemResponse.from_orm(m).model_dump())
+    try:
+        await publish_update("update", "menu", MenuItemResponse.from_orm(m).model_dump())
+    except Exception:
+        pass
 
     return GenericResponse(
         data=MenuItemResponse.from_orm(m),
@@ -166,12 +182,19 @@ async def delete_menu_item(
 ) -> GenericResponse[None]:
     m = db.query(MenuItem).filter(MenuItem.id == menu_id).first()
     if not m:
-        http_404("error.menu.not_found", {"id": menu_id})
+        raise http_404("error.menu.not_found", {"id": menu_id})
 
-    await publish_update("delete", "menu", MenuItemResponse.from_orm(m).model_dump())
+    try:
+        await publish_update("delete", "menu", MenuItemResponse.from_orm(m).model_dump())
+    except Exception:
+        pass
 
-    db.delete(m)
-    db.commit()
+    try:
+        db.delete(m)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise http_500("error.delete.failed", {"entity": "Menu"})
 
     return GenericResponse(
         data=None,

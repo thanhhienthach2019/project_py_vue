@@ -215,20 +215,11 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  computed,
-  onMounted,
-  inject,
-  type Ref,
-  watch,
-  nextTick,
-} from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { AgGridVue } from "ag-grid-vue3";
 import type { ColDef, GridApi, GridOptions } from "ag-grid-community";
 import { usePolicy } from "@/hooks/settings/usePolicy";
 import type { PolicyItem, PolicyCreate } from "@/models/settings/policy";
-import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
 import { Icon } from "@iconify/vue";
 import { useUser } from "@/hooks/auth/useUser";
 import { UserRole } from "@/models/auth/user";
@@ -241,8 +232,6 @@ import { useActionDisabled } from "@/composables/useActionDisabled";
 import SkeletonTable from "@/components/skeletons/SkeletonTable.vue";
 import { useDelayedLoading } from "@/composables/useDelayedLoading";
 import { useGroupPolicyRealtime } from "@/composables/settings/useGroupPolicyRealtime";
-
-const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
 
 const {
   policiesGroup,
@@ -389,34 +378,16 @@ function resetForm() {
 }
 
 async function onAdd() {
-  if (!form.value.v0 || !form.value.v1) {
-    toast.value?.showToast("Please fill subject, resource.", "error");
-    return;
-  }
   const resp = await addPolicyGroup(form.value);
   if (resp.success) {
-    toast.value?.showToast(resp.message, "success");
     resetForm();
-    quickFilterText.value = "";
-    setQuickFilterSafe(gridApi.value, "");
-    await nextTick();
-    gridApi.value?.paginationGoToLastPage();
-  } else {
-    toast.value?.showToast(resp.message, "error");
   }
 }
 
 async function onRemove() {
-  if (!form.value.v0 || !form.value.v1) {
-    toast.value?.showToast("Please fill subject and resource.", "error");
-    return;
-  }
   const resp = await removePolicyGroup(form.value);
   if (resp.success) {
-    toast.value?.showToast("Role removed.", "success");
     resetForm();
-  } else {
-    toast.value?.showToast(resp.message, "error");
   }
 }
 
@@ -427,16 +398,12 @@ async function handleDeletePolicyLine(g: PolicyItem) {
     v1: g.v1,
     v2: g.v2,
   };
-  const confirmed = await showConfirmToast(
-    `Are you sure you want to delete this Role Policy?`
-  );
+  const confirmed = await showConfirmToast();
   if (!confirmed) return;
 
   const resp = await removePolicyGroup(payload);
   if (resp.success) {
-    toast.value?.showToast("Policy removed successfully", "success");
-  } else {
-    toast.value?.showToast(resp.message, "error");
+    resetForm();
   }
 }
 </script>

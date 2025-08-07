@@ -811,16 +811,7 @@
 <script setup lang="ts">
 import { AgGridVue } from "ag-grid-vue3";
 import type { ColDef, GridApi, GridOptions } from "ag-grid-community";
-import {
-  ref,
-  onMounted,
-  inject,
-  type Ref,
-  computed,
-  watch,
-  nextTick,
-} from "vue";
-import ToastTailwind from "@/pages/Toast/ToastTailwind.vue";
+import { ref, onMounted, computed, watch, nextTick } from "vue";
 import { usePermissionRouter } from "@/hooks/settings/usePermissionRouter";
 import { useRouter } from "@/hooks/settings/useRouter";
 import { useMenu } from "@/hooks/settings/useMenu";
@@ -902,7 +893,6 @@ const delayedLoadingPermission = useDelayedLoading(isLoadingPermissions, 300);
 
 const delayedLoadingBinding = useDelayedLoading(isLoadingBindings, 300);
 
-const toast = inject<Ref<InstanceType<typeof ToastTailwind>>>("toast")!;
 const { allMenus, loadMenus } = useMenu();
 //Router
 const routeKey = ref("");
@@ -1084,10 +1074,7 @@ async function saveRouter() {
       : await addRouter(routerForm.value);
 
   if (response.success) {
-    toast?.value?.showToast(response.message, "success");
     resetRouterForm();
-  } else {
-    toast?.value?.showToast(response.message, "error");
   }
 }
 
@@ -1104,17 +1091,12 @@ async function handleEdit(r: {
 
 async function deleteRouter() {
   if (editRouterId.value === null) return;
-  const confirmed = await showConfirmToast(
-    `Are you sure you want to delete this routers?`
-  );
+  const confirmed = await showConfirmToast();
   if (!confirmed) return;
   const response = await removeRouter(editRouterId.value);
 
   if (response.success) {
     resetRouterForm();
-    toast?.value?.showToast(response.message, "success");
-  } else {
-    toast?.value?.showToast(response.message, "error");
   }
 }
 
@@ -1219,10 +1201,7 @@ async function savePermission() {
       : await addPermission(permForm.value);
 
   if (response.success) {
-    toast?.value?.showToast(response.message, "success");
     resetPermForm();
-  } else {
-    toast?.value?.showToast(response.message, "error");
   }
 }
 
@@ -1238,17 +1217,12 @@ async function handleEditPer(p: {
 
 async function deletePermission() {
   if (editPermId.value === null) return;
-  const confirmed = await showConfirmToast(
-    `Are you sure you want to delete this permission?`
-  );
+  const confirmed = await showConfirmToast();
   if (!confirmed) return;
   const response = await removePermission(editPermId.value);
 
   if (response.success) {
     resetPermForm();
-    toast?.value?.showToast(response.message, "success");
-  } else {
-    toast?.value?.showToast(response.message, "error");
   }
 }
 
@@ -1398,10 +1372,7 @@ async function saveBinding() {
       : await addBinding(bindForm.value);
 
   if (response.success) {
-    toast?.value?.showToast(response.message, "success");
     resetBindingForm();
-  } else {
-    toast?.value?.showToast(response.message, "error");
   }
 }
 
@@ -1417,17 +1388,12 @@ async function handleEditBind(b: {
 
 async function deleteBinding() {
   if (editBindId.value === null) return;
-  const confirmed = await showConfirmToast(
-    `Are you sure you want to delete this binding?`
-  );
+  const confirmed = await showConfirmToast();
   if (!confirmed) return;
   const response = await removeBinding(editBindId.value);
 
   if (response.success) {
     resetBindingForm();
-    toast?.value?.showToast(response.message, "success");
-  } else {
-    toast?.value?.showToast(response.message, "error");
   }
 }
 

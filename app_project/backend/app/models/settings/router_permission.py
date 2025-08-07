@@ -7,7 +7,7 @@ class Router(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
-    path = Column(String(255))
+    path = Column(String(255), nullable=False)
     method = Column(String(10), nullable=False)
     __table_args__ = (UniqueConstraint("path", "method"),)
     

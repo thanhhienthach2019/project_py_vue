@@ -1,4 +1,18 @@
-export function showConfirmToast(message: string): Promise<boolean> {
+import { i18n } from "@/i18n";
+
+interface ConfirmOptions {
+  message?: string; 
+  confirmText?: string; 
+  cancelText?: string;  
+}
+
+export function showConfirmToast(options?: ConfirmOptions): Promise<boolean> {
+  const t = i18n.global.t;
+
+  const message = t(options?.message ?? "confirm.delete");
+  const confirmText = t(options?.confirmText ?? "confirm.confirm");
+  const cancelText = t(options?.cancelText ?? "confirm.cancel");
+
   return new Promise((resolve) => {
     const container = document.createElement("div");
     container.className =
@@ -17,10 +31,10 @@ export function showConfirmToast(message: string): Promise<boolean> {
             <div class="text-sm font-medium">${message}</div>
             <div class="mt-4 flex justify-end space-x-3">
               <button id="confirmYes" class="px-4 py-2 text-sm font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                Confirm
+                ${confirmText}
               </button>
               <button id="confirmNo" class="px-4 py-2 text-sm font-semibold rounded-lg bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400">
-                Cancel
+                ${cancelText}
               </button>
             </div>
           </div>
@@ -30,13 +44,11 @@ export function showConfirmToast(message: string): Promise<boolean> {
 
     document.body.appendChild(container);
 
-    // Fade-in effect
     requestAnimationFrame(() => {
       container.classList.remove("opacity-0");
       container.classList.add("opacity-100");
     });
 
-    // Remove toast
     function remove() {
       container.classList.remove("opacity-100");
       container.classList.add("opacity-0");

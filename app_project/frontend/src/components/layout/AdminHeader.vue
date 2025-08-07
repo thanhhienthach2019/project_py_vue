@@ -16,7 +16,7 @@
     </h2>
 
     <!-- Right Section -->
-    <div class="flex items-center space-x-4">
+    <div class="flex items-center space-x-3">
       <!-- User Dropdown -->
       <div
         class="relative"
@@ -42,7 +42,7 @@
           >
             <ul class="py-2">
               <li>
-                <button class="menu-item">
+                <button @click="goToProfile" class="menu-item">
                   <Icon icon="mdi:account-circle-outline" class="icon" />
                   My Profile
                 </button>
@@ -92,24 +92,85 @@
           </div>
         </Transition>
       </div>
-      <li class="border-t border-white/10 mt-2 pt-2">
-        <div class="px-5 pb-2 text-xs text-gray-400">Language</div>
-        <div class="px-3 pb-2">
-          <select
-            v-model="currentLang"
-            @change="changeLanguage(currentLang)"
-            class="w-full text-sm bg-[#2F3A48] text-white border border-white/10 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      <div
+        class="relative group"
+        @mouseenter="showLangDropdown"
+        @mouseleave="hideLangDropdown"
+      >
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-full bg-[#3B4856] hover:bg-[#475769] transition-colors duration-200 relative"
+          :title="currentLanguage.label"
+        >
+          <div class="absolute inset-0 flex items-center justify-center">
+            <Icon icon="mdi:earth" class="text-xl text-blue-400" />
+          </div>
+          <div
+            class="absolute -top-1 -right-1 bg-blue-500 rounded-full w-4 h-4 flex items-center justify-center"
           >
-            <option
-              v-for="lang in availableLanguages"
-              :key="lang.value"
-              :value="lang.value"
-            >
-              {{ lang.label }}
-            </option>
-          </select>
-        </div>
-      </li>
+            <span class="text-[8px] font-bold text-white">{{
+              currentLanguage.code
+            }}</span>
+          </div>
+        </button>
+
+        <!-- Language Dropdown -->
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform opacity-0 -translate-y-1"
+          enter-to-class="transform opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform opacity-100 translate-y-0"
+          leave-to-class="transform opacity-0 -translate-y-1"
+        >
+          <div
+            v-if="langDropdownOpen"
+            class="absolute right-0 top-full mt-2 w-48 bg-[#2F3A48] rounded-xl shadow-2xl border border-white/10 z-50 origin-top-right overflow-hidden"
+          >
+            <div class="px-4 py-3 border-b border-white/10">
+              <h3
+                class="text-xs font-semibold text-blue-400 uppercase tracking-wider"
+              >
+                Select Language
+              </h3>
+            </div>
+
+            <ul class="py-1 max-h-60 overflow-y-auto custom-scrollbar">
+              <li
+                v-for="lang in availableLanguages"
+                :key="lang.value"
+                class="px-3 py-2 hover:bg-[#3B4856] transition-colors duration-150 cursor-pointer"
+                :class="{ 'bg-[#3B4856]': locale === lang.value }"
+                @click="changeLanguage(lang.value)"
+              >
+                <div class="flex items-center">
+                  <div class="w-8 h-8 flex items-center justify-center mr-3">
+                    <div
+                      class="w-6 h-6 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center"
+                    >
+                      <span class="text-xs font-bold text-blue-300">{{
+                        lang.code
+                      }}</span>
+                    </div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-gray-100 truncate">
+                      {{ lang.label }}
+                    </div>
+                    <div class="text-xs text-gray-400 truncate">
+                      {{ lang.nativeName }}
+                    </div>
+                  </div>
+                  <Icon
+                    v-if="locale === lang.value"
+                    icon="mdi:check-circle"
+                    class="text-blue-400 ml-2 flex-shrink-0"
+                  />
+                </div>
+              </li>
+            </ul>
+          </div>
+        </Transition>
+      </div>
     </div>
   </header>
 </template>
@@ -131,24 +192,86 @@ const { user } = useAuth();
 const { setPreferredLanguage } = useAuth();
 const { locale } = useI18n();
 
-const availableLanguages: { label: string; value: SupportedLang }[] = [
-  { label: "English", value: "en-US" },
-  { label: "Tiếng Việt", value: "vi-VN" },
-  { label: "简体中文", value: "zh-CN" },
+const goToProfile = () => {
+  router.push("/admin/settings/my-profile");
+};
+
+const availableLanguages: {
+  value: SupportedLang;
+  label: string;
+  nativeName: string;
+  code: string;
+}[] = [
+  {
+    value: "en-US",
+    label: "English",
+    nativeName: "English",
+    code: "EN",
+  },
+  {
+    value: "vi-VN",
+    label: "Vietnamese",
+    nativeName: "Tiếng Việt",
+    code: "VI",
+  },
+  {
+    value: "zh-CN",
+    label: "Chinese",
+    nativeName: "简体中文",
+    code: "中文",
+  },
 ];
 
-const currentLang = ref<SupportedLang>(locale.value as SupportedLang);
+const currentLanguage = computed(() => {
+  return (
+    availableLanguages.find((l) => l.value === locale.value) ||
+    availableLanguages[0]
+  );
+});
 
+// Logic dropdown ngôn ngữ
+const langDropdownOpen = ref(false);
+let langTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function showLangDropdown() {
+  if (langTimeout) clearTimeout(langTimeout);
+  langDropdownOpen.value = true;
+}
+
+function hideLangDropdown() {
+  langTimeout = setTimeout(() => {
+    langDropdownOpen.value = false;
+  }, 300);
+}
+
+// Thay đổi ngôn ngữ
 async function changeLanguage(lang: SupportedLang) {
+  if (locale.value === lang) {
+    langDropdownOpen.value = false;
+    return;
+  }
+
   const result = await setPreferredLanguage(lang);
   if (result.success) {
     locale.value = lang;
     localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
-  } else {
-    currentLang.value = locale.value as SupportedLang;
+
+    // Hiệu ứng visual feedback
+    const button = document.querySelector(".language-selector-button");
+    if (button) {
+      button.classList.add("language-change-animation");
+      setTimeout(() => {
+        button.classList.remove("language-change-animation");
+      }, 1000);
+    }
   }
+
+  langDropdownOpen.value = false;
 }
 
+onBeforeUnmount(() => {
+  if (langTimeout) clearTimeout(langTimeout);
+});
 const username = computed(() => user.value?.username ?? "User");
 
 // Dropdown logic
