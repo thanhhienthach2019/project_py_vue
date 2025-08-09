@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
+from uuid import UUID
 from app.models.auth.user import User
 from app.schemas.auth.user import MyProfileUpdate, ChangePassword, UserResponse
 from app.schemas.generic_response import GenericResponse
@@ -10,14 +11,16 @@ from app.core.redis import publish_update
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def get_my_profile_model(db: Session, user_id: int) -> User:
-    user = db.query(User).filter(User.id == user_id).first()
+def get_my_profile_model(db: Session, user_id: UUID) -> User:
+    
+    user = db.query(User).filter(User.id == user_id).first() 
+
     if not user:
         raise http_404("error.user.not_found")
     return user
 
 
-def get_my_profile(db: Session, user_id: int) -> GenericResponse[UserResponse]:
+def get_my_profile(db: Session, user_id: UUID) -> GenericResponse[UserResponse]:
     user = get_my_profile_model(db, user_id)
     return GenericResponse(
         data=UserResponse.from_orm(user),
@@ -26,7 +29,7 @@ def get_my_profile(db: Session, user_id: int) -> GenericResponse[UserResponse]:
     )
 
 
-async def update_my_profile(db: Session, user_id: int, profile_data: MyProfileUpdate) -> GenericResponse[UserResponse]:
+async def update_my_profile(db: Session, user_id: UUID, profile_data: MyProfileUpdate) -> GenericResponse[UserResponse]:
     user = get_my_profile_model(db, user_id)
     try:
         update_data = profile_data.model_dump(exclude_unset=True)
@@ -49,7 +52,7 @@ async def update_my_profile(db: Session, user_id: int, profile_data: MyProfileUp
         raise http_500("error.user.update_failed")
 
 
-def change_my_password(db: Session, user_id: int, data: ChangePassword) -> GenericResponse[None]:
+def change_my_password(db: Session, user_id: UUID, data: ChangePassword) -> GenericResponse[None]:
     user = get_my_profile_model(db, user_id)
 
     if not pwd_context.verify(data.old_password, user.hashed_password):

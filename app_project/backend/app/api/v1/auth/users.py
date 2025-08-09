@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Form, status, Depends
 from sqlalchemy.orm import Session
 from typing import List
-
+from uuid import UUID
 from app.core.database import get_db
 from app.schemas.auth.user import UserCreate, UserUpdate, UserResponse, UserDetail, ChangePassword
 from app.schemas.generic_response import GenericResponse
@@ -55,14 +55,14 @@ async def create_user(
 
 @router.get("/{user_id}")
 def read_user(
-    user_id: int,
+    user_id: UUID,
     db: Session = Depends(get_db)
 ):
     return user_service.get_user(db, user_id)
 
 @router.put("/{user_id}")
 async def update_user(
-    user_id: int,
+    user_id: UUID,
     email: str = Form(None),
     full_name: str = Form(None),
     phone_number: str = Form(None),
@@ -71,6 +71,7 @@ async def update_user(
     is_verified: bool = Form(False),
     remove_image: bool = Form(False), 
     image: UploadFile = File(None),
+    version: int = Form(1),
     db: Session = Depends(get_db)
 ):
     profile_picture: str | None = None
@@ -88,6 +89,7 @@ async def update_user(
         is_active=is_active,
         is_verified=is_verified,
         profile_picture=profile_picture,
+        version=version
     )
     dto = UserUpdate(**update_data.model_dump(exclude_none=True))
 
@@ -95,7 +97,7 @@ async def update_user(
 
 @router.delete("/{user_id}")
 async def delete_user(
-    user_id: int,
+    user_id: UUID,
     db: Session = Depends(get_db)
 ):
     return await user_service.delete_user(db, user_id)
@@ -103,7 +105,7 @@ async def delete_user(
 @router.get("/me")
 def get_my_profile(
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id)
+    user_id: UUID = Depends(get_current_user_id)
 ):
     return user_service.get_user(db, user_id)
 
@@ -113,7 +115,7 @@ async def update_my_profile(
     phone_number: str = Form(None),
     image: UploadFile = File(None),
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id)
+    user_id: UUID = Depends(get_current_user_id)
 ):
     image_url = await save_upload_file(image, settings.UPLOAD_DIR)
     dto = UserUpdate(
@@ -127,6 +129,6 @@ async def update_my_profile(
 async def change_my_password(
     data: ChangePassword,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id)
+    user_id: UUID = Depends(get_current_user_id)
 ):
     return await profile_service.change_my_password(db, user_id, data)

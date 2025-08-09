@@ -270,39 +270,31 @@ const userOptions = computed(() =>
 );
 
 const columnDefs = ref<ColDef[]>([
-  { headerName: "Type", field: "ptype", minWidth: 150 },
-  { headerName: "Subject", field: "v0", minWidth: 150 },
-  { headerName: "Resource", field: "v1", minWidth: 150 },
+  { headerName: "Type", field: "ptype" },
+  { headerName: "Subject", field: "v0", minWidth: 250 },
+  { headerName: "Resource", field: "v1", minWidth: 250 },
   {
     headerName: "Action",
     field: "v2",
-    minWidth: 150,
-    flex: 1,
   },
   {
     headerName: "Domain",
     field: "v3",
-    minWidth: 150,
-    flex: 1,
   },
   {
     headerName: "Time",
     field: "v4",
-    minWidth: 150,
-    flex: 1,
   },
   {
     headerName: "IP",
     field: "v5",
-    minWidth: 150,
-    flex: 1,
   },
+  { headerName: "Version", field: "version" },
   {
     headerName: "Actions",
     field: "actions",
     sortable: false,
     filter: false,
-    width: 100,
     cellRenderer: RoleActionCell,
   },
 ]);
@@ -314,6 +306,8 @@ const gridContainer = ref<HTMLElement | null>(null);
 const defaultColDef: ColDef = {
   sortable: true,
   filter: "agTextColumnFilter",
+  flex: 1,
+  minWidth: 150,
   valueFormatter: (params) => params.value || "-",
 };
 
@@ -337,7 +331,7 @@ const gridOptions = ref<GridOptions>({
       nextTick(resizeNow);
     }
   },
-  domLayout: "autoHeight",
+  domLayout: "normal",
   onGridReady: (params) => {
     gridApi.value = params.api;
     params.api.sizeColumnsToFit();
@@ -351,7 +345,7 @@ const gridOptions = ref<GridOptions>({
   suppressRowTransform: false,
   enableCellTextSelection: true,
   suppressCellFocus: true,
-  suppressHorizontalScroll: true,
+  suppressHorizontalScroll: false,
   tooltipShowDelay: 300,
   tooltipHideDelay: 200,
 });

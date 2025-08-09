@@ -1,0 +1,71 @@
+sudo apt update
+sudo apt upgrade -y
+
+ Bước 3: Cài đặt PostgreSQL trong WSL
+sudo apt install postgresql postgresql-contrib -y
+
+ Bước 4: Kiểm tra trạng thái dịch vụ PostgreSQL
+sudo service postgresql status
+Nếu chưa chạy, dùng:
+sudo service postgresql start
+
+Bước 5: Đổi mật khẩu user postgres
+Chuyển sang user postgres:
+sudo -i -u postgres
+
+Mở PostgreSQL shell:
+psql
+
+Đặt mật khẩu:
+\password postgres
+
+Nhập mật khẩu 2 lần, rồi thoát:
+\q
+exit
+
+Bước 6: Cho phép kết nối từ bên ngoài (nếu cần)
+6.1. Mở file cấu hình PostgreSQL:
+sudo nano /etc/postgresql/*/main/postgresql.conf
+
+Tìm dòng:
+
+conf
+Sao chép
+Chỉnh sửa
+# listen_addresses = 'localhost'
+Sửa thành:
+
+conf
+Sao chép
+Chỉnh sửa
+listen_addresses = '*'
+6.2. Sửa pg_hba.conf:
+bash
+Sao chép
+Chỉnh sửa
+sudo nano /etc/postgresql/*/main/pg_hba.conf
+Thêm dòng cuối cùng (cho phép IP LAN):
+
+conf
+Sao chép
+Chỉnh sửa
+host    all             all             0.0.0.0/0               md5
+(Lưu ý: bạn có thể thay 0.0.0.0/0 bằng IP cụ thể hoặc subnet như 192.168.1.0/24 để giới hạn)
+
+ Bước 7: Restart PostgreSQL
+sudo service postgresql restart
+Bước 8: Kết nối thử
+psql -U postgres
+
+
+Bạn đang bị Permission denied vì file pg_hba.conf chỉ cho phép root sửa.
+sudo nano /etc/postgresql/16/main/pg_hba.conf
+Trong file, tìm dòng:
+local   all             postgres                                peer
+và đổi thành:
+local   all             postgres                                md5
+
+sudo service postgresql restart
+
+Sau đó đăng nhập lại:
+psql -U postgres -h localhost -W

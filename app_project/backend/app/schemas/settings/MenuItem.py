@@ -1,12 +1,14 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field, ConfigDict
+from uuid import UUID
 
 class MenuItemBase(BaseModel):
     title: str
     path: str
-    icon: str
+    icon: Optional[str] = None
     permission_key: str
-    parent_id: Optional[int] = None
+    parent_id: Optional[UUID] = None
+    version: int
     order: int
 
 class MenuItemCreate(MenuItemBase):
@@ -14,10 +16,10 @@ class MenuItemCreate(MenuItemBase):
     model_config = ConfigDict(from_attributes=True)
 
 class MenuItemUpdate(MenuItemBase):
-    pass
+    model_config = ConfigDict(from_attributes=True)
 
 class MenuItemResponse(MenuItemBase):
-    id: int
+    id: UUID
     children: Optional[List["MenuItemResponse"]] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
 

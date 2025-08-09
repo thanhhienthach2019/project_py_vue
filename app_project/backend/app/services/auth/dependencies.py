@@ -1,5 +1,5 @@
 # services/auth/dependencies.py
-
+from uuid import UUID
 from fastapi import Request, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.models.auth.user import User
@@ -9,7 +9,7 @@ from app.core.database import get_db
 
 def get_current_user_id_from_cookie(
     request: Request, db: Session = Depends(get_db)
-) -> int:
+) -> UUID:
     token = request.cookies.get("_aid-atk_")
     if not token:
         raise HTTPException(

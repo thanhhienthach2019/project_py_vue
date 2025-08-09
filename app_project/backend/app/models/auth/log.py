@@ -3,7 +3,7 @@ from datetime import datetime
 from app.core.database import Base  
 
 class LoginLog(Base):
-    __tablename__ = "LoginLogs"
+    __tablename__ = "login_logs"
 
     Id = Column(Integer, primary_key=True, index=True)
     Username = Column(String(100))

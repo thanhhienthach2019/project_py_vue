@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from uuid import UUID
 from sqlalchemy.exc import IntegrityError
 from app.models.auth.user import User
 from app.schemas.auth.user import UserCreate, UserUpdate, UserResponse
@@ -29,14 +30,14 @@ def list_users(db: Session, skip: int, limit: int, is_active: bool) -> GenericRe
         raise http_500("error.user.fetch_failed")
 
 
-def get_user_model(db: Session, user_id: int) -> User:
+def get_user_model(db: Session, user_id: UUID) -> User:
     user = db.query(User).get(user_id)
     if not user:
         raise http_404("error.user.not_found")
     return user
 
 
-def get_user(db: Session, user_id: int) -> GenericResponse[UserResponse]:
+def get_user(db: Session, user_id: UUID) -> GenericResponse[UserResponse]:
     user = get_user_model(db, user_id)
     return GenericResponse(
         data=UserResponse.from_orm(user),
@@ -82,7 +83,7 @@ async def create_user(db: Session, data: UserCreate) -> GenericResponse[UserResp
 
 
 
-async def update_user(db: Session, user_id: int, data: UserUpdate) -> GenericResponse[UserResponse]:
+async def update_user(db: Session, user_id: UUID, data: UserUpdate) -> GenericResponse[UserResponse]:
     user = get_user_model(db, user_id)
     try:
         payload = data.model_dump(exclude_unset=True)
@@ -111,7 +112,7 @@ async def update_user(db: Session, user_id: int, data: UserUpdate) -> GenericRes
         raise http_500("error.user.update_failed")
 
 
-async def delete_user(db: Session, user_id: int) -> GenericResponse[None]:
+async def delete_user(db: Session, user_id: UUID) -> GenericResponse[None]:
     user = get_user_model(db, user_id)
     try:
         db.delete(user)

@@ -4,6 +4,9 @@
     "validation": {
       "failed": "以下字段验证失败：{errors}"
     },
+    "fetch": {
+      "failed": "获取{entity}数据失败。请稍后再试。"
+    },
     "menu": {
       "not_found": "未找到 ID 为 {id} 的菜单项。",
       "permission_key_conflict": "权限键 '{key}' 已存在。",

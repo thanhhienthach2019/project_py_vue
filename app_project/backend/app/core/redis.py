@@ -1,11 +1,17 @@
 # app/core/redis.py
 
 import json
+from uuid import UUID
 import redis.asyncio as redis
 from app.core.config import settings
 from app.api.v1.ws.ws_registry import get_channel_by_type
 
 _redis = redis.from_url(settings.REDIS_URL, decode_responses=True)
+
+def json_serial(obj):
+    if isinstance(obj, UUID):
+        return str(obj)
+    raise TypeError(f"Type {type(obj)} not serializable")
 
 def get_redis_client() -> redis.Redis:
     return _redis
@@ -21,9 +27,9 @@ async def publish_update(action: str, type_: str, item: dict):
     channel_name = get_channel_by_type(type_)
     if not channel_name:
         raise ValueError(f"[REDIS] ❌ Unknown type '{type_}', cannot determine channel.")
-
-    await _redis.publish(channel_name, json.dumps(message))
     # print(f"[REDIS] ✅ Published to {channel_name}: {message}")
+    await _redis.publish(channel_name, json.dumps(message, default=json_serial))
+    
 
 
 async def redis_subscriber(channel_name: str):

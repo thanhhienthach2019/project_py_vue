@@ -10,12 +10,16 @@ DOTENV_PATH = BASE_DIR / ".env.dev"
 
 load_dotenv(dotenv_path=DOTENV_PATH)
 
-USE_SQLITE = True
+USE_SQL = os.getenv("USE_SQL", "PostgreSQL") #SQLITE, SQL
 
-db_url = os.getenv("DATABASE_URL_SQLITE") if USE_SQLITE else os.getenv("DATABASE_URL")
+db_url = {
+    'PostgreSQL': os.getenv("DATABASE_URL_PG"),
+    'SQLITE': os.getenv("DATABASE_URL_SQLITE"),
+    'SQL': os.getenv("DATABASE_URL")
+}.get(USE_SQL)
 
 if not db_url:
-    raise ValueError("❌ DATABASE_URL_SQLITE or DATABASE_URL not loaded from .env.dev")
+    raise ValueError("❌DATABASE URL not loaded from .env.dev")
 
 config = context.config
 config.set_main_option("sqlalchemy.url", db_url)

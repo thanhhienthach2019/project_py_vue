@@ -103,13 +103,13 @@
           </label>
         </div>
       </div>
-
+      <button :disabled="true">Disabled</button>
+      <button :disabled="!isPasswordFormValid">Enabled</button>
       <!-- Actions -->
       <div class="flex flex-wrap gap-4">
         <button
-          v-permission.disable="'menu:settings:user:create'"
           v-if="!editMode"
-          :disabled="isCreateDisabled"
+          :disabled="isCreateDisabled || !isPasswordFormValid"
           @click="onAdd"
           :class="[
             'flex items-center gap-2 bg-green-600 hover:bg-green-500 px-6 py-3 rounded-xl text-white font-semibold transition-all',
@@ -126,7 +126,11 @@
         <button
           v-permission.disable="'menu:settings:user:update'"
           v-if="editMode"
-          :disabled="isUpdateDisabled || updatingId !== currentEditId"
+          :disabled="
+            isUpdateDisabled ||
+            updatingId !== currentEditId ||
+            !isPasswordFormValid
+          "
           @click="onUpdate"
           :class="[
             'flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-white font-semibold transition-all',
@@ -272,7 +276,7 @@
 <script setup lang="ts">
 import { AgGridVue } from "ag-grid-vue3";
 import type { ColDef, GridApi, GridOptions } from "ag-grid-community";
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, onMounted, watch, nextTick, computed } from "vue";
 import { Icon } from "@iconify/vue";
 import { useUser } from "@/hooks/auth/useUser";
 import type { UserResponse, UserCreate, UserUpdate } from "@/models/auth/user";
@@ -299,6 +303,7 @@ interface UserForm {
   profile_picture?: string;
   is_active: boolean;
   is_verified: boolean;
+  version: number;
 }
 const {
   users,
@@ -337,26 +342,47 @@ const form = ref<UserForm>({
   profile_picture: "",
   is_active: true,
   is_verified: false,
+  version: 0,
 });
+
+// Password validation
+const isPasswordFormValid = computed(() => {
+  return (
+    form.value.password.length >= 8 &&
+    /[A-Z]/.test(form.value.password) &&
+    /[0-9]/.test(form.value.password) &&
+    /[!@#$%^&*]/.test(form.value.password)
+  );
+});
+
+watch(
+  isPasswordFormValid,
+  (val) => {
+    console.log("Password valid?", val);
+  },
+  { immediate: true }
+);
+
 const editMode = ref(false);
-const currentEditId = ref<number | null>(null);
+const currentEditId = ref<string | null>(null);
 const inputRef = ref<HTMLInputElement | null>(null);
 const quickFilterText = ref("");
 
 const columnDefs = ref<ColDef[]>([
-  { headerName: "Full Name", field: "full_name", minWidth: 150 },
-  { headerName: "User Name", field: "username", minWidth: 150 },
-  { headerName: "Email", field: "email", minWidth: 150 },
-  { headerName: "Active", field: "is_active", minWidth: 70, flex: 1 },
-  { headerName: "Verified", field: "is_verified", minWidth: 70, flex: 1 },
-  { headerName: "Role", field: "role", minWidth: 70, flex: 1 },
-  { headerName: "Last Login", field: "last_login", minWidth: 70, flex: 1 },
+  { headerName: "ID", field: "id", minWidth: 300 },
+  { headerName: "Full Name", field: "full_name", minWidth: 250 },
+  { headerName: "User Name", field: "username", minWidth: 200 },
+  { headerName: "Email", field: "email", minWidth: 250 },
+  { headerName: "Active", field: "is_active" },
+  { headerName: "Version", field: "version" },
+  { headerName: "Verified", field: "is_verified" },
+  { headerName: "Role", field: "role" },
+  { headerName: "Last Login", field: "last_login" },
   {
     headerName: "Actions",
     field: "actions",
     sortable: false,
     filter: false,
-    width: 100,
     cellRenderer: EditActionCell,
   },
 ]);
@@ -368,6 +394,8 @@ const gridContainer = ref<HTMLElement | null>(null);
 const defaultColDef: ColDef = {
   sortable: true,
   filter: "agTextColumnFilter",
+  flex: 1,
+  minWidth: 150,
   valueFormatter: (params) => params.value || "-",
 };
 
@@ -391,7 +419,7 @@ const gridOptions = ref<GridOptions>({
       nextTick(resizeNow);
     }
   },
-  domLayout: "autoHeight",
+  domLayout: "normal",
   onGridReady: (params) => {
     gridApi.value = params.api;
     params.api.sizeColumnsToFit();
@@ -405,7 +433,7 @@ const gridOptions = ref<GridOptions>({
   suppressRowTransform: false,
   enableCellTextSelection: true,
   suppressCellFocus: true,
-  suppressHorizontalScroll: true,
+  suppressHorizontalScroll: false,
   tooltipShowDelay: 300,
   tooltipHideDelay: 200,
 });
@@ -435,6 +463,7 @@ function resetForm() {
     profile_picture: "",
     is_active: true,
     is_verified: false,
+    version: 0,
   };
   imageFile.value = null;
   previewUrl.value = undefined;
@@ -497,6 +526,7 @@ async function handleEdit(user: UserResponse) {
     profile_picture: user.profile_picture,
     is_active: user.is_active,
     is_verified: user.is_verified,
+    version: user.version,
   };
 }
 
@@ -510,6 +540,7 @@ async function onUpdate() {
     profile_picture: form.value.profile_picture,
     is_active: form.value.is_active,
     is_verified: form.value.is_verified,
+    version: form.value.version,
   };
 
   if (form.value.password) {

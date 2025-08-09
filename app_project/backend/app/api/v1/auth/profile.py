@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form
 from sqlalchemy.orm import Session
-
+from uuid import UUID
 from app.core.database import get_db
 from app.services.auth import profile_service
 from app.services.auth.dependencies import get_current_user_id_from_cookie
@@ -18,7 +18,7 @@ router = APIRouter(
 @router.get("", response_model=GenericResponse[UserResponse])
 def get_profile(
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id_from_cookie)
+    user_id: UUID = Depends(get_current_user_id_from_cookie)
 ):
     return profile_service.get_my_profile(db, user_id)
 
@@ -31,7 +31,7 @@ async def update_profile(
     remove_image: bool = Form(False),
     image: UploadFile = File(None),
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id_from_cookie)
+    user_id: UUID = Depends(get_current_user_id_from_cookie)
 ):
     profile_picture = None
 
@@ -50,9 +50,9 @@ async def update_profile(
 
 
 @router.put("/change-password", response_model=GenericResponse[None])
-async def change_password(
+def change_password(
     data: ChangePassword,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id_from_cookie)
+    user_id: UUID = Depends(get_current_user_id_from_cookie)
 ):
-    return await profile_service.change_my_password(db, user_id, data)
+    return profile_service.change_my_password(db, user_id, data)

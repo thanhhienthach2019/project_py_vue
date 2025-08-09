@@ -4,6 +4,9 @@
     "validation": {
       "failed": "Xác thực không thành công với các trường: {errors}"
     },
+    "fetch": {
+      "failed": "Không thể lấy dữ liệu {entity}. Vui lòng thử lại sau."
+    },
     "menu": {
       "not_found": "Không tìm thấy mục menu với ID {id}.",
       "permission_key_conflict": "Permission key '{key}' đã tồn tại.",

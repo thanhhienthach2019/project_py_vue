@@ -10,8 +10,9 @@ env_file_path = BASE_DIR / ".env.dev"
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str
-    DATABASE_URL_SQLITE: str
+    DATABASE_URL: str 
+    DATABASE_URL_SQLITE: str 
+    DATABASE_URL_PG: str
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
     BASE_URL: str
@@ -24,7 +25,8 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_file=str(env_file_path),
-        env_file_encoding="utf-8"
+        env_file_encoding="utf-8",
+        extra="ignore"
     )
 
     @property

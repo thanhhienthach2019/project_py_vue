@@ -32,17 +32,22 @@ engine_sqlite = create_engine(
     future=True,
 )
 
+# PostgreSQL engine
+engine_postgres = create_engine(
+    settings.DATABASE_URL_PG,  
+    echo=False,
+    pool_pre_ping=True,
+    future=True,
+)
 # ---------- Session factories ----------
 
 SessionLocalMSSQL = sessionmaker(bind=engine_mssql, autocommit=False, autoflush=False)
 SessionLocalSQLite = sessionmaker(bind=engine_sqlite, autocommit=False, autoflush=False)
+SessionLocalPostgres = sessionmaker(bind=engine_postgres, autocommit=False, autoflush=False)
 
 # ---------- Test connection for engines ----------
 
 def test_database_connection(engine, name: str = "") -> None:
-    """
-    Tests a database connection by executing a simple SELECT statement.
-    """
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
@@ -57,10 +62,6 @@ def test_database_connection(engine, name: str = "") -> None:
 # ---------- Dependency functions for FastAPI ----------
 
 def get_db_mssql() -> Generator[Session, None, None]:
-    """
-    Dependency function to get a MSSQL database session.
-    Rolls back and closes the session in case of errors.
-    """
     db = SessionLocalMSSQL()
     try:
         yield db
@@ -72,10 +73,6 @@ def get_db_mssql() -> Generator[Session, None, None]:
         db.close()
 
 def get_db_sqlite() -> Generator[Session, None, None]:
-    """
-    Dependency function to get a SQLite database session.
-    Rolls back and closes the session in case of errors.
-    """
     db = SessionLocalSQLite()
     try:
         yield db
@@ -86,6 +83,16 @@ def get_db_sqlite() -> Generator[Session, None, None]:
     finally:
         db.close()
 
-# ---------- Default DB session for backward compatibility ----------
+def get_db_pg() -> Generator[Session, None, None]:
+    db = SessionLocalPostgres()
+    try:
+        yield db
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.exception("Error occurred during PostgreSQL session.")
+        raise HTTPException(status_code=500, detail="PostgreSQL database error")
+    finally:
+        db.close()
 
-get_db = get_db_sqlite  # Default to MSSQL (for legacy usage)
+
+get_db = get_db_pg  

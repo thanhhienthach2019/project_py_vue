@@ -2,43 +2,57 @@
   <header
     class="bg-[#2E3A47] p-4 flex items-center justify-between shadow-md border-b border-white/10"
   >
-    <!-- Toggle Sidebar -->
-    <button
-      @click="$emit('toggleSidebar')"
-      class="text-gray-300 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors duration-200"
-    >
-      <Icon icon="mdi:menu" class="text-2xl" />
-    </button>
+    <!-- Left Section -->
+    <div class="flex items-center space-x-4">
+      <!-- Toggle Sidebar -->
+      <button
+        @click="$emit('toggleSidebar')"
+        class="text-gray-300 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors duration-200"
+      >
+        <Icon icon="mdi:menu" class="text-2xl" />
+      </button>
 
-    <!-- Title -->
-    <h2 class="text-lg font-semibold text-gray-200 hidden md:block">
-      Dashboard
-    </h2>
+      <!-- Title - Hidden on mobile -->
+      <h2 class="text-lg font-semibold text-gray-200 hidden sm:block">
+        Dashboard
+      </h2>
+    </div>
 
     <!-- Right Section -->
-    <div class="flex items-center space-x-3">
+    <div class="flex items-center space-x-2 sm:space-x-3">
+      <!-- Mobile Search Button -->
+      <button class="sm:hidden p-2 text-gray-300 hover:text-white">
+        <Icon icon="mdi:magnify" class="text-xl" />
+      </button>
+
       <!-- User Dropdown -->
       <div
         class="relative"
-        @mouseenter="showUserDropdown"
-        @mouseleave="hideUserDropdown"
+        @mouseenter="!isMobile && showUserDropdown()"
+        @mouseleave="!isMobile && hideUserDropdown()"
+        @click="isMobile ? toggleUserDropdown() : null"
       >
         <div
-          class="flex items-center space-x-2 cursor-pointer px-3 py-2 rounded-lg hover:bg-white/10 transition"
+          class="flex items-center space-x-2 cursor-pointer px-2 sm:px-3 py-2 rounded-lg hover:bg-white/10 transition"
         >
           <div
             class="w-8 h-8 rounded-full bg-blue-400/20 flex items-center justify-center border border-blue-400/30"
           >
             <Icon icon="mdi:account" class="text-blue-400" />
           </div>
-          <span class="text-sm font-medium text-gray-200">{{ username }}</span>
-          <Icon icon="mdi:chevron-down" class="text-gray-400 text-sm" />
+          <span class="text-sm font-medium text-gray-200 hidden sm:inline">{{
+            username
+          }}</span>
+          <Icon
+            icon="mdi:chevron-down"
+            class="text-gray-400 text-sm hidden sm:inline"
+          />
         </div>
 
-        <Transition name="fade">
+        <Transition name="dropdown">
           <div
             v-if="userDropdownOpen"
-            class="absolute right-0 top-full mt-2 w-52 bg-[#2F3A48] rounded-xl shadow-2xl border border-white/10 z-50 origin-top-right"
+            class="absolute right-0 top-full mt-2 w-48 sm:w-52 bg-[#2F3A48] rounded-xl shadow-2xl border border-white/10 z-50 origin-top-right"
           >
             <ul class="py-2">
               <li>
@@ -66,17 +80,17 @@
 
       <!-- Settings Dropdown -->
       <div
-        class="relative"
+        class="relative hidden sm:block"
         @mouseenter="showSettingsDropdown"
         @mouseleave="hideSettingsDropdown"
       >
         <button
           class="p-2 rounded-full bg-[#2E3A47] hover:bg-[#3B4856] text-gray-300 hover:text-blue-400 transition-colors duration-200"
         >
-          <Icon icon="mdi:cog-outline" class="text-2xl" />
+          <Icon icon="mdi:cog-outline" class="text-xl sm:text-2xl" />
         </button>
 
-        <Transition name="fade">
+        <Transition name="dropdown">
           <div
             v-if="settingsDropdownOpen"
             class="absolute right-0 top-full mt-2 w-60 bg-[#2F3A48] rounded-xl shadow-2xl border border-white/10 z-50 origin-top-right"
@@ -92,17 +106,19 @@
           </div>
         </Transition>
       </div>
+
+      <!-- Language Dropdown -->
       <div
-        class="relative group"
+        class="relative group hidden sm:block"
         @mouseenter="showLangDropdown"
         @mouseleave="hideLangDropdown"
       >
         <button
-          class="w-10 h-10 flex items-center justify-center rounded-full bg-[#3B4856] hover:bg-[#475769] transition-colors duration-200 relative"
+          class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-[#3B4856] hover:bg-[#475769] transition-colors duration-200 relative"
           :title="currentLanguage.label"
         >
           <div class="absolute inset-0 flex items-center justify-center">
-            <Icon icon="mdi:earth" class="text-xl text-blue-400" />
+            <Icon icon="mdi:earth" class="text-lg sm:text-xl text-blue-400" />
           </div>
           <div
             class="absolute -top-1 -right-1 bg-blue-500 rounded-full w-4 h-4 flex items-center justify-center"
@@ -114,14 +130,7 @@
         </button>
 
         <!-- Language Dropdown -->
-        <Transition
-          enter-active-class="transition duration-200 ease-out"
-          enter-from-class="transform opacity-0 -translate-y-1"
-          enter-to-class="transform opacity-100 translate-y-0"
-          leave-active-class="transition duration-150 ease-in"
-          leave-from-class="transform opacity-100 translate-y-0"
-          leave-to-class="transform opacity-0 -translate-y-1"
-        >
+        <Transition name="dropdown">
           <div
             v-if="langDropdownOpen"
             class="absolute right-0 top-full mt-2 w-48 bg-[#2F3A48] rounded-xl shadow-2xl border border-white/10 z-50 origin-top-right overflow-hidden"
@@ -176,7 +185,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onBeforeUnmount } from "vue";
+import { ref, computed, onBeforeUnmount, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
 import { useI18n } from "vue-i18n";
@@ -189,12 +198,10 @@ const authStore = useAuthStore();
 const router = useRouter();
 const { user } = useAuth();
 
+const emit = defineEmits(["toggleSidebar"]);
+
 const { setPreferredLanguage } = useAuth();
 const { locale } = useI18n();
-
-const goToProfile = () => {
-  router.push("/admin/settings/my-profile");
-};
 
 const availableLanguages: {
   value: SupportedLang;
@@ -233,17 +240,6 @@ const currentLanguage = computed(() => {
 const langDropdownOpen = ref(false);
 let langTimeout: ReturnType<typeof setTimeout> | null = null;
 
-function showLangDropdown() {
-  if (langTimeout) clearTimeout(langTimeout);
-  langDropdownOpen.value = true;
-}
-
-function hideLangDropdown() {
-  langTimeout = setTimeout(() => {
-    langDropdownOpen.value = false;
-  }, 300);
-}
-
 // Thay đổi ngôn ngữ
 async function changeLanguage(lang: SupportedLang) {
   if (locale.value === lang) {
@@ -277,38 +273,14 @@ const username = computed(() => user.value?.username ?? "User");
 // Dropdown logic
 const userDropdownOpen = ref(false);
 const settingsDropdownOpen = ref(false);
+const isMobile = ref(false);
 let userTimeout: ReturnType<typeof setTimeout> | null = null;
 let settingsTimeout: ReturnType<typeof setTimeout> | null = null;
 
-function showUserDropdown() {
-  if (userTimeout) clearTimeout(userTimeout);
-  userDropdownOpen.value = true;
-}
-function hideUserDropdown() {
-  userTimeout = setTimeout(() => {
-    userDropdownOpen.value = false;
-  }, 200);
-}
-function showSettingsDropdown() {
-  if (settingsTimeout) clearTimeout(settingsTimeout);
-  settingsDropdownOpen.value = true;
-}
-function hideSettingsDropdown() {
-  settingsTimeout = setTimeout(() => {
-    settingsDropdownOpen.value = false;
-  }, 200);
-}
 onBeforeUnmount(() => {
   if (userTimeout) clearTimeout(userTimeout);
   if (settingsTimeout) clearTimeout(settingsTimeout);
 });
-
-function navigateTo(path: string) {
-  router.push(path);
-}
-function logout() {
-  authStore.logout();
-}
 
 const settingsMenu = [
   {
@@ -337,6 +309,65 @@ const settingsMenu = [
   ...item,
   path: `/admin/${item.path}`,
 }));
+
+const checkScreenSize = () => {
+  isMobile.value = window.innerWidth < 640; // sm breakpoint
+};
+
+const showUserDropdown = () => {
+  if (!isMobile.value) userDropdownOpen.value = true;
+};
+
+const hideUserDropdown = () => {
+  if (!isMobile.value) userDropdownOpen.value = false;
+};
+
+const toggleUserDropdown = () => {
+  if (isMobile.value) userDropdownOpen.value = !userDropdownOpen.value;
+};
+
+const showSettingsDropdown = () => {
+  settingsDropdownOpen.value = true;
+};
+
+const hideSettingsDropdown = () => {
+  settingsDropdownOpen.value = false;
+};
+
+const showLangDropdown = () => {
+  langDropdownOpen.value = true;
+};
+
+const hideLangDropdown = () => {
+  langDropdownOpen.value = false;
+};
+
+const goToProfile = () => {
+  // Navigate to profile
+  router.push("/admin/settings/my-profile");
+  userDropdownOpen.value = false;
+};
+
+const logout = () => {
+  // Handle logout
+  userDropdownOpen.value = false;
+  authStore.logout();
+};
+
+const navigateTo = (path: string) => {
+  // Navigate to path
+  router.push(path);
+  settingsDropdownOpen.value = false;
+};
+
+onMounted(() => {
+  checkScreenSize();
+  window.addEventListener("resize", checkScreenSize);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", checkScreenSize);
+});
 </script>
 
 <style scoped>
@@ -352,12 +383,28 @@ const settingsMenu = [
 .icon-danger {
   @apply text-lg mr-3 text-red-300;
 }
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
 }
-.fade-enter-from,
-.fade-leave-to {
+.dropdown-enter-from,
+.dropdown-leave-to {
   opacity: 0;
+  transform: translateY(-10px);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #2e3a47;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #3b4856;
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #475769;
 }
 </style>

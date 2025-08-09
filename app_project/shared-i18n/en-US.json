@@ -4,6 +4,9 @@
     "validation": {
       "failed": "Validation failed for the following fields: {errors}"
     },
+     "fetch": {
+      "failed": "Failed to fetch {entity} data. Please try again later."
+    },
     "menu": {
       "not_found": "Menu item with ID {id} not found.",
       "permission_key_conflict": "The permission key '{key}' already exists.",

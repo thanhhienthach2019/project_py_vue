@@ -6,7 +6,7 @@ from app.api.v1.settings import (
     permission_router,
     policy
     )
-from app.core.database import Base, engine_sqlite
+from app.core.database import Base, engine_postgres
 from app.core.rabbit import rabbit_client
 from app.exceptions.handlers import validation_exception_handler
 from fastapi.exceptions import RequestValidationError
@@ -33,8 +33,14 @@ from app.api.v1.otrao_news import (
     )
 from app.api.v1.ws.ws_listener import start_redis_listeners
 from app.api.v1.ws import ws_router
+from casbin_sqlalchemy_adapter import CasbinRule
 
-Base.metadata.create_all(bind=engine_sqlite)
+# Base.metadata.create_all(bind=engine_postgres)
+
+# try:
+#     CasbinRule.__table__.create(bind=engine_postgres, checkfirst=True)
+# except Exception as e:
+#     print("⚠️ Unable to create CasbinRule table:", e)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

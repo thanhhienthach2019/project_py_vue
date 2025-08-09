@@ -91,12 +91,11 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       try {
         const res = await getProfileApi()
-        const payload = res.data as AuthUser
-        const payloadLang = res.data as AuthResponse
-        this.user = payload
+        const payload = res.data as AuthResponse
+        this.user = payload.user
         this.isAuthenticated = true
-        if (payloadLang.user?.preferred_language) {
-          applyLang(payloadLang.user?.preferred_language)
+        if (payload.user?.preferred_language) {
+          applyLang(payload.user?.preferred_language)
         }
 
         try {
@@ -107,7 +106,7 @@ export const useAuthStore = defineStore('auth', {
 
         return {
           success: true,
-          data: payload,
+          data: payload.user,
           message: res.message,
           args: res.args,
         }
@@ -125,12 +124,12 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       try {
         const res = await getProfileApi()
-        const payload = res.data as AuthUser
-        this.user = payload
+        const payload = res.data as AuthResponse
+        this.user = payload.user
         this.isAuthenticated = true
 
-        if (payload.preferred_language) {
-          applyLang(payload.preferred_language)
+        if (payload.user.preferred_language) {
+          applyLang(payload.user.preferred_language)
         }
 
         try {

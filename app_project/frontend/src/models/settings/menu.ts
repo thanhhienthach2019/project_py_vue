@@ -3,7 +3,8 @@ export interface MenuItemBase {
   path: string;
   icon: string;
   permission_key: string;
-  parent_id?: number | null;
+  parent_id?: string | null;
+  version: number,
   order: number;
 }
 
@@ -14,6 +15,6 @@ export interface MenuItemCreate extends MenuItemBase {
 export interface MenuItemUpdate extends MenuItemBase {}
 
 export interface MenuItemResponse extends MenuItemBase {
-  id: number;
+  id: string;
   children?: MenuItemResponse[];
 }

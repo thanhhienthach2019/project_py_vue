@@ -1,7 +1,7 @@
 // src/models/user.ts
 
 export interface UserResponse {
-  id: number;
+  id: string;
   username: string;
   email: string;
   full_name?: string;
@@ -13,6 +13,7 @@ export interface UserResponse {
   created_at: string;          
   updated_at: string;          
   last_login?: string | null;  
+  version: number;
 }
 
 export interface UserCreate {
@@ -34,6 +35,7 @@ export interface UserUpdate {
   is_active?: boolean;
   is_verified?: boolean;
   role?: UserRole;
+  version: number;
 }
 
 export enum UserRole {

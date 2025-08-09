@@ -1,57 +1,53 @@
 <template>
-  <div
-    class="w-full max-w-12xl mx-auto p-2 my-2 space-y-6 transition-all duration-300"
-  >
-    <!-- Header -->
-    <div
-      class="bg-gradient-to-r from-blue-600/40 via-purple-600/40 to-pink-500/40 backdrop-blur-lg rounded-2xl p-8 border border-white/10 shadow-2xl ring-1 ring-white/20 transition-all duration-300"
-    >
-      <div class="flex items-center justify-between">
+  <div class="w-full mx-auto p-2 sm:p-4 space-y-6 transition-all duration-300">
+    <!-- Header Card -->
+    <div class="bg-[#2E3A47] rounded-2xl p-6 border border-white/10 shadow-lg">
+      <div
+        class="flex flex-col md:flex-row md:items-center justify-between gap-4"
+      >
         <div>
-          <h1 class="text-3xl font-extrabold text-white tracking-tight">
-            Form Access Management
+          <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            <span
+              class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
+            >
+              Form Access Management
+            </span>
           </h1>
-          <p class="text-purple-200 mt-2 font-medium">
+          <p class="text-gray-300 mt-2 text-sm sm:text-base">
             Define and control user permissions on system forms using Casbin
           </p>
         </div>
         <button
           @click="resetForm()"
-          class="group relative flex items-center gap-3 px-6 py-3.5 bg-gradient-to-r from-gray-700/60 to-gray-800/60 rounded-xl border border-white/10 hover:bg-gray-700/80 hover:border-white/20 transition-all duration-300"
+          class="group flex items-center justify-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 bg-[#3B4856] hover:bg-[#475769] rounded-xl border border-white/10 transition-all duration-300"
         >
           <Icon
             icon="mdi:autorenew"
-            class="text-purple-400 text-xl group-hover:rotate-180 transition-transform duration-300"
+            class="text-blue-400 text-lg group-hover:rotate-180 transition-transform duration-500"
           />
-          <span class="text-gray-100 font-medium tracking-wide"
-            >Reset Form</span
-          >
+          <span class="text-gray-100 font-medium">Reset Form</span>
         </button>
       </div>
     </div>
 
-    <!-- Form -->
-    <div
-      class="bg-white/5 backdrop-blur-2xl rounded-2xl p-8 border border-white/15 shadow-xl"
-    >
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+    <!-- Form Card -->
+    <div class="bg-[#2E3A47] rounded-2xl p-6 border border-white/10 shadow-lg">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <!-- Type Select -->
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2"
-            >Type</label
-          >
-          <select
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Type
+          </label>
+          <input
             v-model="form.ptype"
-            class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white focus:ring-purple-400/30 focus:border-purple-50"
-          >
-            <option
-              class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
-              value="p"
-            >
-              p (permission)
-            </option>
-          </select>
+            readonly
+            type="text"
+            class="w-full px-3 py-2 bg-[#3B4856] border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 transition"
+            placeholder="Enter type (e.g. p)"
+          />
         </div>
 
+        <!-- Subject Select -->
         <div class="relative w-full">
           <label class="block text-sm font-medium text-gray-300 mb-2"
             >Subject</label
@@ -62,43 +58,42 @@
             label-key="label"
             value-key="value"
             placeholder="Select a role"
+            class="bg-[#3B4856] border-white/10"
           />
         </div>
 
-        <div class="relative z-[999] overflow-visible">
-          <label class="block text-sm font-medium text-gray-300 mb-2">
-            Resource
-          </label>
+        <!-- Resource Select -->
+        <div class="relative z-[99]">
+          <label class="block text-sm font-medium text-gray-300 mb-2"
+            >Resource</label
+          >
           <SearchableSelect
             v-model="form.v1"
             :options="menuOptions"
             label-key="label"
             value-key="permission_key"
             placeholder="Select a resource"
+            class="bg-[#3B4856] border-white/10"
           />
         </div>
 
+        <!-- Action Select -->
         <div v-if="form.ptype === 'p'">
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2"
-              >Action</label
-            >
-            <select
-              v-model="form.v2"
-              class="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-lg text-white focus:ring-purple-400/30 focus:border-purple-50"
-            >
-              <option
-                class="bg-gray-800 text-gray-200 hover:bg-blue-500/20 focus:bg-blue-500/20"
-                value="view"
-              >
-                View
-              </option>
-            </select>
-          </div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Action
+          </label>
+          <input
+            v-model="form.v2"
+            readonly
+            type="text"
+            class="w-full px-3 py-2 bg-[#3B4856] border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 transition"
+            placeholder="Enter action (e.g. view)"
+          />
         </div>
 
-        <div class="md:col-span-5 flex space-x-4 mt-2">
-          <!-- Add Policy Button -->
+        <!-- Action Buttons -->
+        <div class="md:col-span-5 flex flex-col sm:flex-row gap-3 mt-2">
+          <!-- Create Button -->
           <button
             v-permission.disable="'menu:settings:policy:create'"
             :disabled="isCreateDisabled"
@@ -115,6 +110,7 @@
             <span>{{ isCreating ? "Creating..." : "Create Policy" }}</span>
           </button>
 
+          <!-- Delete Button -->
           <button
             v-permission.disable="'menu:settings:policy:delete'"
             :disabled="isDeleteDisabled"
@@ -128,9 +124,7 @@
               :icon="isDeleting ? 'mdi:loading' : 'mdi:account-remove'"
               :class="['text-lg', { 'animate-spin': isDeleting }]"
             />
-            <span>
-              {{ isDeleting ? "Deleting..." : "Delete Policy" }}
-            </span>
+            <span>{{ isDeleting ? "Deleting..." : "Delete Policy" }}</span>
           </button>
         </div>
       </div>
@@ -138,51 +132,42 @@
 
     <!-- Table Card -->
     <div
-      class="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+      class="bg-[#2E3A47] rounded-2xl border border-white/10 shadow-lg overflow-hidden"
     >
-      <div class="px-8 py-6 border-b border-white/10">
-        <div class="flex items-start justify-between">
-          <!-- Left: icon + title + info -->
-          <div class="flex items-center space-x-4">
-            <div class="relative group">
-              <div
-                class="w-14 h-10 bg-white/10 backdrop-blur-lg rounded-xl border border-white/10 group-hover:border-green-400/40 transition-all duration-300 flex items-center justify-center"
-              >
-                <Icon icon="mdi:database" class="w-8 h-8 text-white" />
-              </div>
-              <div
-                class="absolute -bottom-1 left-4 right-4 h-1 bg-white/5 blur-sm rounded-full group-hover:bg-green-400/30 transition-colors"
-              ></div>
+      <!-- Table Header -->
+      <div class="px-6 py-4 border-b border-white/10">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
+          <!-- Title Section -->
+          <div class="flex items-center gap-4">
+            <div
+              class="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20"
+            >
+              <Icon icon="mdi:database" class="text-blue-400 text-2xl" />
             </div>
-            <div class="flex-1 min-w-0">
-              <h3
-                class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 tracking-tight"
-              >
+            <div>
+              <h3 class="text-xl font-bold text-white">
                 Form Policy Table Data
               </h3>
-              <p class="text-sm text-gray-400 mt-1">
+              <p class="text-sm text-gray-400">
                 Casbin rules applied to form access
-              </p>
-              <div class="flex items-center space-x-2 mt-1">
-                <span class="text-sm font-medium text-gray-400"
-                  >Total Roles:</span
-                >
                 <span
-                  class="text-sm font-semibold text-green-300 bg-green-400/10 px-2 py-0.5 rounded-full flex items-center"
+                  class="ml-2 text-green-300 bg-green-400/10 px-2 py-0.5 rounded-full text-xs"
                 >
                   {{ viewPolicies.length }} active
                 </span>
-              </div>
+              </p>
             </div>
           </div>
 
-          <!-- Right: search box -->
-          <div class="relative w-72">
+          <!-- Search Box -->
+          <div class="relative w-full sm:w-64">
             <input
               v-model="quickFilterText"
               :disabled="isLoading"
               placeholder="Search Policy..."
-              class="w-full pl-4 pr-10 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-400/30 transition-all"
+              class="w-full pl-4 pr-10 py-2 text-sm bg-[#3B4856] border border-white/10 rounded-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 transition-all"
             />
             <Icon
               icon="mdi:magnify"
@@ -192,30 +177,35 @@
         </div>
       </div>
 
-      <div
-        ref="gridContainer"
-        class="grid-wrapper overflow-x-auto overflow-y-visible relative p-4 bg-gray-800 rounded-2xl shadow-xl border border-white/10 transition-all"
-      >
+      <!-- Table Content -->
+      <div class="p-4 bg-[#2E3A47] rounded-b-2xl">
         <div
-          v-if="delayedLoading"
-          class="h-[600px] w-full flex items-start gap-2"
+          ref="gridContainer"
+          class="grid-wrapper overflow-x-auto overflow-y-visible relative"
         >
-          <SkeletonTable />
-        </div>
+          <!-- Loading State -->
+          <div
+            v-if="delayedLoading"
+            class="h-[500px] w-full flex items-start gap-2"
+          >
+            <SkeletonTable />
+          </div>
 
-        <ag-grid-vue
-          v-else
-          class="ag-theme-material-futura h-[600px] w-full"
-          :defaultColDef="defaultColDef"
-          :columnDefs="columnDefs"
-          :rowData="viewPolicies"
-          :frameworkComponents="frameworkComponents"
-          :gridOptions="gridOptions"
-          :quickFilterText="quickFilterText"
-          @grid-ready="onGridReady"
-          @first-data-rendered="onFirstDataRendered"
-          :rowModelType="'clientSide'"
-        />
+          <!-- AG Grid Table -->
+          <ag-grid-vue
+            v-else
+            class="ag-theme-material-futura h-[600px] w-full"
+            :defaultColDef="defaultColDef"
+            :columnDefs="columnDefs"
+            :rowData="viewPolicies"
+            :frameworkComponents="frameworkComponents"
+            :gridOptions="gridOptions"
+            :quickFilterText="quickFilterText"
+            @grid-ready="onGridReady"
+            @first-data-rendered="onFirstDataRendered"
+            :rowModelType="'clientSide'"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -352,10 +342,10 @@ const gridOptions = ref<GridOptions>({
       nextTick(resizeNow);
     }
   },
-  domLayout: "autoHeight",
+  domLayout: "normal",
   onGridReady: (params) => {
     gridApi.value = params.api;
-    params.api.sizeColumnsToFit();
+    // params.api.sizeColumnsToFit();
   },
   context: {
     onDelete: handleDeletePolicyLine,
@@ -366,7 +356,7 @@ const gridOptions = ref<GridOptions>({
   suppressRowTransform: false,
   enableCellTextSelection: true,
   suppressCellFocus: true,
-  suppressHorizontalScroll: true,
+  suppressHorizontalScroll: false,
   tooltipShowDelay: 300,
   tooltipHideDelay: 200,
 });

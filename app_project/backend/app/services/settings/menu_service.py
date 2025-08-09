@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from uuid import UUID
 from typing import Optional, List, Dict
 from fastapi import Request
 from app.core.http_exceptions import http_404, http_400, http_500
@@ -33,6 +34,7 @@ def get_all_menu_items(db: Session) -> List[MenuItem]:
 def get_all_menu_items_response(db: Session) -> GenericResponse[List[MenuItemResponse]]:
     try:
         items = get_all_menu_items(db)
+
         result = [
             MenuItemResponse(
                 id=i.id,
@@ -42,10 +44,12 @@ def get_all_menu_items_response(db: Session) -> GenericResponse[List[MenuItemRes
                 permission_key=i.permission_key,
                 parent_id=i.parent_id,
                 order=i.order,
+                version=i.version,
                 children=[]
             )
             for i in items
         ]
+        
         return GenericResponse(
             data=result,
             message="notification.fetch.success",
@@ -86,7 +90,7 @@ def get_menu_tree_for_user(db: Session, username: str) -> GenericResponse[List[M
 async def create_menu_item(
     db: Session,
     data: MenuItemCreate,
-    parent_id: Optional[int] = None
+    parent_id: Optional[UUID] = None
 ) -> GenericResponse[MenuItemResponse]:
     try:
         m = MenuItem(
@@ -95,6 +99,7 @@ async def create_menu_item(
             icon=data.icon,
             permission_key=data.permission_key,
             parent_id=parent_id or data.parent_id,
+            version=data.version,
             order=data.order
         )
         db.add(m)
@@ -128,6 +133,7 @@ async def create_menu_item(
         permission_key=m.permission_key,
         parent_id=m.parent_id,
         order=m.order,
+        version=m.version,
         children=children
     )
     return GenericResponse(
@@ -140,7 +146,7 @@ async def create_menu_item(
 # 🟡 UPDATE
 async def update_menu_item(
     db: Session,
-    menu_id: int,
+    menu_id: UUID,
     data: MenuItemUpdate,
     request: Request
 ) -> GenericResponse[MenuItemResponse]:
@@ -177,7 +183,7 @@ async def update_menu_item(
 # 🔴 DELETE
 async def delete_menu_item(
     db: Session,
-    menu_id: int,
+    menu_id: UUID,
     request: Request
 ) -> GenericResponse[None]:
     m = db.query(MenuItem).filter(MenuItem.id == menu_id).first()

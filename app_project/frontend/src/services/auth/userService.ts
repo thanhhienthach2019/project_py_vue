@@ -17,7 +17,7 @@ export const fetchUsers = async (): Promise<GenericResponse<UserResponse[]>> => 
 };
 
 export const fetchUserById = async (
-  userId: number
+  userId: string
 ): Promise<GenericResponse<UserResponse>> => {
   try {
     const response = await apiClient.get(`/users/${userId}`, getAuthHeaders());
@@ -70,7 +70,7 @@ export const createUser = async (
 };
 
 export const updateUser = async (
-  userId: number,
+  userId: string,
   userUpdate: UserUpdate,
   imageFile?: File | null,
   removeImage: boolean = false
@@ -80,6 +80,8 @@ export const updateUser = async (
 
     if (userUpdate.email) formData.append("email", userUpdate.email);
     if (userUpdate.full_name) formData.append("full_name", userUpdate.full_name);
+    if (userUpdate.version !== undefined && userUpdate.version !== null) 
+      formData.append("version", String(userUpdate.version));
     if (userUpdate.phone_number) formData.append("phone_number", userUpdate.phone_number);
     if (userUpdate.password) formData.append("password", userUpdate.password);
     if (typeof userUpdate.is_active === "boolean")
@@ -113,7 +115,7 @@ export const updateUser = async (
 
 
 export const deleteUser = async (
-  userId: number
+  userId: string
 ): Promise<GenericResponse<null>> => {
   try {
     const response = await apiClient.delete(`/users/${userId}`, getAuthHeaders());

@@ -1,21 +1,24 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import datetime
+from uuid import UUID
 
-
+# ===== Base Schema =====
 class UserBase(BaseModel):
     username: str = Field(..., max_length=50)
     email: EmailStr
-    role: str = Field(None, max_length=20)
+    role: Optional[str] = Field(None, max_length=20)
     full_name: Optional[str] = Field(None, max_length=255)
     phone_number: Optional[str] = Field(None, max_length=20)
     profile_picture: Optional[str] = None
 
 
+# ===== Create User =====
 class UserCreate(UserBase):
     password: str = Field(..., min_length=6, max_length=128)
 
 
+# ===== Update User =====
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     full_name: Optional[str] = None
@@ -25,13 +28,15 @@ class UserUpdate(BaseModel):
     role: Optional[str] = None
     is_verified: Optional[bool] = None
     password: Optional[str] = Field(default=None, min_length=6)
+    version: int  # required for optimistic concurrency
 
     class Config:
         from_attributes = True
 
 
+# ===== Response Schema =====
 class UserResponse(BaseModel):
-    id: int
+    id: UUID
     username: str
     email: EmailStr
     full_name: Optional[str]
@@ -41,27 +46,28 @@ class UserResponse(BaseModel):
     is_verified: bool
     role: Optional[str]  
     last_login: Optional[datetime]
+    version: int
 
     class Config:
         from_attributes = True
 
 
+# ===== Detailed Response =====
 class UserDetail(UserResponse):
-    full_name: Optional[str]
-    phone_number: Optional[str]
-    profile_picture: Optional[str]
     created_at: datetime
     updated_at: datetime
-    last_login: Optional[datetime]
-    is_verified: bool
 
     class Config:
         from_attributes = True
 
+
+# ===== Change Password Schema =====
 class ChangePassword(BaseModel):
     old_password: str
     new_password: str = Field(..., min_length=6)
 
+
+# ===== Profile Update Schema =====
 class MyProfileUpdate(BaseModel):
     email: Optional[EmailStr]
     full_name: Optional[str]
@@ -71,5 +77,7 @@ class MyProfileUpdate(BaseModel):
     class Config:
         from_attributes = True
 
+
+# ===== Language Update Schema =====
 class UpdateLanguageRequest(BaseModel):
     lang: str

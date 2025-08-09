@@ -1,11 +1,20 @@
 <template>
   <div class="flex min-h-screen bg-[#1E2A38] text-[#E0E0E0]">
     <!-- Sidebar -->
-    <Sidebar :sidebarOpen="sidebarOpen" />
+    <Sidebar
+      :sidebarOpen="sidebarOpen"
+      :isMobile="isMobile"
+      @toggle="sidebarOpen = !sidebarOpen"
+    />
+
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col min-h-screen">
+    <div class="flex-1 flex flex-col min-h-screen overflow-hidden">
       <!-- Navbar -->
-      <HeaderComponent @toggleSidebar="sidebarOpen = !sidebarOpen" />
+      <HeaderComponent
+        @toggleSidebar="toggleSidebar"
+        :sidebarOpen="sidebarOpen"
+      />
+
       <!-- Main content -->
       <MainContent />
 
@@ -16,15 +25,37 @@
         © 2025 Company LLC. All rights reserved.
       </footer>
     </div>
-    <!-- <StateStatusPanel /> -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import HeaderComponent from "@/components/layout/AdminHeader.vue";
 import Sidebar from "@/components/layout/AdminSidebar.vue";
 import MainContent from "@/components/layout/AdminMainContent.vue";
-// import StateStatusPanel from "@/components/StateStatusPanel.vue";
+
 const sidebarOpen = ref(true);
+const isMobile = ref(false);
+
+const checkScreenSize = () => {
+  isMobile.value = window.innerWidth < 768;
+  if (isMobile.value) {
+    sidebarOpen.value = false;
+  } else {
+    sidebarOpen.value = true;
+  }
+};
+
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value;
+};
+
+onMounted(() => {
+  checkScreenSize();
+  window.addEventListener("resize", checkScreenSize);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", checkScreenSize);
+});
 </script>

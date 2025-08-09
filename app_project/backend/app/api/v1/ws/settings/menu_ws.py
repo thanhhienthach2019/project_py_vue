@@ -21,10 +21,10 @@ async def websocket_menu(
 ):
     try:
         username = await authenticate_websocket(websocket, token)
+
         await authorize_websocket(websocket, db, username, path="/menus")
         await websocket.accept()
         add_client_to_channel(MENU_CHANNEL, websocket)
-
         while True:
             await websocket.receive_text()
 

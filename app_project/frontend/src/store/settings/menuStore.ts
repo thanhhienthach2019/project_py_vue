@@ -20,8 +20,8 @@ interface MenuState {
   isUpdating: boolean
   isDeleting: boolean
 
-  updatingId: number | null
-  deletingId: number | null
+  updatingId: string | null
+  deletingId: string | null
 }
 
 export const useMenuStore = defineStore('menu', {
@@ -47,7 +47,7 @@ export const useMenuStore = defineStore('menu', {
       )
     },
 
-    getMenuById: (state) => (id: number) => {
+    getMenuById: (state) => (id: string) => {
       return state.menus.find((menu) => menu.id === id)
     },
   },
@@ -75,7 +75,7 @@ export const useMenuStore = defineStore('menu', {
       }
     },
 
-    async updateMenu(id: number, data: MenuItemUpdate) {
+    async updateMenu(id: string, data: MenuItemUpdate) {
       this.isUpdating = true
       this.updatingId = id
       try {
@@ -86,7 +86,7 @@ export const useMenuStore = defineStore('menu', {
       }
     },
 
-    async deleteMenu(id: number) {
+    async deleteMenu(id: string) {
       this.isDeleting = true
       this.deletingId = id
       try {

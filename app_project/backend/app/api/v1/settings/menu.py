@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from typing import List
 from fastapi import Request
+from uuid import UUID
 from app.core.database import get_db
 from app.core.permissions import permission_required
 from app.schemas.settings.MenuItem import (
@@ -48,7 +49,7 @@ async def create_menu(
 @router.put("/{menu_id}")
 async def update_menu(
     request: Request,
-    menu_id: int,
+    menu_id: UUID,
     data: MenuItemUpdate,
     db: Session = Depends(get_db),
 ):
@@ -58,7 +59,7 @@ async def update_menu(
 @router.delete("/{menu_id}")
 async def delete_menu(
     request: Request,
-    menu_id: int,
+    menu_id: UUID,
     db: Session = Depends(get_db),
 ):
     return await delete_menu_item(db, menu_id, request)

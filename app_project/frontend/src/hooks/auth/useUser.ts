@@ -24,19 +24,19 @@ export function useUser() {
   // ============ Loaders ============
   const loaders = {
     fetchUsers: () => withToastAction(() => store.loadUsers()),
-    fetchUserById: (userId: number) => withToastAction(() => store.loadUserById(userId))
+    fetchUserById: (userId: string) => withToastAction(() => store.loadUserById(userId))
   }
 
   // ============ Actions ============
   const actions = {
     createUser: (user: UserCreate, imageFile?: File | null, removeImage?: boolean) => withToastAction(() => store.createUser(user, imageFile, removeImage)),
-    updateUser: (userId: number, data: UserUpdate, imageFile?: File | null, removeImage?: boolean) => withToastAction(() => store.updateUser(userId, data, imageFile, removeImage)),
-    deleteUser: (userId: number) => withToastAction(() => store.deleteUser(userId)) 
+    updateUser: (userId: string, data: UserUpdate, imageFile?: File | null, removeImage?: boolean) => withToastAction(() => store.updateUser(userId, data, imageFile, removeImage)),
+    deleteUser: (userId: string) => withToastAction(() => store.deleteUser(userId)) 
   }
 
   // ============ Getters ============
   const getters = {
-    getUserByIdFromList: (userId: number) => store.getUserByIdFromList(userId),
+    getUserByIdFromList: (userId: string) => store.getUserByIdFromList(userId),
   }
 
   return {

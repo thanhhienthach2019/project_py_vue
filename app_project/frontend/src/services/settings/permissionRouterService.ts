@@ -51,7 +51,7 @@ export const createRouter = async (
 
 // Update router by ID
 export const updateRouter = async (
-  routerId: number,
+  routerId: string,
   data: RouterUpdate
 ): Promise<GenericResponse<RouterResponse>> => {
   try {
@@ -69,7 +69,7 @@ export const updateRouter = async (
 
 // Delete router by ID
 export const deleteRouter = async (
-  routerId: number
+  routerId: string
 ): Promise<GenericResponse<null>> => {
   try {
     const response = await apiClient.delete(`/router-permissions/routers/${routerId}`);
@@ -120,7 +120,7 @@ export const createPermission = async (
 
 // Update permission by ID
 export const updatePermission = async (
-  permissionId: number,
+  permissionId: string,
   data: PermissionUpdate
 ): Promise<GenericResponse<PermissionResponse>> => {
   try {
@@ -138,7 +138,7 @@ export const updatePermission = async (
 
 // Delete permission by ID
 export const deletePermission = async (
-  permissionId: number
+  permissionId: string
 ): Promise<GenericResponse<null>> => {
   try {
     const response = await apiClient.delete(`/router-permissions/permissions/${permissionId}`);
@@ -203,7 +203,7 @@ export const createRouterPermission = async (
 
 // Update binding by ID
 export const updateRouterPermission = async (
-  id: number,
+  id: string,
   data: RouterPermissionUpdate
 ): Promise<GenericResponse<RouterPermissionResponse>> => {
   try {
@@ -221,7 +221,7 @@ export const updateRouterPermission = async (
 
 // Delete binding by ID
 export const deleteRouterPermission = async (
-  id: number
+  id: string
 ): Promise<GenericResponse<null>> => {
   try {
     const response = await apiClient.delete(`/router-permissions/bindings/${id}`);

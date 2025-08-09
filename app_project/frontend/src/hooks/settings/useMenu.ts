@@ -26,12 +26,12 @@ export function useMenu() {
   // ============ Actions ============
   const actions = {
     createMenu: (data: MenuItemCreate) => withToastAction(() => store.createMenu(data)),
-    updateMenu: (id: number, data: MenuItemUpdate) => withToastAction(() => store.updateMenu(id, data)),
-    deleteMenu: (id: number) => withToastAction(() => store.deleteMenu(id))
+    updateMenu: (id: string, data: MenuItemUpdate) => withToastAction(() => store.updateMenu(id, data)),
+    deleteMenu: (id: string) => withToastAction(() => store.deleteMenu(id))
   }
 
   // ============ Getter ============
-  function getMenuById(id: number) {
+  function getMenuById(id: string) {
     return store.getMenuById(id)
   }
 

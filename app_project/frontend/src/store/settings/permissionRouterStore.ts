@@ -44,8 +44,8 @@ interface PermissionRouterState {
   isUpdating: boolean
   isDeleting: boolean
 
-  updatingId: number | null
-  deletingId: number | null
+  updatingId: string | null
+  deletingId: string | null
 }
 
 export const usePermissionRouterStore = defineStore('permissionRouter', {
@@ -77,9 +77,9 @@ export const usePermissionRouterStore = defineStore('permissionRouter', {
         state.isLoadingDetailedBindings
       )
     },
-    getRouterById: (state) => (id: number) =>
+    getRouterById: (state) => (id: string) =>
       state.routers.find((r) => r.id === id),
-    getPermissionById: (state) => (id: number) =>
+    getPermissionById: (state) => (id: string) =>
       state.permissions.find((p) => p.id === id),
   },
 
@@ -167,7 +167,7 @@ export const usePermissionRouterStore = defineStore('permissionRouter', {
     // ✏️ UPDATE
     // ========================
 
-    async updateRouter(id: number, data: RouterUpdate) {      
+    async updateRouter(id: string, data: RouterUpdate) {      
       this.isUpdating = true
       this.updatingId = id
       try {
@@ -178,7 +178,7 @@ export const usePermissionRouterStore = defineStore('permissionRouter', {
       }
     },
 
-    async updatePermission(id: number, data: PermissionUpdate) {      
+    async updatePermission(id: string, data: PermissionUpdate) {      
       this.isUpdating = true
       this.updatingId = id
       try {
@@ -189,7 +189,7 @@ export const usePermissionRouterStore = defineStore('permissionRouter', {
       }
     },
 
-    async updateBinding(id: number, data: RouterPermissionUpdate) {      
+    async updateBinding(id: string, data: RouterPermissionUpdate) {      
       this.isUpdating = true
       this.updatingId = id
       try {
@@ -204,7 +204,7 @@ export const usePermissionRouterStore = defineStore('permissionRouter', {
     // 🗑️ DELETE
     // ========================
 
-    async deleteRouter(id: number) {      
+    async deleteRouter(id: string) {      
       this.isDeleting = true
       this.deletingId = id
       try {
@@ -215,7 +215,7 @@ export const usePermissionRouterStore = defineStore('permissionRouter', {
       }
     },
 
-    async deletePermission(id: number) {      
+    async deletePermission(id: string) {      
       this.isDeleting = true
       this.deletingId = id
       try {
@@ -226,7 +226,7 @@ export const usePermissionRouterStore = defineStore('permissionRouter', {
       }
     },
 
-    async deleteBinding(id: number) {      
+    async deleteBinding(id: string) {      
       this.isDeleting = true
       this.deletingId = id
       try {

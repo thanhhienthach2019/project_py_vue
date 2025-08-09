@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError
+from uuid import UUID
 from typing import List, Optional
 from fastapi import Request, HTTPException
 from app.models.settings.router_permission import Router, Permission, RouterPermission
@@ -26,7 +27,7 @@ def get_all_routers(db: Session) -> GenericResponse[List[RouterResponse]]:
         raise http_500("error.fetch.failed", {"entity": "Router"})
 
 
-def get_router_by_id(db: Session, router_id: int) -> GenericResponse[RouterResponse]:
+def get_router_by_id(db: Session, router_id: UUID) -> GenericResponse[RouterResponse]:
     r = db.query(Router).filter(Router.id == router_id).first()
     if not r:
         http_404("error.router.not_found", {"id": router_id})
@@ -49,7 +50,7 @@ async def create_router(db: Session, data: RouterCreate) -> GenericResponse[Rout
     return GenericResponse(data=RouterResponse.from_orm(r), message="notification.create.success", args={"entity": "Router"})
 
 
-async def update_router(db: Session, router_id: int, data: RouterUpdate) -> GenericResponse[RouterResponse]:
+async def update_router(db: Session, router_id: UUID, data: RouterUpdate) -> GenericResponse[RouterResponse]:
     r = db.query(Router).filter(Router.id == router_id).first()
     if not r:
         http_404("error.router.not_found", {"id": router_id})
@@ -68,7 +69,7 @@ async def update_router(db: Session, router_id: int, data: RouterUpdate) -> Gene
     return GenericResponse(data=RouterResponse.from_orm(r), message="notification.update.success", args={"entity": "Router"})
 
 
-async def delete_router(db: Session, router_id: int, request: Request) -> GenericResponse[None]:
+async def delete_router(db: Session, router_id: UUID, request: Request) -> GenericResponse[None]:
     r = db.query(Router).filter(Router.id == router_id).first()
     if not r:
         http_404("error.router.not_found", {"id": router_id})
@@ -99,7 +100,7 @@ def get_all_permissions(db: Session) -> GenericResponse[List[PermissionResponse]
         raise http_500("error.fetch.failed", {"entity": "Permission"})
 
 
-def get_permission_by_id(db: Session, permission_id: int) -> GenericResponse[PermissionResponse]:
+def get_permission_by_id(db: Session, permission_id: UUID) -> GenericResponse[PermissionResponse]:
     p = db.query(Permission).filter(Permission.id == permission_id).first()
     if not p:
         http_404("error.permission.not_found", {"id": permission_id})
@@ -122,7 +123,7 @@ async def create_permission(db: Session, data: PermissionCreate) -> GenericRespo
     return GenericResponse(data=PermissionResponse.from_orm(p), message="notification.create.success", args={"entity": "Permission"})
 
 
-async def update_permission(db: Session, permission_id: int, data: PermissionUpdate) -> GenericResponse[PermissionResponse]:
+async def update_permission(db: Session, permission_id: UUID, data: PermissionUpdate) -> GenericResponse[PermissionResponse]:
     p = db.query(Permission).filter(Permission.id == permission_id).first()
     if not p:
         http_404("error.permission.not_found", {"id": permission_id})
@@ -141,7 +142,7 @@ async def update_permission(db: Session, permission_id: int, data: PermissionUpd
     return GenericResponse(data=PermissionResponse.from_orm(p), message="notification.update.success", args={"entity": "Permission"})
 
 
-async def delete_permission(db: Session, permission_id: int) -> GenericResponse[None]:
+async def delete_permission(db: Session, permission_id: UUID) -> GenericResponse[None]:
     p = db.query(Permission).filter(Permission.id == permission_id).first()
     if not p:
         http_404("error.permission.not_found", {"id": permission_id})
@@ -174,7 +175,7 @@ def get_all_router_permissions(db: Session) -> GenericResponse[List[RouterPermis
         raise http_500("error.fetch.failed", {"entity": "Binding"})
 
 
-def get_router_permission_by_id(db: Session, rp_id: int) -> GenericResponse[RouterPermissionResponse]:
+def get_router_permission_by_id(db: Session, rp_id: UUID) -> GenericResponse[RouterPermissionResponse]:
     rp = db.query(RouterPermission).filter(RouterPermission.id == rp_id).first()
     if not rp:
         http_404("error.binding.not_found", {"id": rp_id})
@@ -197,7 +198,7 @@ async def create_router_permission(db: Session, data: RouterPermissionCreate) ->
     return GenericResponse(data=RouterPermissionResponse.from_orm(rp), message="notification.create.success", args={"entity": "Binding"})
 
 
-async def update_router_permission(db: Session, rp_id: int, data: RouterPermissionUpdate) -> GenericResponse[RouterPermissionResponse]:
+async def update_router_permission(db: Session, rp_id: UUID, data: RouterPermissionUpdate) -> GenericResponse[RouterPermissionResponse]:
     rp = db.query(RouterPermission).filter(RouterPermission.id == rp_id).first()
     if not rp:
         http_404("error.binding.not_found", {"id": rp_id})
@@ -216,7 +217,7 @@ async def update_router_permission(db: Session, rp_id: int, data: RouterPermissi
     return GenericResponse(data=RouterPermissionResponse.from_orm(rp), message="notification.update.success", args={"entity": "Binding"})
 
 
-async def delete_router_permission(db: Session, rp_id: int) -> GenericResponse[None]:
+async def delete_router_permission(db: Session, rp_id: UUID) -> GenericResponse[None]:
     rp = db.query(RouterPermission).filter(RouterPermission.id == rp_id).first()
     if not rp:
         http_404("error.binding.not_found", {"id": rp_id})

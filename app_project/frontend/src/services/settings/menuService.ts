@@ -48,7 +48,7 @@ export const createMenu = async (
 
 // 🔹 Update menu item by ID
 export const updateMenu = async (
-  menuId: number,
+  menuId: string,
   data: MenuItemUpdate
 ): Promise<GenericResponse<MenuItemResponse>> => {
   try {
@@ -65,7 +65,7 @@ export const updateMenu = async (
 };
 
 // 🔹 Delete menu item by ID
-export const deleteMenu = async (menuId: number): Promise<GenericResponse<null>> => {
+export const deleteMenu = async (menuId: string): Promise<GenericResponse<null>> => {
   try {
     const response = await apiClient.delete(`/menus/${menuId}`);
     return {

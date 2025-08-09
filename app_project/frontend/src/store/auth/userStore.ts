@@ -24,8 +24,8 @@ interface UserState {
   isUpdating: boolean
   isDeleting: boolean
 
-  updatingId: number | null
-  deletingId: number | null
+  updatingId: string | null
+  deletingId: string | null
 }
 
 
@@ -55,7 +55,7 @@ export const useUserStore = defineStore('user', {
       )
     },
 
-    getUserByIdFromList: (state) => (userId: number) => {
+    getUserByIdFromList: (state) => (userId: string) => {
       return state.users.find((u) => u.id === userId)
     },
   },
@@ -75,7 +75,7 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    async loadUserById(userId: number) {
+    async loadUserById(userId: string) {
       this.isLoadingUserById = true
       try {
         const response = await fetchUserById(userId)
@@ -99,7 +99,7 @@ export const useUserStore = defineStore('user', {
     },
 
     // ✏️ UPDATE
-    async updateUser(userId: number, data: UserUpdate, imageFile?: File | null, removeImage?: boolean) {
+    async updateUser(userId: string, data: UserUpdate, imageFile?: File | null, removeImage?: boolean) {
       this.isUpdating = true
       this.updatingId = userId
       try {
@@ -111,7 +111,7 @@ export const useUserStore = defineStore('user', {
     },
 
     // 🗑️ DELETE
-    async deleteUser(userId: number) {
+    async deleteUser(userId: string) {
       this.isDeleting = true
       this.deletingId = userId
       try {

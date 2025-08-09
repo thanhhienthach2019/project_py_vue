@@ -43,28 +43,28 @@ export function usePermissionRouter() {
   // ============ Router Operations ============
    const routerActions = {
     createRouter: (data: RouterCreate) => withToastAction(() => store.createRouter(data)),
-    updateRouter: (id: number, data: RouterUpdate) => withToastAction(() => store.updateRouter(id, data)),
-    deleteRouter: (id: number) => withToastAction(() => store.deleteRouter(id))
+    updateRouter: (id: string, data: RouterUpdate) => withToastAction(() => store.updateRouter(id, data)),
+    deleteRouter: (id: string) => withToastAction(() => store.deleteRouter(id))
   };
 
   // ============ Permission Operations ============
     const permissionActions = {
     createPermission: (data: PermissionCreate) => withToastAction(() => store.createPermission(data)),
-    updatePermission: (id: number, data: PermissionUpdate) => withToastAction(() => store.updatePermission(id, data)),
-    deletePermission: (id: number) => withToastAction(() => store.deletePermission(id))
+    updatePermission: (id: string, data: PermissionUpdate) => withToastAction(() => store.updatePermission(id, data)),
+    deletePermission: (id: string) => withToastAction(() => store.deletePermission(id))
   };
 
   // ============ Binding Operations ============
    const bindingActions = {
     createBinding: (data: RouterPermissionCreate) => withToastAction(() => store.createBinding(data)),
-    updateBinding: (id: number, data: RouterPermissionUpdate) => withToastAction(() => store.updateBinding(id, data)),
-    deleteBinding: (id: number) => withToastAction(() => store.deleteBinding(id))
+    updateBinding: (id: string, data: RouterPermissionUpdate) => withToastAction(() => store.updateBinding(id, data)),
+    deleteBinding: (id: string) => withToastAction(() => store.deleteBinding(id))
   };
 
   // ============ Helper Getters ============
   const getters = {
-    getRouterById: (id: number) => store.getRouterById(id),
-    getPermissionById: (id: number) => store.getPermissionById(id)
+    getRouterById: (id: string) => store.getRouterById(id),
+    getPermissionById: (id: string) => store.getPermissionById(id)
   };
 
   return {
